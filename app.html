@@ -1,1 +1,22 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>THE PLAYBOOK</title>
+<style>body{font-family:system-ui;background:#1A252F;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}p{opacity:.7}</style>
+</head><body><p id="s">Loading THE PLAYBOOK…</p>
+<script>
+(async function(){
+  const n = 5;
+  let b64 = "";
+  for (let i = 0; i < n; i++) {
+    const r = await fetch("./chunk" + i + ".txt?v=1");
+    if (!r.ok) { document.getElementById("s").textContent = "Load failed " + i; return; }
+    b64 += await r.text();
+  }
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  const html = new TextDecoder("utf-8").decode(bytes);
+  document.open();
+  document.write(html);
+  document.close();
+})();
+</script></body></html>
