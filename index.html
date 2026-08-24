@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <meta name="theme-color" content="#2C3E50" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Playbook" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+
+  <title>THE PLAYBOOK — £2.99 once · For neurodivergent families</title>
+  <meta name="description" content="Track daily life, spot patterns, and print a professional report for school or GP. Built for mums, dads, carers and the whole team. One-time unlock £2.99. No subscription." />
+  <meta property="og:title" content="THE PLAYBOOK — For neurodivergent families" />
+  <meta property="og:description" content="Calm tracking, insights, and a printable report. £2.99 once. No subscription." />
+  <style>
+    :root {
+      --navy: #2C3E50;
+      --navy-dark: #1A252F;
+      --amber: #C1752E;
+      --amber-tint: #FBF1E7;
+      --paper: #F7F6F4;
+      --ink: #1F1F1F;
+      --soft: #5C6570;
+      --line: #E2E6EA;
+      --white: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    a { color: var(--amber); }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+    header {
+      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-dark) 100%);
+      color: white;
+      padding: 28px 0 48px;
+    }
+    .brand {
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-mark {
+      width: 12px; height: 12px;
+      background: var(--amber);
+      border: 2px solid white;
+      border-radius: 2px;
+    }
+    .hero { padding-top: 28px; }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 40px);
+      line-height: 1.15;
+      margin: 0 0 14px;
+      font-weight: 800;
+    }
+    .hero .lead {
+      font-size: 17px;
+      opacity: 0.88;
+      max-width: 36em;
+      margin: 0 0 22px;
+    }
+    .price-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .price {
+      font-size: 28px;
+      font-weight: 800;
+      color: #F5C98A;
+    }
+    .price span { font-size: 14px; font-weight: 600; opacity: 0.85; margin-left: 6px; }
+    .btn {
+      display: inline-block;
+      background: var(--amber);
+      color: white;
+      font-weight: 800;
+      font-size: 16px;
+      padding: 14px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover { filter: brightness(1.06); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.35);
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+    .trust { font-size: 13px; opacity: 0.75; margin-top: 10px; }
+    section { padding: 40px 0; }
+    section h2 {
+      font-size: 22px;
+      color: var(--navy);
+      margin: 0 0 8px;
+      padding-left: 12px;
+      border-left: 4px solid var(--amber);
+    }
+    .sub { color: var(--soft); font-size: 15px; margin: 0 0 22px; padding-left: 16px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 1px 3px rgba(44,62,80,0.05);
+    }
+    .card h3 { margin: 0 0 6px; font-size: 15px; color: var(--navy); }
+    .card p { margin: 0; font-size: 13px; color: var(--soft); }
+    .free-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background: #EAF7EF;
+      color: #1E7A46;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .pro-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background: var(--amber-tint);
+      color: var(--amber);
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .quote {
+      background: var(--white);
+      border-left: 4px solid var(--amber);
+      padding: 16px 18px;
+      border-radius: 0 12px 12px 0;
+      font-size: 15px;
+      color: var(--ink);
+      margin: 0 0 12px;
+    }
+    .quote cite { display: block; margin-top: 8px; font-size: 12px; color: var(--soft); font-style: normal; }
+    .cta-band {
+      background: var(--navy);
+      color: white;
+      padding: 36px 0;
+      text-align: center;
+    }
+    .cta-band h2 { border: none; padding: 0; color: white; margin-bottom: 10px; }
+    .cta-band p { opacity: 0.85; margin: 0 0 18px; }
+    footer {
+      padding: 28px 0 40px;
+      font-size: 12px;
+      color: var(--soft);
+      text-align: center;
+    }
+    .steps { counter-reset: step; list-style: none; padding: 0; margin: 0; }
+    .steps li {
+      position: relative;
+      padding: 14px 14px 14px 52px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 14px; top: 14px;
+      width: 28px; height: 28px;
+      background: var(--amber-tint);
+      color: var(--navy);
+      font-weight: 800;
+      font-size: 13px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #config-note {
+      background: #fff8e6;
+      border: 1px solid #f0d9a8;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #6b4e12;
+      margin: 20px 0;
+      display: none;
+    }
+    #config-note.show { display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand"><span class="brand-mark"></span>THE PLAYBOOK</div>
+      <div class="hero">
+        <h1>The calm companion for neurodivergent families</h1>
+        <p class="lead">
+          Track the days that matter. Spot patterns. Hand school or your GP a clear one-page summary —
+          without another subscription or another app that judges you.
+        </p>
+        <div class="price-row">
+          <div class="price">£2.99 <span>once · no subscription</span></div>
+        </div>
+        <div class="price-row">
+          <!-- Replace STRIPE_PAYMENT_LINK with your real Stripe Payment Link -->
+          <a class="btn" id="buy-btn" href="#buy">Unlock full access</a>
+          <a class="btn-ghost" href="./app.html">Try free tracking first</a>
+        </div>
+        <p class="trust">For mums, dads, grandparents, foster carers — anyone in the child’s corner. Data stays on your device.</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div id="config-note">
+      <strong>Seller setup:</strong> Open this file’s script at the bottom and set <code>STRIPE_PAYMENT_LINK</code> to your Stripe Payment Link URL.
+      Success URL should point to <code>app.html?unlocked=1</code> so the app unlocks after payment.
+    </div>
+
+    <section>
+      <h2>What’s free vs what’s unlocked</h2>
+      <p class="sub">Try the heart of the product before you pay.</p>
+      <div class="grid">
+        <div class="card">
+          <div class="free-badge">Free</div>
+          <h3>Full tracking</h3>
+          <p>Daily log, behaviour, sensory, sleep & food, therapy, meds, milestones, weekly overview, self-care, wins, brain dump, At a Glance.</p>
+        </div>
+        <div class="card">
+          <div class="pro-badge">£2.99 unlock</div>
+          <h3>Insights</h3>
+          <p>Energy trends, common triggers, mood tags — built only from what you’ve logged.</p>
+        </div>
+        <div class="card">
+          <div class="pro-badge">£2.99 unlock</div>
+          <h3>Professional report</h3>
+          <p>Printable / PDF summary for school, GP, or therapy — with a clear “not a clinical assessment” note.</p>
+        </div>
+        <div class="card">
+          <div class="pro-badge">£2.99 unlock</div>
+          <h3>Discover + community</h3>
+          <p>Curated toys & tools, local-style events, practical tips, and space to post with other carers.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Why parents pay once</h2>
+      <p class="sub">Designed for the appointment bag and the hard Tuesday evening.</p>
+      <blockquote class="quote">
+        “GP appointment went better when I brought a one-page snapshot. Less explaining from scratch.”
+        <cite>— Pattern we hear again and again</cite>
+      </blockquote>
+      <blockquote class="quote">
+        “On hard days, my own wins list is proof I’m not failing.”
+        <cite>— Why Small Wins lives in the app</cite>
+      </blockquote>
+    </section>
+
+    <section>
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li><strong>Track free</strong> — log energy, mood, sleep, what helped. No account required.</li>
+        <li><strong>Unlock once</strong> — £2.99 via secure Stripe checkout (card, Apple Pay, Google Pay where available).</li>
+        <li><strong>Print the report</strong> — when school or clinic asks “how have things been?”</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Privacy by design</h2>
+      <p class="sub">Your family’s notes are sensitive. We treat them that way.</p>
+      <div class="card">
+        <p style="margin:0;font-size:14px;color:var(--soft);line-height:1.55">
+          Core data is stored on <strong>your device</strong> (browser local storage). Export a backup anytime.
+          No account is required for tracking. Community posts you write stay local until a future online community is optional.
+          This is <strong>not medical advice</strong> and not a diagnostic tool.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <div class="cta-band" id="buy">
+    <div class="wrap">
+      <h2>Ready when you are</h2>
+      <p>One payment. Full access on this device. No monthly fee.</p>
+      <a class="btn" id="buy-btn-2" href="#buy">Unlock THE PLAYBOOK · £2.99</a>
+      <p class="trust" style="margin-top:14px">Or <a href="./app.html" style="color:#F5C98A">open the free tracker</a> first</p>
+    </div>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      THE PLAYBOOK · For neurodivergent families<br />
+      Not a substitute for professional medical or educational advice.<br />
+      <p style="margin:12px 0 6px">
+        <a href="https://www.facebook.com/groups/2217693205459716/" target="_blank" rel="noopener" style="color:var(--amber);margin:0 8px;text-decoration:none;font-weight:600">Facebook group</a>
+        ·
+        <a href="https://www.tiktok.com/@the.playbook311" target="_blank" rel="noopener" style="color:var(--amber);margin:0 8px;text-decoration:none;font-weight:600">TikTok</a>
+        ·
+        <a href="https://x.com/theplaybookhome" target="_blank" rel="noopener" style="color:var(--amber);margin:0 8px;text-decoration:none;font-weight:600">X</a>
+        ·
+        <a href="mailto:Theplaybookhome@gmail.com" style="color:var(--amber);margin:0 8px;text-decoration:none;font-weight:600">Email</a>
+      </p>
+      <a href="privacy.html" style="color:var(--amber);text-decoration:none;font-weight:600">Privacy</a><br /><span id="year"></span>
+    </div>
+  </footer>
+
+  <script>
+    /* ========== SELLER CONFIG ========== */
+    // 1. Create a Payment Link in Stripe Dashboard → Payment Links
+    // 2. Price: £2.99 GBP, one-time
+    // 3. After payment → redirect to your hosted app.html?unlocked=1
+    // 4. Paste the Payment Link URL below:
+    const STRIPE_PAYMENT_LINK = ""; // e.g. "https://buy.stripe.com/xxxxx"
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    function goBuy(e) {
+      if (e) e.preventDefault();
+      if (!STRIPE_PAYMENT_LINK) {
+        document.getElementById("config-note").classList.add("show");
+        document.getElementById("config-note").scrollIntoView({ behavior: "smooth" });
+        // Demo fallback: send them into the app with unlock instructions
+        alert("Stripe Payment Link not configured yet.\n\nFor demo: open the app and tap Unlock (£2.99) to simulate purchase.\n\nWhen you have a Stripe link, paste it into landing.html (STRIPE_PAYMENT_LINK).");
+        return;
+      }
+      window.location.href = STRIPE_PAYMENT_LINK;
+    }
+    document.getElementById("buy-btn").addEventListener("click", goBuy);
+    document.getElementById("buy-btn-2").addEventListener("click", goBuy);
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js").catch(function (e) {
+          console.warn("SW register failed", e);
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>
