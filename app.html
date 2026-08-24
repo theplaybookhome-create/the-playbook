@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>THE PLAYBOOK</title>
-<style>body{font-family:system-ui;background:#1A252F;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}p{opacity:.7}</style>
-</head><body><p id="s">Loading THE PLAYBOOK…</p>
-<script>
-(async function(){
-  const n = 5;
-  let b64 = "";
-  for (let i = 0; i < n; i++) {
-    const r = await fetch("./chunk" + i + ".txt?v=1");
-    if (!r.ok) { document.getElementById("s").textContent = "Load failed " + i; return; }
-    b64 += await r.text();
-  }
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  const html = new TextDecoder("utf-8").decode(bytes);
-  document.open();
-  document.write(html);
-  document.close();
-})();
-</script></body></html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>THE PLAYBOOK — updating</title>
+<style>
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    background:linear-gradient(165deg,#121A22,#2C3E50); color:#fff; text-align:center; padding:24px; }
+  .box { max-width:420px; }
+  h1 { letter-spacing:1.5px; font-size:22px; margin:0 0 12px; }
+  p { opacity:0.8; line-height:1.5; font-size:15px; }
+  a { color:#E8A317; font-weight:700; }
+</style>
+</head>
+<body>
+  <div class="box">
+    <h1>THE PLAYBOOK</h1>
+    <p>App file is being restored. Please re-upload <strong>app.html</strong> from the file Grok sent you (GitHub → Add file → Upload files), then refresh this page.</p>
+    <p style="margin-top:20px;font-size:13px;opacity:0.55">Icons and other site files are already in the repo.</p>
+  </div>
+</body>
+</html>
