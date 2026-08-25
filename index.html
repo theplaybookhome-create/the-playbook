@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
+  <script>
+    // After Stripe pay: ?unlocked=1 → save unlock + open the real app
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get("unlocked") === "1") {
+          try { localStorage.setItem("playbook:premium-unlocked", "1"); } catch (e) {}
+          window.location.replace("./app.html?unlocked=1");
+        }
+      } catch (e) {}
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -89,98 +101,88 @@
     .btn {
       display: inline-block;
       background: var(--amber);
-      color: white !important;
+      color: white;
+      font-weight: 700;
       text-decoration: none;
-      font-weight: 800;
-      font-size: 16px;
       padding: 14px 22px;
-      border-radius: 10px;
+      border-radius: 12px;
       border: none;
+      font-size: 16px;
       cursor: pointer;
-      font-family: inherit;
     }
-    .btn:hover { filter: brightness(1.06); }
     .btn-ghost {
       display: inline-block;
       background: transparent;
-      color: white !important;
-      border: 1.5px solid rgba(255,255,255,0.35);
+      color: white;
+      font-weight: 600;
       text-decoration: none;
-      font-weight: 700;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.35);
       font-size: 15px;
-      padding: 12px 18px;
-      border-radius: 10px;
       margin-left: 8px;
     }
-    .trust {
-      margin-top: 16px;
-      font-size: 13px;
-      opacity: 0.75;
-    }
-    section { padding: 40px 0; }
-    h2 {
-      font-size: 22px;
-      color: var(--navy);
-      margin: 0 0 8px;
-      padding-left: 12px;
-      border-left: 4px solid var(--amber);
-    }
-    .sub { color: var(--soft); margin: 0 0 20px; padding-left: 16px; }
+    .trust { font-size: 13px; opacity: 0.8; margin-top: 16px; }
+    main { padding: 36px 0 48px; }
+    h2 { font-size: 22px; margin: 0 0 8px; color: var(--navy); }
+    .sub { color: var(--soft); margin: 0 0 20px; }
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      grid-template-columns: 1fr;
+      gap: 12px;
     }
-    @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } .btn-ghost { margin: 10px 0 0; display: block; text-align: center; } }
+    @media (min-width: 560px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
     .card {
       background: var(--white);
       border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 18px 16px;
-      box-shadow: 0 1px 3px rgba(44,62,80,0.06);
+      border-radius: 14px;
+      padding: 16px;
     }
-    .card h3 { margin: 0 0 6px; font-size: 16px; color: var(--navy); }
-    .card p { margin: 0; font-size: 14px; color: var(--soft); }
     .badge {
       display: inline-block;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       padding: 3px 8px;
-      border-radius: 4px;
+      border-radius: 999px;
       margin-bottom: 8px;
     }
-    .badge.free { background: #EAF7EF; color: #1E7A46; }
+    .badge.free { background: #E8F5EE; color: #1E7A46; }
     .badge.pro { background: var(--amber-tint); color: var(--amber); }
-    .cta-band {
-      background: linear-gradient(145deg, var(--navy) 0%, var(--navy-dark) 100%);
+    .card h3 { margin: 0 0 6px; font-size: 16px; color: var(--navy); }
+    .card p { margin: 0; font-size: 14px; color: var(--soft); }
+    #buy {
+      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-dark) 100%);
       color: white;
-      border-radius: 16px;
-      padding: 28px 22px;
-      text-align: center;
-      margin: 10px 0 30px;
+      padding: 36px 0;
+      margin-top: 28px;
     }
-    .cta-band h2 { border: none; padding: 0; color: white; margin-bottom: 8px; }
-    .cta-band p { opacity: 0.85; margin: 0 0 18px; }
+    #buy h2 { color: white; }
+    #buy .sub { color: rgba(255,255,255,0.8); }
+    .buy-box {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .config-note {
+      background: #fff3cd;
+      color: #664d03;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin: 16px 0;
+      display: none;
+    }
+    .config-note.show { display: block; }
     footer {
       padding: 28px 0 40px;
       font-size: 13px;
       color: var(--soft);
       text-align: center;
-      border-top: 1px solid var(--line);
     }
-    .config-note {
-      background: #FFF6E8;
-      border: 1px solid #E8C9A0;
-      border-radius: 10px;
-      padding: 12px 14px;
-      font-size: 13px;
-      color: var(--navy);
-      margin: 16px 0;
-      display: none;
-    }
-    .config-note.show { display: block; }
   </style>
 </head>
 <body>
@@ -209,7 +211,7 @@
           <div class="card">
             <div class="badge free">Free</div>
             <h3>Full tracking</h3>
-            <p>Daily log, behaviour, sensory, sleep &amp; food, therapy, meds, milestones, self-care, wins, brain dump, At a Glance profile.</p>
+            <p>Daily log, behaviour, sensory, sleep & food, therapy, meds, milestones, self-care, wins, brain dump, At a Glance profile.</p>
           </div>
           <div class="card">
             <div class="badge free">Free</div>
@@ -229,7 +231,7 @@
           <div class="card">
             <div class="badge pro">£2.99 unlock</div>
             <h3>Discover + Community post</h3>
-            <p>Toys, events, tips matched to your logs — and share with other paid members when signed in.</p>
+            <p>Toys, events, tips matched to your logs — and share with other paid members when signed in. Plus autism visual supports, colouring & AAC printables.</p>
           </div>
         </div>
       </div>
@@ -237,10 +239,11 @@
 
     <section id="buy">
       <div class="wrap">
-        <div class="cta-band">
-          <h2>Unlock once. Own it on this device.</h2>
+        <h2>Unlock everything</h2>
+        <p class="sub">One payment. Keep it forever on this device.</p>
+        <div class="buy-box">
           <p>One-time £2.99. No subscription. Card, Apple Pay, Google Pay where available.</p>
-          <a class="btn" id="buy-btn-2" href="#buy">Unlock THE PLAYBOOK · £2.99</a>
+          <a class="btn" id="buy-btn-2" href="#buy" style="margin-top:12px">Pay £2.99 · unlock now</a>
           <p class="trust" style="margin-top:14px">Or <a href="./app.html" style="color:#F5C98A">open the free tracker</a> first</p>
         </div>
         <div class="config-note" id="config-note">
@@ -269,7 +272,7 @@
 
   <script>
     /* ========== SELLER CONFIG ========== */
-    const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/3cI6oJcrJ8MNfvcbr038400";
+    const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/bJe4gB2R9fbb96O52C38403";
 
     document.getElementById("year").textContent = new Date().getFullYear();
 
