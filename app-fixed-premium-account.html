@@ -1,0 +1,2803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <meta name="theme-color" content="#2C3E50" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Playbook" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+
+  <meta name="description" content="THE PLAYBOOK — calm companion for neurodivergent families. Track free. Unlock insights, report & more for £2.99 once." />
+  <title>THE PLAYBOOK — For neurodivergent families</title>
+  <style>body { margin: 0; background: #F7F6F4; }</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    window.storage = {
+      async get(key) {
+        try {
+          const v = localStorage.getItem("playbook:" + key);
+          return v === null ? null : { value: v };
+        } catch (e) { return null; }
+      },
+      async set(key, value) {
+        try { localStorage.setItem("playbook:" + key, value); return true; }
+        catch (e) { console.error(e); return false; }
+      }
+    };
+  
+
+// Stripe / Payment Link return: ?unlocked=1
+(function() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("unlocked") === "1") {
+      localStorage.setItem("playbook:premium-unlocked", "1");
+      window.__pb_just_unlocked = true;
+      // clean URL without reload loop
+      const url = new URL(window.location.href);
+      url.searchParams.delete("unlocked");
+      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+    }
+  } catch (e) {}
+})();
+
+// Demo seed for screenshots / trailer (?demo=1)
+(function() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("demo") !== "1") return;
+    function d(n) { const x = new Date(); x.setDate(x.getDate() - n); return x.toISOString().slice(0,10); }
+    const daily = [
+      { id: "d0", date: d(0), energy: 4, mood: ["Calm","Happy"], activities: ["School/daycare","Outdoors"], wentWell: "Park after school — smooth transition", challenges: "", notes: "Headphones in bag helped" },
+      { id: "d1", date: d(1), energy: 2, mood: ["Wobbly","Overwhelmed"], activities: ["School/daycare","Appointment"], wentWell: "Got through the morning", challenges: "Loud assembly", notes: "" },
+      { id: "d2", date: d(2), energy: 3, mood: ["Calm"], activities: ["Therapy","Outdoors"], wentWell: "OT session went well", challenges: "", notes: "" },
+      { id: "d3", date: d(3), energy: 5, mood: ["Happy"], activities: ["Outdoors","Screen time"], wentWell: "Full afternoon at the park", challenges: "", notes: "" },
+      { id: "d4", date: d(4), energy: 3, mood: ["Wobbly"], activities: ["School/daycare"], wentWell: "Asked for a break", challenges: "Transition to PE", notes: "" },
+      { id: "d5", date: d(5), energy: 2, mood: ["Overwhelmed","Shutdown"], activities: ["School/daycare","New food"], wentWell: "", challenges: "Canteen noise + new lunch", notes: "Pack familiar snack next time" },
+      { id: "d6", date: d(6), energy: 4, mood: ["Calm","Happy"], activities: ["Therapy","Outdoors"], wentWell: "Speech practice at home", challenges: "", notes: "" }
+    ];
+    localStorage.setItem("playbook:daily-log-entries", JSON.stringify(daily));
+    localStorage.setItem("playbook:behavior-log-entries", JSON.stringify([
+      { id: "b1", date: d(1), timeOfDay: "3:40pm", whatHappened: "Meltdown after school pickup — hands on ears, refused car seat", triggers: ["Transition","Loud noise","Tired"], whatITried: "Quiet voice, offered water", whatHelped: "Noise-cancelling headphones + 5 min swing at park", notesNextTime: "Headphones ready before school bell" },
+      { id: "b2", date: d(5), timeOfDay: "12:15pm", whatHappened: "Shutdown in canteen — stopped eating, head down", triggers: ["Crowd","Texture","Loud noise"], whatITried: "Moved to quieter table", whatHelped: "Familiar snack from home", notesNextTime: "Request quieter seating" }
+    ]));
+    localStorage.setItem("playbook:wins-entries", JSON.stringify([
+      { id: "w1", date: d(0), win: "Asked for headphones before assembly", notes: "Self-advocacy win" },
+      { id: "w2", date: d(4), win: "Used break card in class", notes: "" },
+      { id: "w3", date: d(2), win: "Tried one new food texture without distress", notes: "" }
+    ]));
+    localStorage.setItem("playbook:sleep-food-entries", JSON.stringify([
+      { id: "s1", date: d(0), sleepQuality: 4, notes: "Asleep by 8:30" },
+      { id: "s2", date: d(1), sleepQuality: 2, notes: "Night waking x2" }
+    ]));
+    localStorage.setItem("playbook:onboard-seen", "1");
+    localStorage.setItem("playbook:premium-unlocked", "1");
+    window.__DEMO_TAB = params.get("tab") || "today";
+  } catch (e) { console.error(e); }
+})();
+
+</script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
+  <script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+/* =========================================================
+   THE PLAYBOOK — Premium companion for neurodivergent families
+   Sellable product · ~£2.99 · inclusive for all caregivers
+   Track · Insights · Community · Discover (toys, events, tips)
+========================================================= */
+
+const CSS = `
+:root {
+  --navy: #2C3E50; --navy-dark: #1A252F; --amber: #C1752E; --amber-tint: #FBF1E7;
+  --ink: #1F1F1F; --soft: #5C6570; --muted: #8B939C; --line: #E2E6EA; --fill: #F0F3F5;
+  --paper: #F7F6F4; --white: #FFFFFF; --danger: #B03A2E; --success: #1E7A46;
+  --card-shadow: 0 1px 3px rgba(44,62,80,0.06), 0 4px 16px rgba(44,62,80,0.04);
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+.app-root { background: var(--paper); min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--ink); padding-bottom: 72px; }
+.app-header { background: linear-gradient(160deg, var(--navy) 0%, var(--navy-dark) 100%); color: white; padding: 18px 18px 14px; }
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.brand { font-weight: 800; letter-spacing: 1.5px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.brand-mark { width: 14px; height: 14px; background: var(--amber); border: 2px solid white; border-radius: 3px; flex-shrink: 0; }
+.brand-sub { font-size: 11px; opacity: 0.72; margin-top: 4px; letter-spacing: 0.8px; }
+.header-actions { display: flex; gap: 6px; }
+.header-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.22); color: white; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.header-btn:hover { background: rgba(255,255,255,0.2); }
+.header-value { margin-top: 14px; background: rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px; font-size: 12px; line-height: 1.45; opacity: 0.92; }
+.app-main { max-width: 680px; margin: 0 auto; padding: 20px 16px calc(96px + env(safe-area-inset-bottom)); }
+.page-header { margin-bottom: 18px; }
+.kicker { font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: var(--amber); text-transform: uppercase; margin-bottom: 4px; }
+.page-title { font-size: 24px; font-weight: 800; color: var(--navy); margin: 0 0 6px; padding-left: 12px; border-left: 4px solid var(--amber); line-height: 1.2; }
+.page-subtitle { font-size: 14px; color: var(--soft); font-style: italic; margin: 0; padding-left: 12px; line-height: 1.4; }
+.card, .entry-form { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; box-shadow: var(--card-shadow); }
+.field { margin-bottom: 14px; }
+.field-label { display: block; font-weight: 700; font-size: 13px; color: var(--ink); margin-bottom: 8px; letter-spacing: 0.01em; }
+.field-hint { font-size: 12px; color: var(--soft); font-style: italic; margin-bottom: 6px; }
+input[type="text"], input[type="date"], input[type="search"], textarea, select {
+  width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 16px; font-family: inherit; color: var(--ink); background: var(--paper);
+  min-height: 48px; box-sizing: border-box; -webkit-appearance: none; appearance: none;
+}
+input[type="date"] {
+  display: block;
+  line-height: 1.3;
+  min-height: 48px;
+  padding: 12px 14px;
+  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%235C6570' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E") no-repeat right 12px center;
+  background-size: 18px;
+  padding-right: 40px;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  width: 40px;
+  height: 100%;
+  position: absolute;
+  right: 0;
+  cursor: pointer;
+}
+.date-field-wrap { position: relative; }
+.date-field-wrap input[type="date"] {
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+}
+.date-hint {
+  font-size: 12px; color: var(--soft); margin: 0 0 8px; line-height: 1.4;
+}
+.date-quick {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center;
+}
+.date-chip {
+  border: 1px solid var(--line); background: white; border-radius: 999px;
+  padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--soft);
+  cursor: pointer; font-family: inherit; min-height: 36px;
+}
+.date-chip.active {
+  border-color: var(--amber); background: var(--amber-tint); color: var(--navy);
+}
+.date-chip.pick {
+  border-color: var(--navy); color: var(--navy); background: #EEF2F5;
+}
+.date-friendly {
+  font-size: 13px; color: var(--soft); margin-top: 8px; font-weight: 500;
+}
+.date-friendly strong { color: var(--navy); }
+
+.tick-add-row {
+  display: flex; gap: 8px; margin-top: 10px; align-items: center; flex-wrap: wrap;
+}
+.tick-add-row input {
+  flex: 1; min-width: 140px; min-height: 40px !important; padding: 8px 12px !important; font-size: 15px !important;
+}
+.tick-add-btn {
+  border: 1px dashed var(--amber); background: var(--amber-tint); color: var(--navy);
+  border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit; min-height: 40px; white-space: nowrap;
+}
+.tick-chip.custom-opt { border-style: dashed; }
+.tick-chip .chip-x {
+  margin-left: 4px; font-size: 11px; opacity: 0.55; font-weight: 700;
+}
+.quick-log-card {
+  background: linear-gradient(135deg, #FBF1E7 0%, #fff 60%);
+  border: 1px solid #E8D5C0; border-radius: 14px; padding: 16px; margin-bottom: 14px;
+}
+.quick-log-card h3 { margin: 0 0 4px; font-size: 15px; color: var(--navy); }
+.quick-log-card p { margin: 0 0 12px; font-size: 12px; color: var(--soft); }
+.quick-log-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.quick-log-label { font-size: 12px; font-weight: 700; color: var(--ink); min-width: 70px; }
+.connect-card {
+  background: linear-gradient(145deg, #FFF8F0 0%, #FFFFFF 45%, #F0F7FF 100%);
+  border: 2px solid #E8D5C0; border-radius: 16px;
+  padding: 18px 16px; margin-bottom: 14px;
+  box-shadow: 0 4px 16px rgba(44,62,80,0.08);
+}
+.connect-card h3 { margin: 0 0 4px; font-size: 16px; color: var(--navy); }
+.connect-card p { margin: 0 0 14px; font-size: 13px; color: var(--soft); line-height: 1.45; }
+.connect-links {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 8px;
+  justify-items: center; text-align: center;
+}
+.connect-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  border: none; background: transparent; padding: 4px;
+  font-size: 12px; font-weight: 700; color: var(--navy); text-decoration: none;
+  font-family: inherit; width: 100%; max-width: 88px;
+}
+.connect-btn .cb-ico {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.35);
+  transition: transform .12s, box-shadow .12s;
+}
+.connect-btn .cb-ico svg { width: 28px; height: 28px; fill: #fff; display: block; }
+.connect-btn .cb-text { display: flex; flex-direction: column; gap: 2px; align-items: center; }
+.connect-btn .cb-text strong { font-size: 11px; font-weight: 800; line-height: 1.2; color: var(--navy); }
+.connect-btn .cb-text span { font-size: 10px; font-weight: 500; color: var(--soft); line-height: 1.2; max-width: 80px; }
+.connect-btn.fb .cb-ico { background: linear-gradient(160deg, #4c8ef5 0%, #1877F2 45%, #0d65d9 100%); }
+.connect-btn.tt .cb-ico {
+  background: #010101;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.connect-btn.xx .cb-ico { background: linear-gradient(160deg, #333 0%, #000 100%); }
+.connect-btn.em .cb-ico { background: linear-gradient(160deg, #d4924a 0%, #C1752E 50%, #a85f20 100%); }
+.connect-btn:active .cb-ico { transform: scale(0.94); }
+.connect-btn:active { opacity: 0.92; }
+
+
+textarea { resize: vertical; min-height: 56px; }
+.scale-row, .tick-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.scale-btn { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--line); background: white; font-weight: 700; color: var(--soft); cursor: pointer; font-size: 14px; }
+.scale-btn.active { background: var(--amber); border-color: var(--amber); color: white; }
+.tick-chip { display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; background: white; font-size: 13px; color: var(--ink); cursor: pointer; font-family: inherit; }
+.tick-chip.active { border-color: var(--amber); background: var(--amber-tint); color: var(--navy); font-weight: 600; }
+.tick-box { width: 14px; height: 14px; border: 1.5px solid var(--amber); border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; color: var(--amber); font-weight: 800; }
+.form-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.btn-primary { background: var(--navy); color: white; border: none; padding: 11px 20px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; }
+.btn-primary:hover { background: var(--navy-dark); }
+.btn-secondary { background: white; border: 1px solid var(--line); color: var(--soft); padding: 10px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 600; }
+.btn-secondary:hover { border-color: var(--navy); color: var(--navy); }
+.btn-danger-solid { background: var(--danger); color: white; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+.section-divider { height: 1px; background: var(--line); margin: 20px 0 14px; }
+.list-heading { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--soft); font-weight: 700; margin: 0 0 10px; }
+.list-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+.list-toolbar .search-wrap { flex: 1; min-width: 140px; }
+.sort-select { border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; font-size: 13px; background: white; color: var(--ink); }
+.empty-state { color: var(--soft); font-size: 14px; padding: 22px 16px; text-align: center; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--white); line-height: 1.5; }
+.entry-list { display: flex; flex-direction: column; gap: 10px; }
+.entry-card { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.entry-card.editing { border-color: var(--amber); box-shadow: 0 0 0 2px var(--amber-tint); }
+.entry-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; }
+.entry-date { font-weight: 700; font-size: 13px; color: var(--navy); }
+.entry-actions { display: flex; gap: 2px; }
+.btn-icon { background: none; border: none; color: var(--soft); font-size: 14px; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+.btn-icon:hover { color: var(--navy); background: var(--fill); }
+.btn-icon.danger:hover { color: var(--danger); background: #fdf2f1; }
+.entry-field { font-size: 13px; margin-bottom: 4px; line-height: 1.45; }
+.entry-field-label { font-weight: 600; color: var(--ink); }
+.entry-scale { color: var(--amber); font-weight: 700; }
+.entry-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.tag { background: var(--fill); color: var(--navy); font-size: 11px; padding: 2px 8px; border-radius: 999px; }
+.footer-note { text-align: center; font-style: italic; color: var(--soft); font-size: 13px; margin-top: 18px; line-height: 1.45; }
+
+.auth-screen {
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 28px 18px 36px;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(193,117,46,0.28), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(193,117,46,0.12), transparent 50%),
+    linear-gradient(165deg, #121A22 0%, #1A252F 35%, #2C3E50 100%);
+  color: #fff;
+  position: relative;
+  overflow-x: hidden;
+}
+.auth-screen::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.auth-wrap { width: 100%; max-width: 420px; position: relative; z-index: 1; }
+.auth-top {
+  text-align: center; margin-bottom: 22px;
+}
+.auth-logo {
+  width: 72px; height: 72px; margin: 0 auto 14px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #E8A317 0%, #C1752E 55%, #A85F20 100%);
+  box-shadow: 0 10px 28px rgba(193,117,46,0.45), inset 0 1px 0 rgba(255,255,255,0.35);
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-logo svg { width: 40px; height: 40px; fill: #fff; }
+.auth-top h1 {
+  margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 1.5px;
+  color: #fff;
+}
+.auth-top .auth-tagline {
+  margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.72); line-height: 1.45;
+  max-width: 300px; margin-left: auto; margin-right: auto;
+}
+.auth-card {
+  background: #FFFEFB; color: var(--ink);
+  border-radius: 18px; padding: 26px 22px 22px;
+  width: 100%;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06);
+  border-top: 3px solid var(--amber);
+}
+.auth-tabs {
+  display: flex; gap: 4px; margin-bottom: 20px;
+  background: var(--fill); border-radius: 12px; padding: 4px;
+}
+.auth-tabs button {
+  flex: 1; border: none; background: transparent; border-radius: 9px;
+  padding: 11px 10px; font-weight: 700; font-size: 14px; font-family: inherit;
+  cursor: pointer; color: var(--soft); transition: background .15s, color .15s, box-shadow .15s;
+}
+.auth-tabs button.active {
+  background: var(--navy); color: #fff;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.25);
+}
+.auth-card .field { margin-bottom: 14px; }
+.auth-card .field-label {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--soft); margin-bottom: 6px;
+}
+.auth-card input[type="text"],
+.auth-card input[type="email"],
+.auth-card input[type="password"] {
+  width: 100%; border: 1.5px solid var(--line); border-radius: 11px;
+  padding: 13px 14px; font-size: 16px; font-family: inherit; color: var(--ink);
+  background: #fff; min-height: 50px; box-sizing: border-box;
+  transition: border-color .15s, box-shadow .15s;
+}
+.auth-card input:focus {
+  outline: none; border-color: var(--amber);
+  box-shadow: 0 0 0 3px var(--amber-tint);
+}
+.auth-submit {
+  width: 100%; margin-top: 6px;
+  background: linear-gradient(135deg, #C1752E 0%, #A85F20 100%);
+  color: #fff; border: none; border-radius: 12px;
+  padding: 15px 18px; font-size: 16px; font-weight: 800; font-family: inherit;
+  cursor: pointer; letter-spacing: 0.02em;
+  box-shadow: 0 6px 20px rgba(193,117,46,0.35);
+  transition: filter .15s, transform .1s;
+}
+.auth-submit:hover { filter: brightness(1.06); }
+.auth-submit:active { transform: scale(0.98); }
+.auth-submit:disabled { opacity: 0.65; cursor: wait; }
+.auth-error {
+  background: #FDECEA; color: var(--danger); border-radius: 10px; padding: 11px 13px;
+  font-size: 13px; margin-bottom: 14px; line-height: 1.4;
+  border: 1px solid #f5c4be;
+}
+.auth-note {
+  font-size: 12px; color: var(--soft); margin: 16px 0 0; line-height: 1.5; text-align: center;
+}
+.auth-footer {
+  text-align: center; margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.45);
+  line-height: 1.4;
+}
+.auth-footer a { color: #E8A317; text-decoration: none; font-weight: 600; }
+.auth-trust {
+  display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+  margin-top: 14px; font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.auth-trust span { display: flex; align-items: center; gap: 5px; }
+
+.cloud-banner {
+  background: #E8F5EE; border: 1px solid #B8E0C8; border-radius: 10px;
+  padding: 10px 12px; font-size: 12px; color: #1E7A46; margin-bottom: 12px; line-height: 1.4;
+}
+.local-banner {
+  background: #FFF6E8; border: 1px solid #E8C9A0; border-radius: 10px;
+  padding: 10px 12px; font-size: 12px; color: var(--navy); margin-bottom: 12px; line-height: 1.4;
+}
+.header-user {
+  font-size: 11px; opacity: 0.85; margin-top: 2px;
+}
+.link-input-row { display: flex; flex-direction: column; gap: 8px; }
+
+
+.story-card {
+  background: linear-gradient(145deg, #1A252F 0%, #2C3E50 100%);
+  color: #fff; border-radius: 14px; padding: 16px 16px 14px;
+  margin-bottom: 12px; box-shadow: 0 8px 24px rgba(26,37,47,0.18);
+}
+.story-card .story-kicker {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #E8A317; margin: 0 0 6px;
+}
+.story-card p { margin: 0; font-size: 15px; line-height: 1.45; font-weight: 500; }
+.story-card .story-meta { margin-top: 8px; font-size: 12px; opacity: 0.75; }
+.insight-grid-premium {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+}
+.insight-metric {
+  background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+  padding: 14px 12px; text-align: center;
+}
+.insight-metric .im-val { font-size: 28px; font-weight: 800; color: var(--navy); line-height: 1.1; }
+.insight-metric .im-label { font-size: 11px; color: var(--soft); margin-top: 4px; font-weight: 600; }
+.talking-points { list-style: none; padding: 0; margin: 0; }
+.talking-points li {
+  position: relative; padding: 10px 12px 10px 36px; margin-bottom: 8px;
+  background: var(--amber-tint); border-radius: 10px; font-size: 14px; line-height: 1.4;
+  border-left: 3px solid var(--amber);
+}
+.talking-points li::before {
+  content: attr(data-n); position: absolute; left: 10px; top: 10px;
+  width: 20px; height: 20px; border-radius: 50%; background: var(--amber);
+  color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  line-height: 20px; text-align: center;
+}
+.range-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.range-pill {
+  border: 1px solid var(--line); background: #fff; border-radius: 999px;
+  padding: 8px 14px; font-size: 13px; font-weight: 700; color: var(--soft);
+  cursor: pointer; font-family: inherit;
+}
+.range-pill.active { border-color: var(--amber); background: var(--amber-tint); color: var(--navy); }
+.appt-banner {
+  background: linear-gradient(120deg, var(--amber) 0%, #A85F20 100%);
+  color: #fff; border-radius: 14px; padding: 16px; margin-bottom: 14px;
+}
+.appt-banner h3 { margin: 0 0 6px; font-size: 17px; }
+.appt-banner p { margin: 0 0 12px; font-size: 13px; opacity: 0.95; line-height: 1.4; }
+.for-you-banner {
+  background: var(--amber-tint); border: 1px solid #E8C9A0; border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 14px; font-size: 13px; line-height: 1.45; color: var(--navy);
+}
+.for-you-banner strong { color: var(--amber); }
+.report-hero {
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding-bottom: 12px; border-bottom: 2px solid var(--navy); margin-bottom: 16px;
+}
+.report-hero .rh-title { font-size: 18px; font-weight: 800; color: var(--navy); margin: 0; }
+.report-hero .rh-sub { font-size: 12px; color: var(--soft); margin: 4px 0 0; }
+.report-kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.report-kpi {
+  background: var(--fill); border-radius: 10px; padding: 10px 8px; text-align: center;
+}
+.report-kpi .rk-v { font-size: 20px; font-weight: 800; color: var(--navy); }
+.report-kpi .rk-l { font-size: 10px; color: var(--soft); font-weight: 600; margin-top: 2px; }
+.parent-note-box {
+  border: 1px dashed var(--line); border-radius: 10px; min-height: 72px;
+  padding: 12px; background: #FFFEF9; font-size: 13px; color: var(--muted);
+}
+.helped-list { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.5; }
+.helped-list li { margin-bottom: 4px; }
+
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.stat-card { background: white; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; box-shadow: var(--card-shadow); }
+.stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); font-weight: 700; }
+.stat-value { font-size: 22px; font-weight: 800; color: var(--navy); margin-top: 4px; }
+.stat-hint { font-size: 12px; color: var(--soft); margin-top: 2px; }
+.quick-links {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;
+}
+.quick-link {
+  text-align: left; background: #FFFBF6;
+  border: 3px solid var(--amber);
+  border-radius: 16px; padding: 16px 14px; cursor: pointer; font-family: inherit;
+  box-shadow: 0 3px 12px rgba(193,117,46,0.15);
+  transition: background .15s, transform .1s, box-shadow .15s;
+}
+.quick-link strong { display: block; font-size: 15px; color: var(--navy); margin-bottom: 4px; }
+.quick-link span { font-size: 12px; color: var(--soft); display: block; line-height: 1.35; }
+.quick-link:hover, .quick-link:active {
+  background: var(--amber-tint);
+  box-shadow: 0 5px 16px rgba(193,117,46,0.28);
+  transform: translateY(-1px);
+}
+.quick-link .ql-ico { font-size: 20px; display: block; margin-bottom: 8px; }
+.insight-bar { display: flex; align-items: flex-end; gap: 6px; height: 88px; margin: 12px 0 6px; }
+.insight-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.insight-fill { width: 100%; max-width: 36px; border-radius: 6px 6px 2px 2px; background: var(--amber); min-height: 4px; }
+.insight-day { font-size: 10px; color: var(--muted); font-weight: 600; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip { background: var(--amber-tint); color: var(--navy); font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+.insight-empty { font-size: 13px; color: var(--soft); font-style: italic; }
+.post-card { background: white; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--card-shadow); }
+.post-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+.post-author { font-weight: 700; font-size: 13px; color: var(--navy); }
+.post-time { font-size: 11px; color: var(--muted); }
+.post-body { font-size: 14px; line-height: 1.5; color: var(--ink); white-space: pre-wrap; }
+.post-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.post-actions { display: flex; gap: 12px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--fill); }
+.post-action { background: none; border: none; color: var(--soft); font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; }
+.post-action:hover { color: var(--amber); }
+.composer textarea { min-height: 80px; }
+.community-note { background: var(--amber-tint); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--navy); line-height: 1.45; margin-bottom: 16px; }
+.discover-tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; }
+.disc-tab { flex-shrink: 0; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: white; font-size: 13px; font-weight: 600; color: var(--soft); cursor: pointer; }
+.disc-tab.active { background: var(--amber); border-color: var(--amber); color: white; }
+.product-card, .event-card, .tip-card { background: white; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--card-shadow); }
+.product-title, .event-title { font-weight: 700; font-size: 15px; color: var(--navy); margin: 0 0 4px; }
+.product-meta, .event-meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.product-why, .event-desc, .tip-body { font-size: 13px; line-height: 1.5; color: var(--ink); }
+.product-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+.badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--fill); color: var(--navy); }
+.badge.sensory { background: #E8F4FD; color: #1A5F8A; }
+.badge.calm { background: #EAF7EF; color: #1E7A46; }
+.badge.motor { background: #FDF3E8; color: #9A5B1A; }
+.badge.comm { background: #F3EAF8; color: #6B3A8A; }
+.category-block { margin-bottom: 18px; }
+.category-title { font-size: 15px; font-weight: 700; color: var(--navy); margin: 0 0 8px; }
+.idea-list { display: flex; flex-direction: column; gap: 6px; }
+.idea-item { display: flex; align-items: center; gap: 10px; text-align: left; background: white; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; cursor: pointer; font-size: 14px; color: var(--ink); width: 100%; font-family: inherit; }
+.idea-item.done { background: var(--amber-tint); border-color: var(--amber); }
+.idea-item.done .idea-label { text-decoration: line-through; color: var(--soft); }
+.idea-box { width: 18px; height: 18px; flex-shrink: 0; border: 1.5px solid var(--amber); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--amber); font-weight: 800; font-size: 12px; }
+.braindump-area { width: 100%; min-height: 280px; border: 1px solid var(--line); border-radius: 10px; padding: 14px; font-size: 15px; line-height: 1.6; font-family: inherit; background: white; resize: vertical; }
+.sub-nav { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 2px; scrollbar-width: none; }
+.sub-nav::-webkit-scrollbar { display: none; }
+.sub-btn { flex-shrink: 0; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--line); background: white; font-size: 12px; font-weight: 600; color: var(--soft); cursor: pointer; }
+.sub-btn.active { background: var(--navy); border-color: var(--navy); color: white; }
+.loading { text-align: center; padding: 60px 0; color: var(--soft); }
+.toast { position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%); background: var(--navy); color: white; padding: 11px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 100; box-shadow: 0 6px 24px rgba(0,0,0,0.18); max-width: 90%; }
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(26,37,47,0.5); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal { background: white; border-radius: 14px; padding: 22px; max-width: 380px; width: 100%; box-shadow: 0 16px 48px rgba(0,0,0,0.22); }
+.modal h3 { margin: 0 0 8px; font-size: 17px; color: var(--navy); }
+.modal p { margin: 0 0 18px; font-size: 14px; color: var(--soft); line-height: 1.45; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.hidden-file { display: none; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--line); display: flex; justify-content: space-around; padding: 8px 4px calc(8px + env(safe-area-inset-bottom)); z-index: 30; max-width: 680px; margin: 0 auto; }
+.bottom-btn { flex: 1; background: none; border: none; padding: 6px 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; font-family: inherit; }
+.bottom-btn .ico { font-size: 18px; line-height: 1; }
+.bottom-btn .lbl { font-size: 10px; font-weight: 700; color: var(--muted); }
+.bottom-btn.active .lbl { color: var(--navy); }
+.onboard-overlay { position: fixed; inset: 0; background: rgba(26,37,47,0.72); z-index: 80; display: flex; align-items: flex-end; justify-content: center; padding: 16px; }
+.onboard-sheet { background: white; border-radius: 18px 18px 14px 14px; padding: 24px 20px 20px; max-width: 420px; width: 100%; box-shadow: 0 -8px 40px rgba(0,0,0,0.2); }
+.onboard-sheet h2 { margin: 0 0 8px; font-size: 22px; color: var(--navy); }
+.onboard-sheet p { margin: 0 0 12px; font-size: 14px; color: var(--soft); line-height: 1.5; }
+.onboard-list { margin: 0 0 18px; padding-left: 18px; font-size: 14px; color: var(--ink); line-height: 1.55; }
+.onboard-list li { margin-bottom: 6px; }
+.price-pill {
+  display: inline-block; background: var(--amber); color: white; font-weight: 800; font-size: 13px;
+  padding: 4px 10px; border-radius: 999px; letter-spacing: 0.3px;
+}
+.paywall-card {
+  background: linear-gradient(145deg, #2C3E50 0%, #1A252F 100%); color: white;
+  border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: var(--card-shadow);
+}
+.paywall-card h3 { margin: 0 0 8px; font-size: 18px; }
+.paywall-card p { margin: 0 0 12px; font-size: 13px; line-height: 1.5; opacity: 0.9; }
+.paywall-features { margin: 0 0 16px; padding-left: 18px; font-size: 13px; line-height: 1.55; opacity: 0.95; }
+.paywall-features li { margin-bottom: 4px; }
+.btn-amber {
+  background: var(--amber); color: white; border: none; padding: 12px 20px; border-radius: 8px;
+  font-weight: 800; font-size: 15px; cursor: pointer; width: 100%;
+}
+.btn-amber:hover { filter: brightness(1.06); }
+.unlock-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+  background: rgba(193,117,46,0.2); color: #F5C98A; padding: 3px 8px; border-radius: 4px;
+}
+.locked-overlay {
+  border: 1px dashed var(--line); border-radius: var(--radius); padding: 28px 16px; text-align: center;
+  background: var(--white); color: var(--soft); font-size: 14px; line-height: 1.5;
+}
+.report-section { margin-bottom: 18px; page-break-inside: avoid; }
+.report-section h3 {
+  font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--amber);
+  border-bottom: 1px solid var(--line); padding-bottom: 6px; margin: 0 0 10px;
+}
+.report-row { font-size: 13px; margin-bottom: 6px; line-height: 1.45; }
+.report-label { font-weight: 700; color: var(--navy); }
+.report-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+
+.printables-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; }
+@media (min-width: 420px) { .printables-grid { grid-template-columns: 1fr 1fr; } }
+.print-pack {
+  background: white; border: 1px solid var(--line); border-radius: 14px; padding: 16px;
+  box-shadow: var(--card-shadow); display: flex; flex-direction: column; gap: 8px;
+}
+.print-pack .pp-kicker { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); }
+.print-pack h3 { margin: 0; font-size: 16px; color: var(--navy); }
+.print-pack p { margin: 0; font-size: 13px; color: var(--soft); line-height: 1.45; flex: 1; }
+.print-pack .pp-meta { font-size: 11px; color: var(--muted); font-weight: 600; }
+.print-pack a.btn-primary, .print-pack a.btn-amber {
+  display: block; text-align: center; text-decoration: none; margin-top: 4px;
+}
+
+@media print {
+  .app-header, .bottom-nav, .report-actions, .header-btn, .toast, .onboard-overlay, .no-print { display: none !important; }
+  .app-root { padding: 0; background: white; }
+  .app-main { max-width: 100%; padding: 12px; }
+  .card, .entry-form { box-shadow: none; border: 1px solid #ccc; }
+}
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+`;
+
+// Inject theme CSS once (needed for AuthScreen before App mounts)
+(function injectPlaybookCSS() {
+  try {
+    if (typeof document === "undefined") return;
+    if (document.getElementById("playbook-css")) return;
+    var el = document.createElement("style");
+    el.id = "playbook-css";
+    el.textContent = CSS;
+    document.head.appendChild(el);
+  } catch (e) { console.error(e); }
+})();
+
+const dailyFields = [
+  { key: "date", label: "Date", type: "date" },
+  { key: "energy", label: "My energy today", type: "scale5", hint: "1 = running on empty · 5 = feeling good" },
+  { key: "mood", label: "Child's mood / regulation", type: "ticks", options: ["Calm", "Happy", "Wobbly", "Overwhelmed", "Shutdown", "Big feelings"] },
+  { key: "activities", label: "Main events / activities", type: "ticks", options: ["School/daycare", "Therapy", "Outdoors", "Screen time", "New food", "Appointment"] },
+  { key: "wentWell", label: "What went well", type: "textarea", hint: "Even small things count.", rows: 2 },
+  { key: "challenges", label: "Challenges", type: "textarea", hint: "What was hard today? No judgement here.", rows: 2 },
+  { key: "notes", label: "Notes", type: "textarea", rows: 2 },
+];
+const behaviorFields = [
+  { key: "date", label: "Date", type: "date" },
+  { key: "timeOfDay", label: "Time (optional)", type: "text", placeholder: "e.g. 4:30pm" },
+  { key: "whatHappened", label: "What happened (brief)", type: "textarea", hint: "Just the facts.", rows: 2 },
+  { key: "triggers", label: "Possible triggers", type: "ticks", options: ["Loud noise", "Transition", "Hunger", "Tired", "Routine change", "Crowd", "Texture", "Not sure"] },
+  { key: "whatITried", label: "What I tried", type: "textarea", rows: 2 },
+  { key: "whatHelped", label: "What helped (or didn't)", type: "textarea", rows: 2 },
+  { key: "notesNextTime", label: "Notes for next time", type: "textarea", rows: 2 },
+];
+const sensoryFields = [
+  { key: "date", label: "Date", type: "date" },
+  { key: "inputObserved", label: "Sensory input observed", type: "ticks", options: ["Sound", "Touch", "Light", "Smell", "Movement", "Taste/food"] },
+  { key: "response", label: "How my child responded", type: "textarea", rows: 2 },
+  { key: "helped", label: "What helped regulate", type: "textarea", rows: 2 },
+  { key: "notes", label: "Notes", type: "textarea", rows: 2 },
+];
+const sleepFields = [
+  { key: "date", label: "Date", type: "date" },
+  { key: "bedtime", label: "Bedtime", type: "text", placeholder: "e.g. 8:15pm" },
+  { key: "waketime", label: "Wake time", type: "text", placeholder: "e.g. 6:40am" },
+  { key: "quality", label: "Sleep quality", type: "ticks", options: ["Good night", "Okay", "Rough night"] },
+  { key: "sleepNotes", label: "Sleep notes", type: "textarea", rows: 2 },
+  { key: "foodNotes", label: "Food / eating", type: "textarea", rows: 2 },
+];
+const therapyFields = [
+  { key: "date", label: "Date", type: "date" },
+  { key: "sessionType", label: "Type of session", type: "text", placeholder: "OT, speech, ABA…" },
+  { key: "keyPoints", label: "Key points from the session", type: "textarea", rows: 2 },
+  { key: "actionsHome", label: "Actions for home", type: "textarea", rows: 2 },
+  { key: "nextAppt", label: "Next appointment", type: "text" },
+];
+const medFields = [
+  { key: "date", label: "Date", type: "date" },
+  { key: "name", label: "Name", type: "text" },
+  { key: "dose", label: "Dose", type: "text" },
+  { key: "timeGiven", label: "Time given", type: "text" },
+  { key: "notes", label: "Notes / side effects", type: "textarea", rows: 2 },
+];
+const milestoneFields = [
+  { key: "date", label: "Date", type: "date" },
+  { key: "description", label: "What you noticed", type: "textarea", hint: "A new word, skill, or first.", rows: 2 },
+];
+const weeklyFields = [
+  { key: "weekLabel", label: "Week of", type: "text", placeholder: "e.g. 18 Aug" },
+  { key: "monday", label: "Monday", type: "text" }, { key: "tuesday", label: "Tuesday", type: "text" },
+  { key: "wednesday", label: "Wednesday", type: "text" }, { key: "thursday", label: "Thursday", type: "text" },
+  { key: "friday", label: "Friday", type: "text" }, { key: "saturday", label: "Saturday", type: "text" },
+  { key: "sunday", label: "Sunday", type: "text" },
+  { key: "focus", label: "This week's focus", type: "textarea", rows: 2 },
+  { key: "remember", label: "Things to remember", type: "textarea", rows: 2 },
+];
+const selfCareFields = [
+  { key: "date", label: "Date", type: "date" },
+  { key: "today", label: "Today", type: "ticks", options: ["Ate a real meal", "Drank water", "Stepped outside", "Talked to another adult", "Moved my body", "Slept enough last night"] },
+  { key: "oneThing", label: "One small thing for me today", type: "text" },
+  { key: "support", label: "Who's in my corner", type: "textarea", rows: 2 },
+];
+const winsFields = [
+  { key: "date", label: "Date", type: "date" },
+  { key: "win", label: "Small win", type: "textarea", hint: "If it felt good, it counts.", rows: 2 },
+];
+
+const TRACK_ITEMS = [
+  { id: "daily", label: "Daily", storageKey: "daily-log-entries", title: "Daily Log", fields: dailyFields },
+  { id: "behavior", label: "Behaviour", storageKey: "behavior-log-entries", title: "Behaviour & Meltdown Log", subtitle: "For spotting patterns, not placing blame.", fields: behaviorFields },
+  { id: "sensory", label: "Sensory", storageKey: "sensory-log-entries", title: "Sensory Notes", fields: sensoryFields },
+  { id: "sleep", label: "Sleep & Food", storageKey: "sleep-food-entries", title: "Sleep & Food Log", subtitle: "Because both affect everything else.", fields: sleepFields },
+  { id: "therapy", label: "Therapy", storageKey: "therapy-entries", title: "Therapy & Appointments", fields: therapyFields },
+  { id: "medication", label: "Meds", storageKey: "medication-entries", title: "Medication & Supplements", subtitle: "A simple record — not medical advice.", fields: medFields },
+  { id: "milestones", label: "Milestones", storageKey: "milestone-entries", title: "Milestones & Progress", subtitle: "The slow stuff, tracked so you can see it moving.", fields: milestoneFields, footerNote: "Progress isn't always loud." },
+  { id: "weekly", label: "Weekly", storageKey: "weekly-overview-entries", title: "Weekly Overview", fields: weeklyFields },
+  { id: "selfcare", label: "Self-care", storageKey: "self-care-entries", title: "Self-Care Check-In", subtitle: "You matter here too.", fields: selfCareFields, footerNote: "Taking care of yourself isn't selfish." },
+  { id: "wins", label: "Wins", storageKey: "wins-entries", title: "Small Wins", subtitle: "If it felt good, it counts.", fields: winsFields },
+  { id: "learning", label: "Play ideas", type: "learning" },
+  { id: "braindump", label: "Brain dump", type: "brainDump" },
+  { id: "glance", label: "At a Glance", type: "atAGlance" },
+];
+
+const LEARNING_CATEGORIES = [
+  { name: "Sensory Play", items: ["Playdough or kinetic sand", "Water play at the sink", "Textured fabrics or brushes", "Rice or bean bin digging"] },
+  { name: "Communication", items: ["Narrate what you're doing", "Name objects during play", "Sing familiar songs", "Offer two choices, not open questions"] },
+  { name: "Fine Motor", items: ["Stacking cups or blocks", "Tearing paper", "Threading beads or pasta", "Squeezing sponges in water"] },
+  { name: "Movement", items: ["Animal walks (crawl, hop, waddle)", "Swing or trampoline time", "Kick a ball back and forth", "Short walk, same route"] },
+  { name: "Calm-Down", items: ["Deep-pressure hug or blanket burrito", "Blowing bubbles (slow breathing)", "Quiet corner, favourite item", "Rocking or swaying together"] },
+];
+
+const TOYS = [
+  { id: "t1", title: "Weighted lap pad or blanket", age: "3+", tags: ["calm", "sensory"], why: "Deep pressure can help regulation during homework, travel, or busy rooms. Start light and follow your child's lead." },
+  { id: "t2", title: "Chewable necklace / chewelry", age: "2+", tags: ["sensory"], why: "Safe outlet for oral seeking. Look for food-grade silicone and age-appropriate strength." },
+  { id: "t3", title: "Noise-reducing earmuffs", age: "All ages", tags: ["sensory"], why: "Softens overwhelming environments (shops, assemblies, fireworks) without total isolation." },
+  { id: "t4", title: "Kinetic sand or playdough set", age: "3+", tags: ["sensory", "motor"], why: "Mess-contained tactile play that builds hand strength and can settle a busy nervous system." },
+  { id: "t5", title: "Visual timer (Time Timer style)", age: "3+", tags: ["comm"], why: "Makes abstract time visible — reduces transition battles for many autistic children." },
+  { id: "t6", title: "Wobble cushion or therapy ball seat", age: "4+", tags: ["motor", "sensory"], why: "Allows movement while seated; can improve attention for movement-seekers." },
+  { id: "t7", title: "Simple AAC / choice board", age: "Any", tags: ["comm"], why: "Gives a reliable way to request, refuse, and comment — reduces frustration when speech is hard." },
+  { id: "t8", title: "Mini trampoline", age: "3+", tags: ["motor", "calm"], why: "Proprioceptive input many children use to organise their body before or after demands." },
+  { id: "t9", title: "Quiet fidgets (putty, soft options)", age: "5+", tags: ["sensory"], why: "Classroom-friendly options. Avoid anything that becomes the conflict." },
+  { id: "t10", title: "Social story templates", age: "Any", tags: ["comm"], why: "Prepare for new places, haircuts, dentists. Use their words and photos when you can." },
+];
+
+const EVENTS = [
+  { id: "e1", title: "Sensory-friendly cinema screening", when: "Monthly · check local listings", where: "Major cinema chains (UK)", type: "Child", desc: "Lights up, sound down, freedom to move. Search ‘sensory friendly film’ + your town." },
+  { id: "e2", title: "Parent / carer coffee morning", when: "Weekly or fortnightly", where: "Children's centres, NAS groups, local Facebook groups", type: "Parent", desc: "Low-pressure peer support. You don't have to share — showing up counts." },
+  { id: "e3", title: "Soft play — quiet hour", when: "Weekday mornings often", where: "Local soft play centres", type: "Child", desc: "Reduced capacity or autism-friendly sessions. Call ahead and ask." },
+  { id: "e4", title: "Swimming — disability / family session", when: "Varies", where: "Council leisure centres", type: "Both", desc: "Quieter pools, hoist access, flexible rules. Ask about companion tickets." },
+  { id: "e5", title: "SEND / EHCP parent workshop", when: "Termly", where: "Local authority, SENDIASS, charities", type: "Parent", desc: "Practical rights and process info. Bring questions; take notes for later." },
+  { id: "e6", title: "Outdoor playgroup (park / forest)", when: "Seasonal", where: "Parks trusts, autism-friendly groups", type: "Child", desc: "Same route, predictable structure works best. Pack a regulation toolkit." },
+  { id: "e7", title: "Carer wellbeing walk or class", when: "Weekly", where: "Community centres, Mind, local charities", type: "Parent", desc: "Something for you that isn't another appointment about your child." },
+  { id: "e8", title: "Library sensory storytime", when: "Often weekday", where: "Public libraries", type: "Child", desc: "Shorter, calmer story sessions. Free and repeatable." },
+];
+
+const TIPS = [
+  { id: "tip1", title: "Two choices beat open questions", body: "“Blue cup or green cup?” is easier than “What do you want to drink?” Reduces decision load and freeze." },
+  { id: "tip2", title: "Warn before transitions", body: "A 5-minute and 1-minute warning (visual timer helps) can prevent the surprise that sparks a meltdown." },
+  { id: "tip3", title: "Regulation before reasoning", body: "When the nervous system is flooded, logic won't land. Co-regulate first; talk later." },
+  { id: "tip4", title: "Same script, same tone", body: "Short, consistent phrases (“First shoes, then car”) help more than long explanations in the moment." },
+  { id: "tip5", title: "Your data is power", body: "Sleep, food, triggers, and wins written down help you see patterns — and help professionals take you seriously." },
+  { id: "tip6", title: "Rest is part of the plan", body: "A quiet afternoon after a hard morning isn't giving in. It's recovery." },
+];
+
+const SEED_COMMUNITY = [
+  { id: "c1", author: "Sam · parent of 6yo", time: "2d ago", body: "Rough week of transitions after the school holiday. What helped: same breakfast every day, visual schedule on the fridge, and one outdoor loop walk even when we didn't feel like it. Small, boring consistency.", tags: ["transitions", "routines"], likes: 24 },
+  { id: "c2", author: "Jordan · carer", time: "4d ago", body: "Anyone else find evening meltdowns spike when swimming lessons start? We're trialling an earlier dinner and a quiet decompress corner after the pool. Open to other ideas.", tags: ["sensory", "evenings"], likes: 18 },
+  { id: "c3", author: "Alex · mum", time: "5d ago", body: "First time our child used their AAC to say they needed a break at soft play. I almost cried in the ball pit. Logging it in Milestones so I don't forget on the hard days.", tags: ["wins", "communication"], likes: 41 },
+  { id: "c4", author: "Priya · dad", time: "1w ago", body: "GP appointment went better when I brought a one-page At a Glance printout. Less explaining from scratch. If you're stuck, start there.", tags: ["appointments"], likes: 33 },
+  { id: "c5", author: "Lee · foster carer", time: "1w ago", body: "Reminder: comparing your child to a sibling or a neighbour's kid is a trap. Compare them to themselves last month. That's the only fair race.", tags: ["mindset"], likes: 56 },
+];
+
+const ALL_STORAGE_KEYS = [
+  ...TRACK_ITEMS.filter((n) => n.storageKey).map((n) => n.storageKey),
+  "learning-play-ticked", "at-a-glance-profile", "brain-dump-text", "community-posts", "community-likes", "onboard-seen", "premium-unlocked",
+];
+
+const PREMIUM_PRICE = "£2.99";
+/** Paste your Stripe Payment Link here when ready (Dashboard → Payment Links, £2.99 one-time).
+ *  After payment, set Stripe success URL to: https://theplaybook.cloud/?unlocked=1
+ */
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/bJe4gB2R9fbb96O52C38403";
+
+const PRINTABLES_BASE = "./";
+const PRINTABLES_PACKS = [
+  {
+    id: "complete",
+    kicker: "Full pack",
+    title: "Complete Toolkit",
+    desc: "All four categories in one PDF — visual supports, colouring, learning cards and AAC symbols.",
+    meta: "~46 pages · one download",
+    file: "complete-toolkit.pdf",
+    primary: true,
+  },
+  {
+    id: "visual",
+    kicker: "Category 1",
+    title: "Visual Supports",
+    desc: "Choice board, morning & after-school schedules, weekend routine, cue cards, First→Then, checklist, feelings check-in.",
+    meta: "8 sheets",
+    file: "1-visual-supports.pdf",
+  },
+  {
+    id: "colouring",
+    kicker: "Category 2",
+    title: "Colouring Book",
+    desc: "Calm corner, routines, ABC, counting, feelings, shapes, farm animals, weather and transport colouring pages.",
+    meta: "13 sheets",
+    file: "2-colouring-book.pdf",
+  },
+  {
+    id: "learning",
+    kicker: "Category 3",
+    title: "Learning Cards",
+    desc: "Card chart, core words, emotions, alphabet A–Z, numbers 1–20, colours and shapes.",
+    meta: "9 sheets",
+    file: "3-learning-cards.pdf",
+  },
+  {
+    id: "aac",
+    kicker: "Category 4",
+    title: "AAC Symbol Sets",
+    desc: "Core board, sentence strip, food, actions, people & places, feelings & body, toys, school kit, weather, transport, animals.",
+    meta: "11 boards",
+    file: "4-aac-symbols.pdf",
+  },
+];
+
+
+
+/** ========== SHARED COMMUNITY (Supabase) ==========
+ * 1. Create free project at https://supabase.com
+ * 2. Project Settings → API → copy Project URL + anon public key
+ * 3. Paste below
+ * 4. SQL Editor → run the SQL in SUPABASE_SETUP.md (or LAUNCH.md)
+ * Until keys are set, Community/Discover stay device-local.
+ */
+const SUPABASE_URL = "https://kknaxghkbgjvgblhcaay.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbmF4Z2hrYmdqdmdibGhjYWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1NjUzMzgsImV4cCI6MjEwMzE0MTMzOH0.3HCBXqbqpatgUBApHUORAYpOtg9zX_NfhzlqBtb5W0k";
+const CLOUD_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL.indexOf("http") === 0);
+
+function getSupabase() {
+  if (!CLOUD_ENABLED || !window.supabase) return null;
+  if (!window.__pb_supabase) {
+    window.__pb_supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  return window.__pb_supabase;
+}
+
+/** Known Stripe payers (emails lowercased) — grants account unlock until metadata syncs */
+const KNOWN_PAID_EMAILS = [
+  "lewisrowlinson14@gmail.com",
+  "terrifairhurst@live.co.uk",
+  "theplaybookhome@gmail.com"
+];
+
+function userHasPremiumFlag(user) {
+  if (!user) return false;
+  const md = user.user_metadata || {};
+  if (md.premium === true || md.premium === "true" || md.premium === 1 || md.premium === "1") return true;
+  if (md.premium_unlocked === true || md.premium_unlocked === "true" || md.premium_unlocked === 1 || md.premium_unlocked === "1") return true;
+  const email = (user.email || "").toLowerCase().trim();
+  if (email && KNOWN_PAID_EMAILS.indexOf(email) !== -1) return true;
+  return false;
+}
+
+async function persistPremiumToAccount() {
+  try {
+    const sb = getSupabase();
+    if (!sb) return false;
+    const { data: sess } = await sb.auth.getSession();
+    const user = sess && sess.session && sess.session.user;
+    if (!user) return false;
+    if (userHasPremiumFlag(user) && (user.user_metadata || {}).premium === true) return true;
+    const { error } = await sb.auth.updateUser({
+      data: {
+        premium: true,
+        premium_unlocked: true,
+        premium_unlocked_at: new Date().toISOString()
+      }
+    });
+    if (error) { console.warn("premium account sync", error); return false; }
+    return true;
+  } catch (e) {
+    console.warn(e);
+    return false;
+  }
+}
+
+async function grantLocalPremium() {
+  try { localStorage.setItem("playbook:premium-unlocked", "1"); } catch (e) {}
+  try { await (window.storage && window.storage.set ? window.storage.set("premium-unlocked", "1") : null); } catch (e) {}
+}
+
+
+
+const SOCIAL_LINKS = [
+  { id: "facebook", label: "Facebook", href: "https://www.facebook.com/groups/2217693205459716/", hint: "Group" },
+  { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@the.playbook311", hint: "Videos" },
+  { id: "x", label: "X", href: "https://x.com/theplaybookhome", hint: "Updates" }
+];
+const SUPPORT_EMAIL = "Theplaybookhome@gmail.com";
+
+
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+function blankValues(fields) {
+  const v = {};
+  fields.forEach((f) => {
+    if (f.type === "date") v[f.key] = todayISO();
+    else if (f.type === "ticks") v[f.key] = [];
+    else if (f.type === "scale5") v[f.key] = null;
+    else v[f.key] = "";
+  });
+  return v;
+}
+function formatEntryHeader(entry, fields) {
+  const dateField = fields.find((f) => f.type === "date");
+  if (dateField && entry[dateField.key]) {
+    const d = new Date(entry[dateField.key] + "T00:00:00");
+    if (!isNaN(d)) return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  }
+  const first = fields[0];
+  if (first && entry[first.key]) return String(entry[first.key]);
+  return "Entry";
+}
+function entryMatchesQuery(entry, fields, query) {
+  if (!query) return true;
+  const q = query.toLowerCase().trim();
+  if (!q) return true;
+  for (const f of fields) {
+    const val = entry[f.key];
+    if (val == null) continue;
+    if (Array.isArray(val)) { if (val.some((v) => String(v).toLowerCase().includes(q))) return true; }
+    else if (String(val).toLowerCase().includes(q)) return true;
+  }
+  return false;
+}
+function sortEntries(entries, fields, sortMode) {
+  const copy = [...entries];
+  const dateKey = fields.find((f) => f.type === "date")?.key;
+  copy.sort((a, b) => {
+    if (dateKey && a[dateKey] && b[dateKey]) {
+      const cmp = a[dateKey].localeCompare(b[dateKey]);
+      if (cmp !== 0) return sortMode === "oldest" ? cmp : -cmp;
+    }
+    return sortMode === "oldest" ? (a.id || "").localeCompare(b.id || "") : (b.id || "").localeCompare(a.id || "");
+  });
+  return copy;
+}
+async function storageGet(key) {
+  try { const res = await window.storage.get(key, false); return res ? res.value : null; } catch { return null; }
+}
+async function storageSet(key, value) {
+  try { await window.storage.set(key, value, false); return true; } catch (e) { console.error(e); return false; }
+}
+function downloadJson(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
+}
+
+function useToast() {
+  const [toast, setToast] = useState(null);
+  const timer = useRef(null);
+  const show = useCallback((message, type = "default") => {
+    if (timer.current) clearTimeout(timer.current);
+    setToast({ message, type });
+    timer.current = setTimeout(() => setToast(null), 2400);
+  }, []);
+  const ToastEl = toast ? <div className={"toast" + (toast.type !== "default" ? " " + toast.type : "")} role="status">{toast.message}</div> : null;
+  return { show, ToastEl };
+}
+
+function PageHeader({ kicker, title, subtitle }) {
+  return (
+    <div className="page-header">
+      {kicker && <div className="kicker">{kicker}</div>}
+      <h2 className="page-title">{title}</h2>
+      {subtitle && <p className="page-subtitle">{subtitle}</p>}
+    </div>
+  );
+}
+function ConfirmModal({ title, message, onConfirm, onCancel }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onCancel(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+  return (
+    <div className="modal-backdrop" onClick={onCancel} role="presentation">
+      <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+        <h3>{title}</h3>
+        <p>{message}</p>
+        <div className="modal-actions">
+          <button type="button" className="btn-secondary" onClick={onCancel}>Cancel</button>
+          <button type="button" className="btn-danger-solid" onClick={onConfirm}>Delete</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function shiftISO(days) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+function friendlyDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso + "T00:00:00");
+  if (isNaN(d)) return iso;
+  const today = todayISO();
+  const yest = shiftISO(-1);
+  if (iso === today) return "Today";
+  if (iso === yest) return "Yesterday";
+  return d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+}
+function DateField({ value, onChange }) {
+  const inputRef = useRef(null);
+  const isToday = value === todayISO();
+  const isYest = value === shiftISO(-1);
+  const minDate = "2015-01-01";
+  const maxDate = todayISO();
+  function openPicker() {
+    const el = inputRef.current;
+    if (!el) return;
+    try {
+      if (typeof el.showPicker === "function") el.showPicker();
+      else el.focus();
+    } catch (e) { el.focus(); }
+  }
+  return (
+    <div className="date-field-wrap">
+      <p className="date-hint">Tap the date box to open the calendar — backdate anytime (paper notes, old tracker, catch-up days).</p>
+      <input
+        ref={inputRef}
+        type="date"
+        value={value || ""}
+        min={minDate}
+        max={maxDate}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label="Log date — tap to choose any past day"
+      />
+      <div className="date-quick">
+        <button type="button" className={"date-chip" + (isToday ? " active" : "")} onClick={() => onChange(todayISO())}>Today</button>
+        <button type="button" className={"date-chip" + (isYest ? " active" : "")} onClick={() => onChange(shiftISO(-1))}>Yesterday</button>
+        <button type="button" className="date-chip pick" onClick={openPicker}>📅 Calendar</button>
+      </div>
+      {value ? (
+        <div className="date-friendly">
+          Logging for <strong>{friendlyDate(value)}</strong>
+          {!isToday && !isYest ? " · backdated" : ""}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function loadCustomOptions(fieldKey) {
+  try {
+    const raw = localStorage.getItem("playbook:custom-opts:" + fieldKey);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter((x) => typeof x === "string" && x.trim()) : [];
+  } catch (e) { return []; }
+}
+function saveCustomOptions(fieldKey, list) {
+  try { localStorage.setItem("playbook:custom-opts:" + fieldKey, JSON.stringify(list)); } catch (e) {}
+}
+function TicksField({ fieldKey, defaults, selected, onToggle }) {
+  const [custom, setCustom] = useState(() => loadCustomOptions(fieldKey));
+  const [draft, setDraft] = useState("");
+  const all = useMemo(() => {
+    const seen = new Set();
+    const out = [];
+    [...defaults, ...custom].forEach((o) => {
+      const k = o.trim();
+      if (!k) return;
+      const low = k.toLowerCase();
+      if (seen.has(low)) return;
+      seen.add(low);
+      out.push(k);
+    });
+    return out;
+  }, [defaults, custom]);
+  function addCustom(e) {
+    if (e) e.preventDefault();
+    const name = draft.trim();
+    if (!name) return;
+    const low = name.toLowerCase();
+    if (all.some((o) => o.toLowerCase() === low)) {
+      onToggle(all.find((o) => o.toLowerCase() === low) || name);
+      setDraft("");
+      return;
+    }
+    const next = [...custom, name];
+    setCustom(next);
+    saveCustomOptions(fieldKey, next);
+    onToggle(name); // select it immediately
+    setDraft("");
+  }
+  function removeCustom(opt, e) {
+    e.stopPropagation();
+    const next = custom.filter((c) => c !== opt);
+    setCustom(next);
+    saveCustomOptions(fieldKey, next);
+    // deselect if selected
+    if ((selected || []).includes(opt)) onToggle(opt);
+  }
+  return (
+    <div>
+      <div className="tick-row">
+        {all.map((opt) => {
+          const active = (selected || []).includes(opt);
+          const isCustom = custom.includes(opt);
+          return (
+            <button type="button" key={opt} className={"tick-chip" + (active ? " active" : "") + (isCustom ? " custom-opt" : "")} onClick={() => onToggle(opt)}>
+              <span className="tick-box">{active ? "✓" : ""}</span>
+              {opt}
+              {isCustom && (
+                <span className="chip-x" title="Remove your option" onClick={(e) => removeCustom(opt, e)}>✕</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      <div className="tick-add-row">
+        <input
+          type="text"
+          value={draft}
+          placeholder="Add your own…"
+          maxLength={40}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustom(e); } }}
+        />
+        <button type="button" className="tick-add-btn" onClick={addCustom}>+ Add</button>
+      </div>
+    </div>
+  );
+}
+function FieldInputs({ fields, values, update, toggleTick }) {
+
+
+  return fields.map((f) => (
+    <div className="field" key={f.key}>
+      <label className="field-label">{f.label}</label>
+      {f.hint && <div className="field-hint">{f.hint}</div>}
+      {f.type === "text" && <input type="text" value={values[f.key] || ""} placeholder={f.placeholder || ""} onChange={(e) => update(f.key, e.target.value)} />}
+      {f.type === "date" && (
+        <DateField value={values[f.key] || ""} onChange={(v) => update(f.key, v)} />
+      )}
+      {f.type === "textarea" && <textarea rows={f.rows || 3} value={values[f.key] || ""} placeholder={f.placeholder || ""} onChange={(e) => update(f.key, e.target.value)} />}
+      {f.type === "scale5" && (
+        <div className="scale-row">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button type="button" key={n} className={"scale-btn" + (values[f.key] === n ? " active" : "")} onClick={() => update(f.key, n)}>{n}</button>
+          ))}
+        </div>
+      )}
+      {f.type === "ticks" && (
+        <TicksField
+          fieldKey={f.key}
+          defaults={f.options || []}
+          selected={values[f.key] || []}
+          onToggle={(opt) => toggleTick(f.key, opt)}
+        />
+      )}
+    </div>
+  ));
+}
+function EntryForm({ fields, onSubmit, initialValues, onCancel, submitLabel }) {
+  const [values, setValues] = useState(() => initialValues || blankValues(fields));
+  useEffect(() => { if (initialValues) setValues(initialValues); }, [initialValues]);
+  function update(key, val) { setValues((v) => ({ ...v, [key]: val })); }
+  function toggleTick(key, opt) {
+    setValues((v) => {
+      const cur = v[key] || [];
+      return { ...v, [key]: cur.includes(opt) ? cur.filter((o) => o !== opt) : [...cur, opt] };
+    });
+  }
+  function handleSubmit(e) {
+    e.preventDefault();
+    const entry = initialValues ? { ...initialValues, ...values } : { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), ...values };
+    onSubmit(entry);
+    if (!initialValues) setValues(blankValues(fields));
+  }
+  return (
+    <form className="entry-form" onSubmit={handleSubmit}>
+      <FieldInputs fields={fields} values={values} update={update} toggleTick={toggleTick} />
+      <div className="form-actions">
+        <button type="submit" className="btn-primary">{submitLabel || "Save entry"}</button>
+        {onCancel && <button type="button" className="btn-secondary" onClick={onCancel}>Cancel</button>}
+      </div>
+    </form>
+  );
+}
+function EntryList({ fields, entries, onDelete, onEdit, editingId }) {
+  if (!entries.length) {
+    return <div className="empty-state">Nothing logged yet.<br />When you save an entry, it appears here — private, on this device.</div>;
+  }
+  return (
+    <div className="entry-list">
+      {entries.map((entry) => (
+        <div className={"entry-card" + (editingId === entry.id ? " editing" : "")} key={entry.id}>
+          <div className="entry-card-head">
+            <span className="entry-date">{formatEntryHeader(entry, fields)}</span>
+            <div className="entry-actions">
+              {onEdit && <button type="button" className="btn-icon" aria-label="Edit" onClick={() => onEdit(entry)}>✎</button>}
+              <button type="button" className="btn-icon danger" aria-label="Delete" onClick={() => onDelete(entry.id)}>✕</button>
+            </div>
+          </div>
+          {fields.filter((f) => f.type !== "date").map((f) => {
+            const val = entry[f.key];
+            if (val === undefined || val === null || val === "" || (Array.isArray(val) && !val.length)) return null;
+            return (
+              <div className="entry-field" key={f.key}>
+                <span className="entry-field-label">{f.label}: </span>
+                {f.type === "ticks" ? <span className="entry-tags">{val.map((v) => <span className="tag" key={v}>{v}</span>)}</span>
+                  : f.type === "scale5" ? <span className="entry-scale">{val} / 5</span> : <span>{val}</span>}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ListSection({ storageKey, title, subtitle, fields, footerNote, entries, onEntriesChange, showToast }) {
+  const [search, setSearch] = useState("");
+  const [sortMode, setSortMode] = useState("newest");
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const filtered = useMemo(() => sortEntries(entries.filter((e) => entryMatchesQuery(e, fields, search)), fields, sortMode), [entries, fields, search, sortMode]);
+
+  async function handleAdd(entry) {
+    const next = [entry, ...entries];
+    onEntriesChange(next);
+    await storageSet(storageKey, JSON.stringify(next));
+    showToast("Entry saved");
+  }
+  async function handleUpdate(entry) {
+    const next = entries.map((e) => (e.id === entry.id ? entry : e));
+    onEntriesChange(next);
+    await storageSet(storageKey, JSON.stringify(next));
+    setEditingEntry(null);
+    showToast("Entry updated");
+  }
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    const next = entries.filter((e) => e.id !== pendingDelete);
+    onEntriesChange(next);
+    await storageSet(storageKey, JSON.stringify(next));
+    setPendingDelete(null);
+    if (editingEntry?.id === pendingDelete) setEditingEntry(null);
+    showToast("Entry deleted");
+  }
+
+  return (
+    <div>
+      <PageHeader title={title} subtitle={subtitle} />
+      {editingEntry ? (
+        <EntryForm fields={fields} initialValues={editingEntry} onSubmit={handleUpdate} onCancel={() => setEditingEntry(null)} submitLabel="Update entry" />
+      ) : (
+        <EntryForm fields={fields} onSubmit={handleAdd} />
+      )}
+      <div className="section-divider" />
+      <div className="list-toolbar">
+        <div className="search-wrap"><input type="search" placeholder="Search entries…" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search" /></div>
+        <select className="sort-select" value={sortMode} onChange={(e) => setSortMode(e.target.value)} aria-label="Sort">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+      </div>
+      <h3 className="list-heading">Past entries{entries.length > 0 && <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}> · {filtered.length}{search ? ` of ${entries.length}` : ""}</span>}</h3>
+      <EntryList fields={fields} entries={filtered} onDelete={(id) => setPendingDelete(id)} onEdit={(entry) => { setEditingEntry(entry); window.scrollTo({ top: 0, behavior: "smooth" }); }} editingId={editingEntry?.id} />
+      {footerNote && <div className="footer-note">{footerNote}</div>}
+      {pendingDelete && <ConfirmModal title="Delete this entry?" message="This can't be undone. Export a backup first if you might need it later." onConfirm={confirmDelete} onCancel={() => setPendingDelete(null)} />}
+    </div>
+  );
+}
+
+
+function filterByDays(entries, days) {
+  if (!days || days === "all") return entries || [];
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const iso = cutoff.toISOString().slice(0, 10);
+  return (entries || []).filter((e) => e.date && e.date >= iso);
+}
+function countMap(items) {
+  const map = {};
+  (items || []).forEach((t) => { if (t) map[t] = (map[t] || 0) + 1; });
+  return Object.entries(map).sort((a, b) => b[1] - a[1]);
+}
+function buildStories(dataStore, days) {
+  const daily = filterByDays(dataStore["daily-log-entries"] || [], days);
+  const behavior = filterByDays(dataStore["behavior-log-entries"] || [], days);
+  const sleep = filterByDays(dataStore["sleep-food-entries"] || [], days);
+  const wins = filterByDays(dataStore["wins-entries"] || [], days);
+  const stories = [];
+  const energies = daily.map((e) => Number(e.energy)).filter((n) => n >= 1 && n <= 5);
+  const avgE = energies.length ? (energies.reduce((a, b) => a + b, 0) / energies.length) : null;
+  const triggers = countMap(behavior.flatMap((e) => e.triggers || []));
+  const moods = countMap(daily.flatMap((e) => e.mood || []));
+  const helped = behavior.map((e) => e.whatHelped).filter((x) => x && String(x).trim());
+  const rough = sleep.filter((e) => {
+    const q = e.quality || [];
+    return q.includes("Rough night") || (e.sleepNotes && /wake|rough|night/i.test(e.sleepNotes));
+  }).length;
+
+  if (triggers.length) {
+    const [top, n] = triggers[0];
+    const total = behavior.length || 1;
+    stories.push({
+      kicker: "Top pattern",
+      text: `"${top}" shows up in ${n} of your ${behavior.length} behaviour log${behavior.length === 1 ? "" : "s"} in this period.`,
+      meta: triggers.slice(0, 3).map(([t, c]) => `${t} ×${c}`).join(" · ")
+    });
+  }
+  if (avgE != null) {
+    const label = avgE >= 4 ? "relatively steady energy" : avgE >= 3 ? "mixed energy days" : "lower energy days overall";
+    stories.push({
+      kicker: "Energy",
+      text: `Average energy is ${avgE.toFixed(1)} / 5 — ${label}.`,
+      meta: energies.length + " scored day" + (energies.length === 1 ? "" : "s")
+    });
+  }
+  if (rough > 0 && energies.length >= 3) {
+    stories.push({
+      kicker: "Sleep link",
+      text: `${rough} rough night${rough === 1 ? "" : "s"} logged. Worth comparing energy the next day when you talk to school or GP.`,
+      meta: "From sleep notes"
+    });
+  }
+  if (moods.length) {
+    stories.push({
+      kicker: "Mood picture",
+      text: `Most logged moods: ${moods.slice(0, 3).map(([m, c]) => `${m} (${c})`).join(", ")}.`,
+      meta: "From daily logs"
+    });
+  }
+  if (helped.length) {
+    stories.push({
+      kicker: "What already helps",
+      text: `You've noted strategies that worked — take these into appointments.`,
+      meta: helped.slice(0, 2).map((h) => String(h).slice(0, 60)).join(" · ")
+    });
+  }
+  if (wins.length) {
+    stories.push({
+      kicker: "Strengths",
+      text: `${wins.length} win${wins.length === 1 ? "" : "s"} logged — useful to balance hard days in any meeting.`,
+      meta: wins[0].win ? String(wins[0].win).slice(0, 70) : ""
+    });
+  }
+  if (!stories.length) {
+    stories.push({
+      kicker: "Getting started",
+      text: "Log a few daily energy scores and one behaviour note — insights appear here automatically.",
+      meta: "Private on this device"
+    });
+  }
+  return { stories, avgE, triggers, moods, helped, rough, daily, behavior, sleep, wins, energies };
+}
+function buildTalkingPoints(analysis) {
+  const pts = [];
+  if (analysis.triggers.length) {
+    const [t, n] = analysis.triggers[0];
+    pts.push(`Main trigger pattern: ${t} (${n}×). Ask what support is available around this.`);
+  }
+  if (analysis.avgE != null && analysis.avgE < 3.2) {
+    pts.push(`Energy average ${analysis.avgE.toFixed(1)}/5 — discuss fatigue, demand, or recovery time.`);
+  }
+  if (analysis.rough > 0) {
+    pts.push(`Rough nights logged (${analysis.rough}). Explore sleep hygiene and daytime impact.`);
+  }
+  if (analysis.helped.length) {
+    pts.push(`What helps at home: ${String(analysis.helped[0]).slice(0, 90)}. Can school/therapy mirror this?`);
+  }
+  if (analysis.wins.length) {
+    pts.push(`Recent strength: ${String(analysis.wins[0].win || "").slice(0, 90) || "see wins list"}.`);
+  }
+  if (pts.length < 2) {
+    pts.push("Share the printed summary and ask for one clear next step before you leave.");
+  }
+  return pts.slice(0, 5);
+}
+
+
+
+function AuthScreen({ onAuthed, recoveryMode }) {
+  const [mode, setMode] = useState(recoveryMode ? "update" : "login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [info, setInfo] = useState("");
+
+  useEffect(() => {
+    if (recoveryMode) {
+      setMode("update");
+      setErr("");
+      setInfo("Choose a new password for your account.");
+    }
+  }, [recoveryMode]);
+
+  async function submit(e) {
+    e.preventDefault();
+    setErr("");
+    setInfo("");
+    const sb = getSupabase();
+    if (!sb) {
+      setErr("Cloud login is not configured yet.");
+      return;
+    }
+    setBusy(true);
+    try {
+      if (mode === "forgot") {
+        if (!email.trim()) {
+          setErr("Enter the email you used to join.");
+          setBusy(false);
+          return;
+        }
+        const redirectTo = (typeof window !== "undefined" && window.location && window.location.origin)
+          ? (window.location.origin + (window.location.pathname.indexOf("app.html") >= 0 ? window.location.pathname : "/"))
+          : "https://theplaybook.cloud/";
+        const { error } = await sb.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+        if (error) throw error;
+        setInfo("If an account exists for that email, a reset link is on its way. Check inbox and spam, then open the link on this device.");
+      } else if (mode === "update") {
+        if (password.length < 6) {
+          setErr("New password must be at least 6 characters.");
+          setBusy(false);
+          return;
+        }
+        if (password !== password2) {
+          setErr("Passwords do not match.");
+          setBusy(false);
+          return;
+        }
+        const { data, error } = await sb.auth.updateUser({ password });
+        if (error) throw error;
+        setInfo("Password updated. You're signed in.");
+        if (data && data.user) {
+          const { data: sessData } = await sb.auth.getSession();
+          if (sessData && sessData.session) onAuthed(sessData.session);
+          else onAuthed({ user: data.user });
+        }
+      } else if (mode === "login") {
+        if (!email.trim() || password.length < 6) {
+          setErr("Use a valid email and a password of at least 6 characters.");
+          setBusy(false);
+          return;
+        }
+        const { data, error } = await sb.auth.signInWithPassword({ email: email.trim(), password });
+        if (error) throw error;
+        onAuthed(data.session);
+      } else {
+        if (!email.trim() || password.length < 6) {
+          setErr("Use a valid email and a password of at least 6 characters.");
+          setBusy(false);
+          return;
+        }
+        const { data, error } = await sb.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { data: { display_name: displayName.trim() || email.trim().split("@")[0] } }
+        });
+        if (error) throw error;
+        if (data.session) onAuthed(data.session);
+        else setErr("Check your email to confirm your account, then log in. (If confirmations are disabled in Supabase, try logging in now.)");
+      }
+    } catch (ex) {
+      setErr(ex.message || "Something went wrong");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const titleHint = mode === "forgot"
+    ? "We'll email you a secure link to choose a new password."
+    : mode === "update"
+    ? "Set a new password to get back into THE PLAYBOOK."
+    : "A calm companion for families — private tracking, shared support.";
+
+  return (
+    <div className="auth-screen">
+      <style>{CSS}</style>
+      <div className="auth-wrap">
+        <div className="auth-top">
+          <div className="auth-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 3h7v18H6a2 2 0 0 1-2-2V3zm9 0h7v16a2 2 0 0 1-2 2h-5V3z"/></svg>
+          </div>
+          <h1>THE PLAYBOOK</h1>
+          <p className="auth-tagline">{titleHint}</p>
+        </div>
+        <div className="auth-card">
+          {mode !== "update" && mode !== "forgot" ? (
+            <div className="auth-tabs">
+              <button type="button" className={mode === "login" ? "active" : ""} onClick={() => { setMode("login"); setErr(""); setInfo(""); }}>Log in</button>
+              <button type="button" className={mode === "signup" ? "active" : ""} onClick={() => { setMode("signup"); setErr(""); setInfo(""); }}>Join free</button>
+            </div>
+          ) : null}
+          {mode === "forgot" ? (
+            <div style={{ marginBottom: 16 }}>
+              <div className="kicker" style={{ marginBottom: 6 }}>Password reset</div>
+              <p style={{ margin: 0, fontSize: 14, color: "var(--soft)", lineHeight: 1.45 }}>Enter your account email. We'll send a link — open it on this phone or tablet.</p>
+            </div>
+          ) : null}
+          {mode === "update" ? (
+            <div style={{ marginBottom: 16 }}>
+              <div className="kicker" style={{ marginBottom: 6 }}>New password</div>
+              <p style={{ margin: 0, fontSize: 14, color: "var(--soft)", lineHeight: 1.45 }}>You're almost back in. Choose a password you'll remember.</p>
+            </div>
+          ) : null}
+          {err ? <div className="auth-error">{err}</div> : null}
+          {info ? <div className="cloud-banner" style={{ marginBottom: 14 }}>{info}</div> : null}
+          <form onSubmit={submit}>
+            {mode === "signup" && (
+              <div className="field">
+                <label className="field-label">Display name</label>
+                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="What others see in the community" autoComplete="nickname" />
+              </div>
+            )}
+            {(mode === "login" || mode === "signup" || mode === "forgot") && (
+              <div className="field">
+                <label className="field-label">Email</label>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" autoComplete="email" required />
+              </div>
+            )}
+            {(mode === "login" || mode === "signup") && (
+              <div className="field">
+                <label className="field-label">Password</label>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={6} />
+              </div>
+            )}
+            {mode === "update" && (
+              <>
+                <div className="field">
+                  <label className="field-label">New password</label>
+                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" autoComplete="new-password" required minLength={6} />
+                </div>
+                <div className="field">
+                  <label className="field-label">Confirm new password</label>
+                  <input type="password" value={password2} onChange={(e) => setPassword2(e.target.value)} placeholder="Type it again" autoComplete="new-password" required minLength={6} />
+                </div>
+              </>
+            )}
+            <button type="submit" className="auth-submit" disabled={busy}>
+              {busy ? "Please wait…"
+                : mode === "forgot" ? "Send reset link"
+                : mode === "update" ? "Save new password"
+                : mode === "login" ? "Log in securely"
+                : "Create your account"}
+            </button>
+          </form>
+          {mode === "login" ? (
+            <p className="auth-note">
+              <button type="button" onClick={() => { setMode("forgot"); setErr(""); setInfo(""); setPassword(""); }} style={{ background: "none", border: "none", color: "var(--amber)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "inherit", padding: 0 }}>Forgot password?</button>
+            </p>
+          ) : null}
+          {mode === "forgot" || mode === "update" ? (
+            <p className="auth-note">
+              <button type="button" onClick={() => { setMode("login"); setErr(""); setInfo(""); setPassword(""); setPassword2(""); }} style={{ background: "none", border: "none", color: "var(--amber)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "inherit", padding: 0 }}>← Back to log in</button>
+            </p>
+          ) : (
+            <p className="auth-note">
+              {mode === "login"
+                ? "Your tracking stays on this device. Community & Discover are shared when you are online."
+                : "Join free to track. Unlock once for Insights, reports and posting to the community."}
+            </p>
+          )}
+        </div>
+        <div className="auth-trust">
+          <span>Private logs</span>
+          <span>·</span>
+          <span>No subscription required</span>
+          <span>·</span>
+          <span>£2.99 unlock</span>
+        </div>
+        <p className="auth-footer">Need help? <a href="mailto:Theplaybookhome@gmail.com">Theplaybookhome@gmail.com</a></p>
+      </div>
+    </div>
+  );
+}
+
+function PaywallCard({ onUnlock, unlocked }) {
+  if (unlocked) {
+    return (
+      <div className="card" style={{ borderColor: "var(--amber)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+          <div>
+            <div className="stat-label">Full access on this device</div>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--soft)" }}>Insights, report, Discover, Printables &amp; more unlocked.</p>
+          </div>
+          <span className="price-pill" style={{ background: "var(--success)" }}>Owned</span>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="paywall-card">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+        <h3>Walk into appointments prepared</h3>
+        <span className="price-pill">{PREMIUM_PRICE}</span>
+      </div>
+      <p>One-time unlock. No subscription. Your logs stay private on this device.</p>
+      <ul className="paywall-features">
+        <li>Plain-English insights from <em>your</em> patterns</li>
+        <li>Professional report + talking points for school, GP &amp; therapy</li>
+        <li>Appointment Mode — last 14 days, ready to print</li>
+        <li>Discover tools matched to what you log</li>
+        <li>Printables toolkit — visuals, colouring, learning &amp; AAC</li>
+      </ul>
+      <button type="button" className="btn-amber" onClick={onUnlock}>Unlock full access · {PREMIUM_PRICE}</button>
+      <p style={{ margin: "10px 0 0", fontSize: 11, opacity: 0.7 }}>Until Stripe is linked, Unlock works as a demo on this device.</p>
+    </div>
+  );
+}
+
+function ReportPage({ dataStore, profile, unlocked, onRequestUnlock }) {
+  const [range, setRange] = useState(14);
+  if (!unlocked) {
+    return (
+      <div>
+        <PageHeader kicker="For appointments" title="Professional report" subtitle="A clean summary to hand to school, GP, or therapists." />
+        <div className="locked-overlay">
+          <p style={{ margin: "0 0 8px", fontWeight: 700, color: "var(--navy)" }}>Appointment-ready one-pager</p>
+          <p style={{ margin: "0 0 14px" }}>Date range, KPIs, talking points, what already helps, and space for your note — print or Save as PDF.</p>
+          <button type="button" className="btn-primary" onClick={onRequestUnlock}>Unlock report · {PREMIUM_PRICE}</button>
+        </div>
+      </div>
+    );
+  }
+  const analysis = useMemo(() => buildStories(dataStore, range), [dataStore, range]);
+  const points = useMemo(() => buildTalkingPoints(analysis), [analysis]);
+  const profileSafe = profile || {};
+  const dayLabel = range === "all" ? "All logged data" : `Last ${range} days`;
+
+  return (
+    <div>
+      <PageHeader kicker="Share with professionals" title="Professional report" subtitle="Print or Save as PDF (browser → Print → Save as PDF)." />
+
+      <div className="appt-banner no-print">
+        <h3>Appointment Mode</h3>
+        <p>Uses your logs from the selected range. Hand this over or talk from the numbered points.</p>
+        <button type="button" className="btn-primary" style={{ background: "#fff", color: "var(--navy)" }} onClick={() => window.print()}>Print / Save as PDF</button>
+      </div>
+
+      <div className="range-pills no-print">
+        {[{ d: 7, l: "7 days" }, { d: 14, l: "14 days" }, { d: 30, l: "30 days" }, { d: "all", l: "All time" }].map((r) => (
+          <button key={String(r.d)} type="button" className={"range-pill" + (range === r.d ? " active" : "")} onClick={() => setRange(r.d)}>{r.l}</button>
+        ))}
+      </div>
+
+      <div className="report-actions no-print">
+        <button type="button" className="btn-primary" onClick={() => window.print()}>Print / Save as PDF</button>
+      </div>
+
+      <div className="card" id="professional-report">
+        <div className="report-hero">
+          <div>
+            <div className="brand" style={{ color: "var(--navy)", marginBottom: 4 }}><span className="brand-mark" />THE PLAYBOOK</div>
+            <p className="rh-title">Care summary</p>
+            <p className="rh-sub">{dayLabel} · Generated {new Date().toLocaleDateString()} · Parent/carer notes — not a clinical assessment</p>
+          </div>
+        </div>
+
+        <div className="report-kpi-row">
+          <div className="report-kpi">
+            <div className="rk-v">{analysis.avgE != null ? analysis.avgE.toFixed(1) : "—"}</div>
+            <div className="rk-l">Avg energy /5</div>
+          </div>
+          <div className="report-kpi">
+            <div className="rk-v">{analysis.behavior.length}</div>
+            <div className="rk-l">Behaviour logs</div>
+          </div>
+          <div className="report-kpi">
+            <div className="rk-v">{analysis.wins.length}</div>
+            <div className="rk-l">Wins logged</div>
+          </div>
+        </div>
+
+        {(profileSafe.nameAge || profileSafe.communicatesBy || profileSafe.triggers) && (
+          <div className="report-section">
+            <h3>At a glance</h3>
+            {[["nameAge","Name / age"],["communicatesBy","Communicates by"],["likes","Likes"],["dislikes","Dislikes"],["triggers","Known triggers"],["meltdownHelp","What helps in meltdown"],["allergies","Allergies / medical"],["emergencyContact","Emergency contact"]].map(([k, lab]) => (
+              profileSafe[k] ? <div key={k} className="report-row"><span className="report-label">{lab}: </span>{profileSafe[k]}</div> : null
+            ))}
+          </div>
+        )}
+
+        <div className="report-section">
+          <h3>Talking points for this appointment</h3>
+          <ol className="talking-points" style={{ listStyle: "none", padding: 0 }}>
+            {points.map((pt, i) => (
+              <li key={i} data-n={i + 1}>{pt}</li>
+            ))}
+          </ol>
+        </div>
+
+        {analysis.triggers.length > 0 && (
+          <div className="report-section">
+            <h3>Frequent triggers ({dayLabel.toLowerCase()})</h3>
+            {analysis.triggers.slice(0, 6).map(([t, n]) => (
+              <div key={t} className="report-row"><span className="report-label">{t}: </span>{n} time{n === 1 ? "" : "s"}</div>
+            ))}
+          </div>
+        )}
+
+        {analysis.helped.length > 0 && (
+          <div className="report-section">
+            <h3>What already helps</h3>
+            <ul className="helped-list">
+              {analysis.helped.slice(0, 6).map((h, i) => <li key={i}>{h}</li>)}
+            </ul>
+          </div>
+        )}
+
+        {analysis.moods.length > 0 && (
+          <div className="report-section">
+            <h3>Mood / regulation tags</h3>
+            <div className="chip-row" style={{ marginTop: 4 }}>
+              {analysis.moods.slice(0, 8).map(([m, n]) => <span className="chip" key={m}>{m} · {n}</span>)}
+            </div>
+          </div>
+        )}
+
+        {analysis.sleep.length > 0 && (
+          <div className="report-section">
+            <h3>Sleep notes</h3>
+            {analysis.sleep.slice(0, 6).map((e) => (
+              <div key={e.id} className="report-row">
+                <span className="report-label">{e.date}: </span>
+                {[e.bedtime && `Bed ${e.bedtime}`, e.waketime && `Wake ${e.waketime}`, (e.quality || []).join(", "), e.sleepNotes || e.notes].filter(Boolean).join(" · ")}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {analysis.wins.length > 0 && (
+          <div className="report-section">
+            <h3>Recent wins</h3>
+            {analysis.wins.slice(0, 8).map((e) => (
+              <div key={e.id} className="report-row"><span className="report-label">{e.date}: </span>{e.win}{e.notes ? ` — ${e.notes}` : ""}</div>
+            ))}
+          </div>
+        )}
+
+        {(dataStore["therapy-entries"] || []).length > 0 && (
+          <div className="report-section">
+            <h3>Therapy notes</h3>
+            {filterByDays(dataStore["therapy-entries"] || [], range).slice(0, 5).map((e) => (
+              <div key={e.id} style={{ marginBottom: 8 }}>
+                <div className="report-label">{e.date}{e.sessionType ? ` · ${e.sessionType}` : ""}</div>
+                {e.keyPoints && <div className="report-row">{e.keyPoints}</div>}
+                {e.actionsHome && <div className="report-row">Home: {e.actionsHome}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="report-section">
+          <h3>Parent / carer note for this appointment</h3>
+          <div className="parent-note-box">Write here before you print, or add by hand after printing…</div>
+        </div>
+
+        <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 20, lineHeight: 1.4 }}>
+          Generated by THE PLAYBOOK for family use. Not a diagnosis or clinical report. Discuss with qualified professionals.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+
+
+function QuickLog({ setDataStore, showToast }) {
+  const [energy, setEnergy] = useState(null);
+  const [mood, setMood] = useState([]);
+  const [note, setNote] = useState("");
+  const moodOpts = ["Calm", "Happy", "Wobbly", "Overwhelmed", "Shutdown", "Big feelings"];
+  function toggleMood(m) {
+    setMood((cur) => cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m]);
+  }
+  async function save() {
+    if (energy == null && mood.length === 0 && !note.trim()) {
+      if (showToast) showToast("Pick energy, mood, or a note first");
+      return;
+    }
+    const entry = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      date: todayISO(),
+      energy: energy,
+      mood: mood,
+      activities: [],
+      wentWell: note.trim(),
+      hard: "",
+      notes: ""
+    };
+    let list = [];
+    try {
+      const raw = await storageGet("daily-log-entries");
+      list = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(list)) list = [];
+    } catch (e) { list = []; }
+    list = [entry, ...list];
+    await storageSet("daily-log-entries", JSON.stringify(list));
+    if (setDataStore) setDataStore((d) => ({ ...d, "daily-log-entries": list }));
+    setEnergy(null); setMood([]); setNote("");
+    if (showToast) showToast("Quick log saved", "success");
+  }
+  return (
+    <div className="quick-log-card">
+      <h3>Quick log</h3>
+      <p>One-tap energy &amp; mood — full detail later if you want.</p>
+      <div className="quick-log-row">
+        <span className="quick-log-label">Energy</span>
+        <div className="scale-row">
+          {[1,2,3,4,5].map((n) => (
+            <button type="button" key={n} className={"scale-btn" + (energy === n ? " active" : "")} onClick={() => setEnergy(n)}>{n}</button>
+          ))}
+        </div>
+      </div>
+      <div className="quick-log-row" style={{ alignItems: "flex-start" }}>
+        <span className="quick-log-label" style={{ marginTop: 8 }}>Mood</span>
+        <div className="tick-row">
+          {moodOpts.map((m) => (
+            <button type="button" key={m} className={"tick-chip" + (mood.includes(m) ? " active" : "")} onClick={() => toggleMood(m)}>
+              <span className="tick-box">{mood.includes(m) ? "✓" : ""}</span>{m}
+            </button>
+          ))}
+        </div>
+      </div>
+      <input type="text" placeholder="One line note (optional)" value={note} onChange={(e) => setNote(e.target.value)} style={{ marginBottom: 10 }} />
+      <button type="button" className="btn-primary" style={{ width: "100%" }} onClick={save}>Save quick log</button>
+    </div>
+  );
+}
+function SocialIcon({ id }) {
+  if (id === "facebook") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.89v2.26h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+    );
+  }
+  if (id === "tiktok") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.53.02C13.54 0 14.49.01 15.43.02c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.95a8.06 8.06 0 0 1-6.63 3.38c-1.76.1-3.57-.4-4.97-1.47a7.98 7.98 0 0 1-2.79-4.22 8.2 8.2 0 0 1-.1-3.37c.4-2.14 1.7-4.08 3.55-5.2 1.5-.93 3.35-1.3 5.1-1.1.01 1.5-.01 3-.01 4.5-.7-.22-1.5-.2-2.18.1-.7.32-1.26.9-1.5 1.62-.27.7-.2 1.55.2 2.18.5.78 1.45 1.2 2.38 1.1.8-.05 1.58-.5 2-1.16.2-.3.3-.64.33-.99.06-3.7.03-7.4.04-11.1z"/></svg>
+    );
+  }
+  if (id === "x") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 1.15h3.67l-8.02 9.16L24 22.85h-7.4l-5.8-7.58-6.63 7.58H.49l8.58-9.8L0 1.15h7.59l5.24 6.93L18.9 1.15zm-1.29 19.53h2.03L6.53 3.24H4.35l13.26 17.44z"/></svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5L4 8V6l8 5 8-5v2z"/></svg>
+  );
+}
+function ConnectCard() {
+  const cls = { facebook: "fb", tiktok: "tt", x: "xx" };
+  return (
+    <div className="connect-card">
+      <h3>Connect with us</h3>
+      <p>Join the community on social — share wins, ask questions, or just listen in.</p>
+      <div className="connect-links">
+        {SOCIAL_LINKS.map((s) => (
+          <a key={s.id} className={"connect-btn " + (cls[s.id] || "")} href={s.href} target="_blank" rel="noopener noreferrer">
+            <span className="cb-ico"><SocialIcon id={s.id} /></span>
+            <span className="cb-text">
+              <strong>{s.label}</strong>
+              <span>{s.hint}</span>
+            </span>
+          </a>
+        ))}
+        {SUPPORT_EMAIL ? (
+          <a className="connect-btn em" href={"mailto:" + SUPPORT_EMAIL}>
+            <span className="cb-ico"><SocialIcon id="email" /></span>
+            <span className="cb-text">
+              <strong>Email</strong>
+              <span>Support</span>
+            </span>
+          </a>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function PrintablesPage({ unlocked, onRequestUnlock }) {
+  if (!unlocked) {
+    return (
+      <div>
+        <PageHeader kicker="Print · laminate · use" title="Printables" subtitle="Visual supports, colouring, learning cards and AAC boards." />
+        <div className="locked-overlay">
+          <p style={{ margin: "0 0 8px", fontWeight: 700, color: "var(--navy)" }}>Home toolkit for communication & routines</p>
+          <p style={{ margin: "0 0 14px" }}>Download organised PDFs — choice boards, schedules, colouring pages, alphabet, numbers and AAC symbol sets. Print what you need, add more packs later.</p>
+          <button type="button" className="btn-primary" onClick={onRequestUnlock}>Unlock Printables · {PREMIUM_PRICE}</button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div>
+      <PageHeader kicker="Print · laminate · use" title="Printables" subtitle="Organised by category. Download the full pack or one section." />
+      <div className="community-note">
+        Family use — supports routines and communication at home. Not a clinical AAC system. Laminate cards for daily use.
+      </div>
+      <div className="printables-grid">
+        {PRINTABLES_PACKS.map((p) => (
+          <div className="print-pack" key={p.id} style={p.primary ? { borderColor: "var(--amber)", borderWidth: 2 } : undefined}>
+            <div className="pp-kicker">{p.kicker}</div>
+            <h3>{p.title}</h3>
+            <p>{p.desc}</p>
+            <div className="pp-meta">{p.meta}</div>
+            <a
+              className={p.primary ? "btn-amber" : "btn-primary"}
+              href={PRINTABLES_BASE + p.file}
+              target="_blank"
+              rel="noopener noreferrer"
+              download
+            >
+              {p.primary ? "Download complete toolkit" : "Download PDF"}
+            </a>
+          </div>
+        ))}
+      </div>
+      <p className="footer-note">More sheets can be added later without losing your logs.</p>
+    </div>
+  );
+}
+
+function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onOpenPaywall, showToast }) {
+
+  const daily = dataStore["daily-log-entries"] || [];
+  const wins = dataStore["wins-entries"] || [];
+  const behavior = dataStore["behavior-log-entries"] || [];
+  const recentEnergy = daily.slice(0, 7).map((e) => e.energy).filter((n) => n != null);
+  const avgEnergy = recentEnergy.length ? (recentEnergy.reduce((a, b) => a + b, 0) / recentEnergy.length).toFixed(1) : "—";
+  const lastWin = wins[0];
+  return (
+    <div>
+      <PageHeader kicker="Your companion" title="Today" subtitle="Track what matters. Spot patterns. Look after yourself too." />
+      <PaywallCard onUnlock={onUnlock} unlocked={unlocked} />
+      <QuickLog setDataStore={setDataStore} showToast={showToast} />
+      <ConnectCard />
+      <div className="dash-grid">
+        <div className="stat-card"><div className="stat-label">Energy (7 logs)</div><div className="stat-value">{avgEnergy}{avgEnergy !== "—" ? "/5" : ""}</div><div className="stat-hint">Your average lately</div></div>
+        <div className="stat-card"><div className="stat-label">Logs this device</div><div className="stat-value">{daily.length + behavior.length}</div><div className="stat-hint">Daily + behaviour</div></div>
+      </div>
+      {lastWin && <div className="card"><div className="stat-label">Latest win</div><p style={{ margin: "6px 0 0", fontSize: 14, lineHeight: 1.45 }}>{lastWin.win}</p></div>}
+      <div className="quick-links">
+        <button type="button" className="quick-link" onClick={() => onNavigate("track", "daily")}><span className="ql-ico">✏️</span><strong>Log today</strong><span>Energy, mood, what went well</span></button>
+        <button type="button" className="quick-link" onClick={() => onNavigate("insights")}><span className="ql-ico">📊</span><strong>See patterns</strong><span>Triggers, sleep, energy trends</span></button>
+        <button type="button" className="quick-link" onClick={() => onNavigate("report")}><span className="ql-ico">📄</span><strong>Pro report</strong><span>Print for school / GP</span></button>
+        <button type="button" className="quick-link" onClick={() => onNavigate("community")}><span className="ql-ico">💬</span><strong>Community</strong><span>Peer notes &amp; support</span></button>
+        <button type="button" className="quick-link" onClick={() => onNavigate("printables")}><span className="ql-ico">🖨️</span><strong>Printables</strong><span>Visuals, colouring, AAC</span></button>
+      </div>
+      <div className="card">
+        <div className="stat-label">Why unlock helps</div>
+        <p style={{ margin: "8px 0 0", fontSize: 13, lineHeight: 1.5, color: "var(--soft)" }}>
+          Appointments go better with a one-page snapshot. Patterns only show up when they're written down. On hard days, your wins list is proof you're not failing. Tracking stays free to try — full insights &amp; report unlock with a single purchase.
+        </p>
+        {!unlocked && (
+          <button type="button" className="btn-ghost" style={{ marginTop: 8 }} onClick={onOpenPaywall}>See what's included →</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function InsightsPage({ dataStore, unlocked, onRequestUnlock }) {
+  const [range, setRange] = useState(14);
+  const analysis = useMemo(() => buildStories(dataStore, range), [dataStore, range]);
+  const last7 = useMemo(() => {
+    const daily = [...(dataStore["daily-log-entries"] || [])].filter((e) => e.date).sort((a, b) => a.date.localeCompare(b.date));
+    return daily.slice(-7);
+  }, [dataStore]);
+
+  if (!unlocked) {
+    return (
+      <div>
+        <PageHeader kicker="Patterns, not perfection" title="Insights" subtitle="Plain English from what you've actually logged." />
+        <div className="locked-overlay">
+          <p style={{ margin: "0 0 8px", fontWeight: 700, color: "var(--navy)" }}>See what your week is really saying</p>
+          <p style={{ margin: "0 0 14px" }}>Story cards, energy trends, top triggers, and links between sleep and hard days — private on this device.</p>
+          <button type="button" className="btn-primary" onClick={onRequestUnlock}>Unlock Insights · {PREMIUM_PRICE}</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <PageHeader kicker="Patterns, not perfection" title="Insights" subtitle="Built only from what you've logged on this device." />
+
+      <div className="range-pills">
+        {[{ d: 7, l: "7 days" }, { d: 14, l: "14 days" }, { d: 30, l: "30 days" }, { d: "all", l: "All time" }].map((r) => (
+          <button key={String(r.d)} type="button" className={"range-pill" + (range === r.d ? " active" : "")} onClick={() => setRange(r.d)}>{r.l}</button>
+        ))}
+      </div>
+
+      <div className="insight-grid-premium">
+        <div className="insight-metric">
+          <div className="im-val">{analysis.avgE != null ? analysis.avgE.toFixed(1) : "—"}</div>
+          <div className="im-label">Avg energy</div>
+        </div>
+        <div className="insight-metric">
+          <div className="im-val">{analysis.behavior.length}</div>
+          <div className="im-label">Behaviour logs</div>
+        </div>
+        <div className="insight-metric">
+          <div className="im-val">{analysis.rough}</div>
+          <div className="im-label">Rough nights</div>
+        </div>
+        <div className="insight-metric">
+          <div className="im-val">{analysis.wins.length}</div>
+          <div className="im-label">Wins</div>
+        </div>
+      </div>
+
+      {analysis.stories.map((s, i) => (
+        <div className="story-card" key={i}>
+          <div className="story-kicker">{s.kicker}</div>
+          <p>{s.text}</p>
+          {s.meta ? <div className="story-meta">{s.meta}</div> : null}
+        </div>
+      ))}
+
+      <div className="card">
+        <div className="stat-label">Energy — last daily scores</div>
+        {last7.length === 0 ? <p className="insight-empty">Log daily energy to see a trend.</p> : (
+          <div className="insight-bar">
+            {last7.map((e) => (
+              <div className="insight-col" key={e.id}>
+                <div className="insight-fill" style={{ height: e.energy ? (e.energy / 5) * 72 : 4 }} title={e.energy ? `${e.energy}/5` : "—"} />
+                <span className="insight-day">{e.date ? e.date.slice(5) : ""}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {analysis.triggers.length > 0 && (
+        <div className="card">
+          <div className="stat-label">Top triggers</div>
+          <div className="chip-row">{analysis.triggers.slice(0, 8).map(([t, n]) => <span className="chip" key={t}>{t} · {n}</span>)}</div>
+        </div>
+      )}
+
+      {analysis.moods.length > 0 && (
+        <div className="card">
+          <div className="stat-label">Mood tags</div>
+          <div className="chip-row">{analysis.moods.slice(0, 8).map(([m, n]) => <span className="chip" key={m}>{m} · {n}</span>)}</div>
+        </div>
+      )}
+
+      {analysis.helped.length > 0 && (
+        <div className="card">
+          <div className="stat-label">Strategies that helped</div>
+          <ul className="helped-list">{analysis.helped.slice(0, 5).map((h, i) => <li key={i}>{h}</li>)}</ul>
+        </div>
+      )}
+
+      <p className="footer-note">Insights stay on your device. Use Professional report + talking points for school or GP.</p>
+    </div>
+  );
+}
+
+
+function CommunityPage({ posts, likes, onAddPost, onToggleLike, showToast, unlocked, onRequestUnlock, user, cloudMode, onRefreshCloud }) {
+  const [text, setText] = useState("");
+  const [tag, setTag] = useState("");
+  const [link, setLink] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function handlePost(e) {
+    e.preventDefault();
+    if (!unlocked) { onRequestUnlock(); return; }
+    if (!user && cloudMode) {
+      showToast("Log in to post to the shared community", "error");
+      return;
+    }
+    const body = text.trim();
+    if (!body) return;
+    setBusy(true);
+    try {
+      await onAddPost({
+        body,
+        tag: tag.trim(),
+        link: link.trim(),
+        author: (user && (user.user_metadata && user.user_metadata.display_name)) || (user && user.email) || "You"
+      });
+      setText(""); setTag(""); setLink("");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div>
+      <PageHeader kicker="You're not the only one" title="Community" subtitle={cloudMode ? "Shared with other Playbook members." : "On this device until cloud is connected."} />
+      <ConnectCard />
+      {cloudMode ? (
+        <div className="cloud-banner"><strong>Live community.</strong> Posts from paid members appear for everyone signed in. Pull to refresh by switching tabs, or tap Refresh.</div>
+      ) : (
+        <div className="local-banner"><strong>Local mode.</strong> Posts stay on this phone until Supabase is connected (see setup). Free users can still read sample posts.</div>
+      )}
+      {cloudMode && onRefreshCloud ? (
+        <button type="button" className="btn-secondary" style={{ marginBottom: 12 }} onClick={onRefreshCloud}>Refresh feed</button>
+      ) : null}
+      {unlocked && (user || !cloudMode) ? (
+        <form className="entry-form composer" onSubmit={handlePost}>
+          <div className="field"><label className="field-label">Share something that helped (or is hard)</label><textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="A tip, a rant, a tiny win…" rows={3} /></div>
+          <div className="field"><label className="field-label">Optional tag</label><input type="text" value={tag} onChange={(e) => setTag(e.target.value)} placeholder="e.g. sleep, school, wins" /></div>
+          <div className="field"><label className="field-label">Optional link</label><input type="url" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://… video, article, resource" /></div>
+          <button type="submit" className="btn-primary" disabled={busy}>{busy ? "Posting…" : "Post to community"}</button>
+        </form>
+      ) : (
+        <div className="locked-overlay" style={{ marginBottom: 16 }}>
+          <p style={{ margin: "0 0 12px" }}>{!unlocked ? "Read free. Posting is for full access members." : "Log in to post to the shared community."}</p>
+          {!unlocked ? <button type="button" className="btn-primary" onClick={onRequestUnlock}>Unlock to post · {PREMIUM_PRICE}</button> : null}
+        </div>
+      )}
+      {posts.map((p) => (
+        <div className="post-card" key={p.id}>
+          <div className="post-meta"><span className="post-author">{p.author}</span><span className="post-time">{p.time}</span></div>
+          <div className="post-body">{p.body}</div>
+          {p.link ? <p style={{ margin: "8px 0 0", fontSize: 13 }}><a href={p.link} target="_blank" rel="noopener noreferrer" style={{ color: "var(--amber)", fontWeight: 700 }}>Open link</a></p> : null}
+          {p.tags?.length > 0 && <div className="post-tags">{p.tags.map((t) => <span className="tag" key={t}>{t}</span>)}</div>}
+          <div className="post-actions">
+            <button type="button" className={"like-btn" + (likes[p.id] ? " on" : "")} onClick={() => onToggleLike(p.id)}>
+              {likes[p.id] ? "♥ Liked" : "♡ Like"}{p.likes ? ` · ${p.likes}` : ""}
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
+function DiscoverPage({ unlocked, onRequestUnlock, dataStore, user, cloudMode, memberPosts, onAddDiscover, onRefreshDiscover }) {
+  const [tab, setTab] = useState("toys");
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [url, setUrl] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const topTriggers = useMemo(() => {
+    const map = {};
+    (dataStore && dataStore["behavior-log-entries"] || []).forEach((e) => (e.triggers || []).forEach((t) => { map[t] = (map[t] || 0) + 1; }));
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([t]) => t);
+  }, [dataStore]);
+
+  const tagBoost = useMemo(() => {
+    const boost = new Set();
+    topTriggers.forEach((t) => {
+      const low = String(t).toLowerCase();
+      if (/noise|loud|sound|crowd/.test(low)) { boost.add("sensory"); boost.add("calm"); }
+      if (/transition|routine|change/.test(low)) { boost.add("calm"); boost.add("comm"); }
+      if (/hunger|food|texture/.test(low)) { boost.add("sensory"); }
+      if (/tired|sleep/.test(low)) { boost.add("calm"); }
+      if (/motor|movement|swing/.test(low)) { boost.add("motor"); }
+    });
+    return boost;
+  }, [topTriggers]);
+
+  const sortedToys = useMemo(() => {
+    const list = [...TOYS];
+    list.sort((a, b) => {
+      const sa = (a.tags || []).some((t) => tagBoost.has(t)) ? 1 : 0;
+      const sb = (b.tags || []).some((t) => tagBoost.has(t)) ? 1 : 0;
+      return sb - sa;
+    });
+    return list;
+  }, [tagBoost]);
+
+  const memberForTab = (memberPosts || []).filter((p) => p.kind === tab || (tab === "toys" && p.kind === "toy") || (tab === "events" && p.kind === "event") || (tab === "tips" && p.kind === "tip"));
+
+  async function submitMember(e) {
+    e.preventDefault();
+    if (!unlocked) { onRequestUnlock(); return; }
+    if (cloudMode && !user) { return; }
+    if (!title.trim() || !body.trim()) return;
+    setBusy(true);
+    try {
+      const kind = tab === "toys" ? "toy" : tab === "events" ? "event" : "tip";
+      await onAddDiscover({
+        kind,
+        title: title.trim(),
+        body: body.trim(),
+        url: url.trim(),
+        author: (user && (user.user_metadata && user.user_metadata.display_name)) || (user && user.email) || "Member"
+      });
+      setTitle(""); setBody(""); setUrl("");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!unlocked) {
+    return (
+      <div>
+        <PageHeader kicker="Less noise, more signal" title="Discover" subtitle="Tools, events and tips — plus shares from paid members." />
+        <div className="locked-overlay">
+          <p style={{ margin: "0 0 8px", fontWeight: 700, color: "var(--navy)" }}>Read curated lists free after unlock · paid members can contribute</p>
+          <p style={{ margin: "0 0 14px" }}>Unlock to browse Discover and, when signed in, post toys, local events, tips and links for everyone.</p>
+          <button type="button" className="btn-primary" onClick={onRequestUnlock}>Unlock Discover · {PREMIUM_PRICE}</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <PageHeader kicker="Less noise, more signal" title="Discover" subtitle="Curated picks + member shares with live links." />
+      {cloudMode ? (
+        <div className="cloud-banner"><strong>Member Discover.</strong> Paid members can post toys, events and tips with links. Everyone signed in can read them.</div>
+      ) : (
+        <div className="local-banner"><strong>Local mode.</strong> Member posts need Supabase (shared cloud). Curated lists still work offline.</div>
+      )}
+      {topTriggers.length > 0 && (
+        <div className="for-you-banner">
+          <strong>For you · </strong>
+          Based on your logs ({topTriggers.join(", ")}), matching tools are listed first.
+        </div>
+      )}
+      <div className="discover-tabs">
+        {[{ id: "toys", label: "Toys & tools" }, { id: "events", label: "Events" }, { id: "tips", label: "Tips" }].map((t) => (
+          <button key={t.id} type="button" className={"disc-tab" + (tab === t.id ? " active" : "")} onClick={() => setTab(t.id)}>{t.label}</button>
+        ))}
+      </div>
+
+      {unlocked && (user || !cloudMode) && (
+        <form className="entry-form composer" onSubmit={submitMember}>
+          <div className="field"><label className="field-label">Share with members ({tab})</label>
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
+          </div>
+          <div className="field">
+            <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Why it helped / where / when…" rows={3} />
+          </div>
+          <div className="field">
+            <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https:// link to product, event or video" />
+          </div>
+          <button type="submit" className="btn-amber" disabled={busy}>{busy ? "Sharing…" : "Share with members"}</button>
+        </form>
+      )}
+
+      {memberForTab.length > 0 && (
+        <>
+          <h3 className="list-heading" style={{ marginTop: 8 }}>From members</h3>
+          {memberForTab.map((p) => (
+            <div className="product-card" key={p.id} style={{ borderColor: "var(--amber)" }}>
+              <h3 className="product-title">{p.title}</h3>
+              <div className="product-meta">{p.author} · {p.time}</div>
+              <p className="product-why">{p.body}</p>
+              {p.url ? <p style={{ margin: "8px 0 0" }}><a href={p.url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--amber)", fontWeight: 700 }}>Open link</a></p> : null}
+            </div>
+          ))}
+        </>
+      )}
+
+      {tab === "toys" && (
+        <>
+          <h3 className="list-heading">Curated</h3>
+          <p style={{ fontSize: 13, color: "var(--soft)", margin: "0 0 14px", lineHeight: 1.45 }}>Not sponsored. Categories families often find useful.</p>
+          {sortedToys.map((t) => (
+            <div className="product-card" key={t.id} style={(t.tags || []).some((x) => tagBoost.has(x)) ? { borderColor: "var(--amber)" } : undefined}>
+              <h3 className="product-title">{t.title}{(t.tags || []).some((x) => tagBoost.has(x)) ? " · matched" : ""}</h3>
+              <div className="product-meta">Suggested age: {t.age}</div>
+              <p className="product-why">{t.why}</p>
+              <div className="product-tags">{t.tags.map((tag) => <span className={"badge " + (["calm", "motor", "comm"].includes(tag) ? tag : "sensory")} key={tag}>{tag}</span>)}</div>
+            </div>
+          ))}
+        </>
+      )}
+      {tab === "events" && (
+        <>
+          <h3 className="list-heading">Curated ideas</h3>
+          {EVENTS.map((e) => (
+            <div className="event-card" key={e.id}>
+              <div style={{ marginBottom: 6 }}><span className="badge">{e.type}</span></div>
+              <h3 className="event-title">{e.title}</h3>
+              <div className="event-meta">{e.when} · {e.where}</div>
+              <p className="event-desc">{e.desc}</p>
+            </div>
+          ))}
+        </>
+      )}
+      {tab === "tips" && (
+        <>
+          <h3 className="list-heading">Curated tips</h3>
+          {TIPS.map((t) => (
+            <div className="tip-card" key={t.id}><h3 className="product-title">{t.title}</h3><p className="tip-body">{t.body}</p></div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
+
+function LearningPlayPage({ ticked, onToggle }) {
+  const doneCount = Object.values(ticked).filter(Boolean).length;
+  return (
+    <div>
+      <PageHeader kicker="Grab and go" title="Learning & Play Ideas" subtitle="Low-prep ideas for the in-between moments." />
+      {doneCount > 0 && <p style={{ fontSize: 13, color: "var(--soft)", margin: "0 0 14px" }}>{doneCount} idea{doneCount === 1 ? "" : "s"} tried — untick to reset.</p>}
+      {LEARNING_CATEGORIES.map((cat) => (
+        <div className="category-block" key={cat.name}>
+          <h3 className="category-title">{cat.name}</h3>
+          <div className="idea-list">
+            {cat.items.map((item) => {
+              const id = cat.name + "::" + item;
+              const done = !!ticked[id];
+              return (
+                <button type="button" key={id} className={"idea-item" + (done ? " done" : "")} onClick={() => onToggle(id)}>
+                  <span className="idea-box">{done ? "✓" : ""}</span><span className="idea-label">{item}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      <div className="footer-note">Pick one. Two minutes counts.</div>
+    </div>
+  );
+}
+function AtAGlancePage({ profile, onSave, showToast }) {
+  const fields = [
+    { key: "nameAge", label: "Child's name / age", type: "text" },
+    { key: "communicatesBy", label: "Communicates by", type: "textarea", hint: "Words, signs, AAC, gestures — whatever's true.", rows: 2 },
+    { key: "likes", label: "Likes / calms with", type: "textarea", rows: 2 },
+    { key: "dislikes", label: "Dislikes / avoid", type: "textarea", rows: 2 },
+    { key: "triggers", label: "Known triggers", type: "textarea", rows: 2 },
+    { key: "meltdownHelp", label: "If a meltdown happens", type: "textarea", hint: "Space, pressure, quiet, a specific item…", rows: 2 },
+    { key: "allergies", label: "Allergies / medical notes", type: "textarea", rows: 2 },
+    { key: "emergencyContact", label: "Emergency contact", type: "text" },
+  ];
+  const [values, setValues] = useState(profile || {});
+  useEffect(() => { setValues(profile || {}); }, [profile]);
+  function update(key, val) { setValues((v) => ({ ...v, [key]: val })); }
+  async function handleSave(e) {
+    e.preventDefault();
+    onSave(values);
+    await storageSet("at-a-glance-profile", JSON.stringify(values));
+    showToast("Profile saved — handy for sitters & school");
+  }
+  return (
+    <div>
+      <PageHeader kicker="Quick reference" title="At a Glance" subtitle="One page to hand to a sitter, grandparent, or teacher." />
+      <form className="entry-form" onSubmit={handleSave}>
+        <FieldInputs fields={fields} values={values} update={update} toggleTick={() => {}} />
+        <button type="submit" className="btn-primary">Save</button>
+      </form>
+    </div>
+  );
+}
+function BrainDumpPage({ text, onChange, showToast }) {
+  const timeoutRef = useRef(null);
+  function handleChange(e) {
+    const val = e.target.value;
+    onChange(val);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => storageSet("brain-dump-text", val), 500);
+  }
+  async function handleClear() {
+    if (!window.confirm("Clear the brain dump? This can't be undone.")) return;
+    onChange("");
+    await storageSet("brain-dump-text", "");
+    showToast("Brain dump cleared");
+  }
+  return (
+    <div>
+      <PageHeader title="Brain Dump" subtitle="Empty your head here — nothing needs to make sense." />
+      <textarea className="braindump-area" value={text} placeholder="Start typing…" onChange={handleChange} />
+      <button type="button" className="btn-secondary" style={{ marginTop: 12 }} onClick={handleClear}>Clear page</button>
+    </div>
+  );
+}
+
+function TrackPage({ dataStore, setDataStore, learningTicked, setLearningTicked, profile, setProfile, brainDump, setBrainDump, showToast, initialSub }) {
+  const [sub, setSub] = useState(initialSub || "daily");
+  useEffect(() => { if (initialSub) setSub(initialSub); }, [initialSub]);
+  const active = TRACK_ITEMS.find((n) => n.id === sub) || TRACK_ITEMS[0];
+  async function toggleLearning(id) {
+    const next = { ...learningTicked, [id]: !learningTicked[id] };
+    setLearningTicked(next);
+    await storageSet("learning-play-ticked", JSON.stringify(next));
+  }
+  return (
+    <div>
+      <div className="sub-nav">
+        {TRACK_ITEMS.map((item) => (
+          <button key={item.id} type="button" className={"sub-btn" + (sub === item.id ? " active" : "")} onClick={() => setSub(item.id)}>{item.label}</button>
+        ))}
+      </div>
+      {active.type === "learning" ? <LearningPlayPage ticked={learningTicked} onToggle={toggleLearning} />
+        : active.type === "atAGlance" ? <AtAGlancePage profile={profile} onSave={setProfile} showToast={showToast} />
+        : active.type === "brainDump" ? <BrainDumpPage text={brainDump} onChange={setBrainDump} showToast={showToast} />
+        : (
+          <ListSection
+            storageKey={active.storageKey} title={active.title} subtitle={active.subtitle} fields={active.fields} footerNote={active.footerNote}
+            entries={dataStore[active.storageKey] || []}
+            onEntriesChange={(next) => setDataStore((d) => ({ ...d, [active.storageKey]: next }))}
+            showToast={showToast}
+          />
+        )}
+    </div>
+  );
+}
+
+function App() {
+  const [mainTab, setMainTab] = useState("home");
+  const [trackSub, setTrackSub] = useState("daily");
+  const [loaded, setLoaded] = useState(false);
+  const [dataStore, setDataStore] = useState({});
+  const [learningTicked, setLearningTicked] = useState({});
+  const [profile, setProfile] = useState({});
+  const [brainDump, setBrainDump] = useState("");
+  const [communityPosts, setCommunityPosts] = useState(SEED_COMMUNITY);
+  const [communityLikes, setCommunityLikes] = useState({});
+  const [discoverPosts, setDiscoverPosts] = useState([]);
+  const [showOnboard, setShowOnboard] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [session, setSession] = useState(null);
+  const [authReady, setAuthReady] = useState(!CLOUD_ENABLED);
+  const [recoveryMode, setRecoveryMode] = useState(false);
+  const fileInputRef = useRef(null);
+  const { show: showToast, ToastEl } = useToast();
+  const cloudMode = CLOUD_ENABLED;
+  const user = session && session.user ? session.user : null;
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAll() {
+      const listItems = TRACK_ITEMS.filter((n) => n.storageKey);
+      const results = {};
+      await Promise.all(listItems.map(async (item) => {
+        const raw = await storageGet(item.storageKey);
+        try { results[item.storageKey] = raw ? JSON.parse(raw) : []; } catch { results[item.storageKey] = []; }
+      }));
+      const lp = await storageGet("learning-play-ticked");
+      const pf = await storageGet("at-a-glance-profile");
+      const bd = await storageGet("brain-dump-text");
+      const cp = await storageGet("community-posts");
+      const cl = await storageGet("community-likes");
+      const ob = await storageGet("onboard-seen");
+      const pu = await storageGet("premium-unlocked");
+      if (cancelled) return;
+      setDataStore(results);
+      try { setLearningTicked(lp ? JSON.parse(lp) : {}); } catch { setLearningTicked({}); }
+      try { setProfile(pf ? JSON.parse(pf) : {}); } catch { setProfile({}); }
+      setBrainDump(bd || "");
+      try {
+        const parsed = cp ? JSON.parse(cp) : null;
+        if (Array.isArray(parsed) && parsed.length) setCommunityPosts([...parsed, ...SEED_COMMUNITY.filter((s) => !parsed.find((p) => p.id === s.id))]);
+      } catch { /* keep seed */ }
+      try { setCommunityLikes(cl ? JSON.parse(cl) : {}); } catch { setCommunityLikes({}); }
+      setShowOnboard(ob !== "1");
+      setUnlocked(pu === "1");
+
+      try {
+        const t = new URLSearchParams(window.location.search).get("tab");
+        if (t && ["today","track","insights","report","community","discover","printables","home"].includes(t)) setMainTab(t === "today" ? "home" : t);
+      } catch (e) {}
+
+      setLoaded(true);
+    }
+    loadAll();
+    return () => { cancelled = true; };
+  }, []);
+
+
+  useEffect(() => {
+    if (!CLOUD_ENABLED) { setAuthReady(true); return; }
+    const sb = getSupabase();
+    if (!sb) { setAuthReady(true); return; }
+    async function applyAccountPremium(sess) {
+      try {
+        const u = sess && sess.user;
+        if (!u) return;
+        // If this device just returned from Stripe, write premium onto the account
+        if (window.__pb_just_unlocked || localStorage.getItem("playbook:premium-unlocked") === "1") {
+          await persistPremiumToAccount();
+          window.__pb_just_unlocked = false;
+        }
+        if (userHasPremiumFlag(u)) {
+          await grantLocalPremium();
+          setUnlocked(true);
+          setShowPaywall(false);
+        }
+      } catch (e) { console.warn(e); }
+    }
+    sb.auth.getSession().then(async ({ data }) => {
+      setSession(data.session || null);
+      setAuthReady(true);
+      await applyAccountPremium(data.session || null);
+    });
+    const { data: sub } = sb.auth.onAuthStateChange(async (event, sess) => {
+      setSession(sess);
+      if (event === "PASSWORD_RECOVERY") setRecoveryMode(true);
+      if (event === "USER_UPDATED") setRecoveryMode(false);
+      if (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+        await applyAccountPremium(sess);
+      }
+    });
+    return () => { try { sub.subscription.unsubscribe(); } catch (e) {} };
+  }, []);
+
+  async function refreshCommunity() {
+    const sb = getSupabase();
+    if (!sb) return;
+    const { data, error } = await sb.from("community_posts").select("*").order("created_at", { ascending: false }).limit(50);
+    if (error) { console.error(error); showToast(error.message || "Could not load community", "error"); return; }
+    const mapped = (data || []).map((row) => ({
+      id: row.id,
+      author: row.author_name || "Member",
+      time: row.created_at ? new Date(row.created_at).toLocaleString() : "",
+      body: row.body,
+      tags: row.tag ? [row.tag] : [],
+      link: row.link || "",
+      likes: row.likes || 0,
+      local: false
+    }));
+    setCommunityPosts(mapped.length ? mapped : SEED_COMMUNITY);
+  }
+
+  async function refreshDiscover() {
+    const sb = getSupabase();
+    if (!sb) return;
+    const { data, error } = await sb.from("discover_posts").select("*").order("created_at", { ascending: false }).limit(50);
+    if (error) { console.error(error); return; }
+    setDiscoverPosts((data || []).map((row) => ({
+      id: row.id,
+      kind: row.kind,
+      title: row.title,
+      body: row.body,
+      url: row.url || "",
+      author: row.author_name || "Member",
+      time: row.created_at ? new Date(row.created_at).toLocaleString() : ""
+    })));
+  }
+
+  useEffect(() => {
+    if (!CLOUD_ENABLED || !session) return;
+    refreshCommunity();
+    refreshDiscover();
+  }, [session]);
+
+  function navigate(tab, sub) { setMainTab(tab); if (sub) setTrackSub(sub); }
+  async function dismissOnboard() { setShowOnboard(false); await storageSet("onboard-seen", "1"); }
+  async function handleUnlock() {
+    if (STRIPE_PAYMENT_LINK && STRIPE_PAYMENT_LINK.indexOf("http") === 0) {
+      window.location.href = STRIPE_PAYMENT_LINK;
+      return;
+    }
+    // Demo / offline unlock until Stripe link is pasted above
+    await storageSet("premium-unlocked", "1");
+    setUnlocked(true);
+    setShowPaywall(false);
+    await persistPremiumToAccount();
+    showToast("Unlocked · thank you");
+  }
+  async function restorePurchase() {
+    try {
+      const sb = getSupabase();
+      if (!sb || !user) {
+        showToast("Log in with the email you used to pay, then tap Restore", "error");
+        return;
+      }
+      // Refresh user from server
+      const { data: refreshed } = await sb.auth.getUser();
+      const u = (refreshed && refreshed.user) || user;
+      if (userHasPremiumFlag(u) || window.__pb_just_unlocked || (await storageGet("premium-unlocked")) === "1") {
+        await storageSet("premium-unlocked", "1");
+        setUnlocked(true);
+        setShowPaywall(false);
+        await persistPremiumToAccount();
+        showToast("Purchase restored on this device", "success");
+        return;
+      }
+      showToast("No purchase found on this account. Use the same email you paid with, or open the unlock link from your receipt.", "error");
+    } catch (e) {
+      console.error(e);
+      showToast("Could not restore — try again", "error");
+    }
+  }
+  function requestUnlock() { setShowPaywall(true); }
+  async function addCommunityPost(post) {
+    if (CLOUD_ENABLED) {
+      const sb = getSupabase();
+      if (!sb || !user) { showToast("Log in to post", "error"); return; }
+      if (!unlocked) { requestUnlock(); return; }
+      const { error } = await sb.from("community_posts").insert({
+        body: post.body,
+        tag: post.tag || null,
+        link: post.link || null,
+        author_name: post.author || "Member",
+        user_id: user.id,
+        likes: 0
+      });
+      if (error) { showToast(error.message || "Post failed", "error"); return; }
+      showToast("Posted to the community");
+      await refreshCommunity();
+      return;
+    }
+    const entry = {
+      id: "u-" + Date.now().toString(36),
+      author: post.author || "You",
+      time: "Just now",
+      body: post.body,
+      tags: post.tag ? [post.tag] : [],
+      link: post.link || "",
+      likes: 0,
+      local: true
+    };
+    const next = [entry, ...communityPosts];
+    setCommunityPosts(next);
+    await storageSet("community-posts", JSON.stringify(next.filter((p) => p.local)));
+    showToast("Posted (this device only)");
+  }
+
+  async function addDiscoverPost(post) {
+    if (CLOUD_ENABLED) {
+      const sb = getSupabase();
+      if (!sb || !user) { showToast("Log in to share", "error"); return; }
+      if (!unlocked) { requestUnlock(); return; }
+      const { error } = await sb.from("discover_posts").insert({
+        kind: post.kind,
+        title: post.title,
+        body: post.body,
+        url: post.url || null,
+        author_name: post.author || "Member",
+        user_id: user.id
+      });
+      if (error) { showToast(error.message || "Share failed", "error"); return; }
+      showToast("Shared with members");
+      await refreshDiscover();
+      return;
+    }
+    const entry = {
+      id: "d-" + Date.now().toString(36),
+      kind: post.kind,
+      title: post.title,
+      body: post.body,
+      url: post.url || "",
+      author: post.author || "You",
+      time: "Just now"
+    };
+    setDiscoverPosts((cur) => [entry, ...cur]);
+    showToast("Saved on this device (connect cloud to share with everyone)");
+  }
+
+  async function handleSignOut() {
+    const sb = getSupabase();
+    if (sb) await sb.auth.signOut();
+    setSession(null);
+    showToast("Signed out");
+  }
+
+  async function toggleLike(id) {
+    const next = { ...communityLikes, [id]: !communityLikes[id] };
+    setCommunityLikes(next);
+    await storageSet("community-likes", JSON.stringify(next));
+  }
+  async function handleExport() {
+    const payload = { version: 2, exportedAt: new Date().toISOString(), product: "THE PLAYBOOK", data: {} };
+    for (const key of ALL_STORAGE_KEYS) {
+      const raw = await storageGet(key);
+      if (raw != null) { try { payload.data[key] = JSON.parse(raw); } catch { payload.data[key] = raw; } }
+    }
+    Object.keys(dataStore).forEach((k) => { if (payload.data[k] === undefined) payload.data[k] = dataStore[k]; });
+    downloadJson(payload, `playbook-backup-${todayISO()}.json`);
+    showToast("Backup downloaded");
+  }
+  async function handleImport(file) {
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text());
+      const data = parsed.data || parsed;
+      if (typeof data !== "object" || !data) throw new Error("Invalid");
+      const nextStore = { ...dataStore };
+      for (const key of ALL_STORAGE_KEYS) {
+        if (data[key] === undefined) continue;
+        const value = data[key];
+        await storageSet(key, typeof value === "string" ? value : JSON.stringify(value));
+        if (TRACK_ITEMS.some((n) => n.storageKey === key)) nextStore[key] = Array.isArray(value) ? value : [];
+      }
+      setDataStore(nextStore);
+      if (data["learning-play-ticked"]) setLearningTicked(typeof data["learning-play-ticked"] === "object" ? data["learning-play-ticked"] : {});
+      if (data["at-a-glance-profile"]) setProfile(typeof data["at-a-glance-profile"] === "object" ? data["at-a-glance-profile"] : {});
+      if (data["brain-dump-text"] !== undefined) setBrainDump(String(data["brain-dump-text"] || ""));
+      if (data["premium-unlocked"] === "1" || data["premium-unlocked"] === true) setUnlocked(true);
+      showToast("Backup restored", "success");
+    } catch (e) { console.error(e); showToast("Import failed — check the file", "error"); }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  const bottom = [
+    { id: "home", label: "Today", ico: "◎" },
+    { id: "track", label: "Track", ico: "☰" },
+    { id: "insights", label: "Insights", ico: "◔" },
+    { id: "report", label: "Report", ico: "▤" },
+    { id: "community", label: "Community", ico: "◉" },
+    { id: "discover", label: "Discover", ico: "✦" },
+    { id: "printables", label: "Print", ico: "⬇" },
+  ];
+
+  if (CLOUD_ENABLED && authReady && (!session || recoveryMode)) {
+    return <AuthScreen recoveryMode={recoveryMode} onAuthed={(s) => { setSession(s); setRecoveryMode(false); }} />;
+  }
+  if (CLOUD_ENABLED && !authReady) {
+    return <div className="app-root" style={{ padding: 40, textAlign: "center", color: "var(--soft)" }}>Starting secure session…</div>;
+  }
+
+
+  return (
+    <div className="app-root">
+      <style>{CSS}</style>
+      <header className="app-header no-print">
+        <div className="header-top">
+          <div>
+            <div className="brand"><span className="brand-mark" />THE PLAYBOOK</div>
+            <div className="brand-sub">{unlocked ? "Full access on this device" : "Track free · unlock once"}{user ? " · " + (user.email || "signed in") : ""}</div>
+          </div>
+          <div className="header-actions">
+            {!unlocked && <button type="button" className="header-btn" onClick={requestUnlock}>{PREMIUM_PRICE}</button>}
+            <button type="button" className="header-btn" onClick={handleExport}>Export</button>
+            <button type="button" className="header-btn" onClick={() => fileInputRef.current?.click()}>Import</button>
+            {CLOUD_ENABLED && user ? <button type="button" className="header-btn" onClick={handleSignOut}>Sign out</button> : null}
+            <input ref={fileInputRef} type="file" accept="application/json,.json" className="hidden-file" onChange={(e) => handleImport(e.target.files?.[0])} />
+          </div>
+        </div>
+        <div className="header-value">Private tracking · pattern insights · professional report · community · curated tools</div>
+      </header>
+      <main className="app-main">
+        {!loaded ? <div className="loading">Loading your playbook…</div>
+          : mainTab === "home" ? (
+            <HomePage setDataStore={setDataStore} showToast={showToast} dataStore={dataStore} onNavigate={navigate} unlocked={unlocked} onUnlock={handleUnlock} onOpenPaywall={requestUnlock} />
+          )
+          : mainTab === "track" ? (
+            <TrackPage dataStore={dataStore} setDataStore={setDataStore} learningTicked={learningTicked} setLearningTicked={setLearningTicked}
+              profile={profile} setProfile={setProfile} brainDump={brainDump} setBrainDump={setBrainDump} showToast={showToast} initialSub={trackSub} />
+          )
+          : mainTab === "insights" ? <InsightsPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} />
+          : mainTab === "report" ? <ReportPage dataStore={dataStore} profile={profile} unlocked={unlocked} onRequestUnlock={requestUnlock} />
+          : mainTab === "community" ? (
+            <CommunityPage posts={communityPosts} likes={communityLikes} onAddPost={addCommunityPost} onToggleLike={toggleLike} showToast={showToast} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} onRefreshCloud={refreshCommunity} />
+          )
+          : mainTab === "discover" ? <DiscoverPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} memberPosts={discoverPosts} onAddDiscover={addDiscoverPost} onRefreshDiscover={refreshDiscover} />
+          : mainTab === "printables" ? <PrintablesPage unlocked={unlocked} onRequestUnlock={requestUnlock} /> : null}
+      </main>
+      <nav className="bottom-nav no-print" aria-label="Main">
+        {bottom.map((b) => (
+          <button key={b.id} type="button" className={"bottom-btn" + (mainTab === b.id ? " active" : "")} onClick={() => setMainTab(b.id)}>
+            <span className="ico">{b.ico}</span><span className="lbl">{b.label}</span>
+          </button>
+        ))}
+      </nav>
+      {ToastEl}
+      {showOnboard && (
+        <div className="onboard-overlay no-print">
+          <div className="onboard-sheet">
+            <h2>Welcome to THE PLAYBOOK</h2>
+            <p>A calm companion for parents and carers of neurodivergent children — mums, dads, grandparents, foster carers, the whole team.</p>
+            <ul className="onboard-list">
+              <li><strong>Track free</strong> — daily life, behaviour, sleep, therapy, wins.</li>
+              <li><strong>Unlock once ({PREMIUM_PRICE})</strong> — Insights, professional report, Discover, community posting.</li>
+              <li>No subscription. Data stays on this device.</li>
+            </ul>
+            <button type="button" className="btn-primary" style={{ width: "100%", marginTop: 8 }} onClick={dismissOnboard}>Start free tracking</button>
+          </div>
+        </div>
+      )}
+      {showPaywall && !unlocked && (
+        <div className="onboard-overlay no-print" onClick={() => setShowPaywall(false)}>
+          <div className="onboard-sheet" onClick={(e) => e.stopPropagation()}>
+            <h2>Full access · {PREMIUM_PRICE}</h2>
+            <p>One-time unlock. No subscription. Built for every caregiver in the child's corner.</p>
+            <ul className="onboard-list">
+              <li>Pattern Insights from your logs</li>
+              <li>Printable professional report for school / GP / therapy</li>
+              <li>Full Discover library (toys, events, tips)</li>
+              <li>Community posting</li>
+              <li>Printables toolkit (visuals, colouring, AAC)</li>
+            </ul>
+            <button type="button" className="btn-amber" onClick={handleUnlock}>Unlock now · {PREMIUM_PRICE}</button>
+            <button type="button" className="btn-secondary" style={{ marginTop: 10, width: "100%" }} onClick={restorePurchase}>Already paid? Restore on this device</button>
+            <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 12, textAlign: "center" }}>Demo: simulates purchase — no real payment taken</p>
+            <button type="button" className="btn-secondary" style={{ width: "100%", marginTop: 10 }} onClick={() => setShowPaywall(false)}>Not now</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(React.createElement(App));
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js").catch(function (e) {
+          console.warn("SW register failed", e);
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>
