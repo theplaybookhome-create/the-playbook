@@ -581,6 +581,21 @@ textarea { resize: vertical; min-height: 56px; }
 .report-row { font-size: 13px; margin-bottom: 6px; line-height: 1.45; }
 .report-label { font-weight: 700; color: var(--navy); }
 .report-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+
+.printables-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; }
+@media (min-width: 420px) { .printables-grid { grid-template-columns: 1fr 1fr; } }
+.print-pack {
+  background: white; border: 1px solid var(--line); border-radius: 14px; padding: 16px;
+  box-shadow: var(--card-shadow); display: flex; flex-direction: column; gap: 8px;
+}
+.print-pack .pp-kicker { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); }
+.print-pack h3 { margin: 0; font-size: 16px; color: var(--navy); }
+.print-pack p { margin: 0; font-size: 13px; color: var(--soft); line-height: 1.45; flex: 1; }
+.print-pack .pp-meta { font-size: 11px; color: var(--muted); font-weight: 600; }
+.print-pack a.btn-primary, .print-pack a.btn-amber {
+  display: block; text-align: center; text-decoration: none; margin-top: 4px;
+}
+
 @media print {
   .app-header, .bottom-nav, .report-actions, .header-btn, .toast, .onboard-overlay, .no-print { display: none !important; }
   .app-root { padding: 0; background: white; }
@@ -749,6 +764,53 @@ const PREMIUM_PRICE = "£2.99";
  *  After payment, set Stripe success URL to: https://theplaybook.cloud/?unlocked=1
  */
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/bJe4gB2R9fbb96O52C38403";
+
+const PRINTABLES_BASE = "./printables/";
+const PRINTABLES_PACKS = [
+  {
+    id: "complete",
+    kicker: "Full pack",
+    title: "Complete Toolkit",
+    desc: "All four categories in one PDF — visual supports, colouring, learning cards and AAC symbols.",
+    meta: "~46 pages · one download",
+    file: "complete-toolkit.pdf",
+    primary: true,
+  },
+  {
+    id: "visual",
+    kicker: "Category 1",
+    title: "Visual Supports",
+    desc: "Choice board, morning & after-school schedules, weekend routine, cue cards, First→Then, checklist, feelings check-in.",
+    meta: "8 sheets",
+    file: "1-visual-supports.pdf",
+  },
+  {
+    id: "colouring",
+    kicker: "Category 2",
+    title: "Colouring Book",
+    desc: "Calm corner, routines, ABC, counting, feelings, shapes, farm animals, weather and transport colouring pages.",
+    meta: "13 sheets",
+    file: "2-colouring-book.pdf",
+  },
+  {
+    id: "learning",
+    kicker: "Category 3",
+    title: "Learning Cards",
+    desc: "Card chart, core words, emotions, alphabet A–Z, numbers 1–20, colours and shapes.",
+    meta: "9 sheets",
+    file: "3-learning-cards.pdf",
+  },
+  {
+    id: "aac",
+    kicker: "Category 4",
+    title: "AAC Symbol Sets",
+    desc: "Core board, sentence strip, food, actions, people & places, feelings & body, toys, school kit, weather, transport, animals.",
+    meta: "11 boards",
+    file: "4-aac-symbols.pdf",
+  },
+];
+
+
 
 /** ========== SHARED COMMUNITY (Supabase) ==========
  * 1. Create free project at https://supabase.com
@@ -1470,7 +1532,7 @@ function PaywallCard({ onUnlock, unlocked }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
           <div>
             <div className="stat-label">Full access on this device</div>
-            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--soft)" }}>Insights, appointment report, Discover &amp; more unlocked.</p>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--soft)" }}>Insights, report, Discover, Printables &amp; more unlocked.</p>
           </div>
           <span className="price-pill" style={{ background: "var(--success)" }}>Owned</span>
         </div>
@@ -1489,6 +1551,7 @@ function PaywallCard({ onUnlock, unlocked }) {
         <li>Professional report + talking points for school, GP &amp; therapy</li>
         <li>Appointment Mode — last 14 days, ready to print</li>
         <li>Discover tools matched to what you log</li>
+        <li>Printables toolkit — visuals, colouring, learning &amp; AAC</li>
       </ul>
       <button type="button" className="btn-amber" onClick={onUnlock}>Unlock full access · {PREMIUM_PRICE}</button>
       <p style={{ margin: "10px 0 0", fontSize: 11, opacity: 0.7 }}>Until Stripe is linked, Unlock works as a demo on this device.</p>
@@ -1764,6 +1827,50 @@ function ConnectCard() {
     </div>
   );
 }
+
+function PrintablesPage({ unlocked, onRequestUnlock }) {
+  if (!unlocked) {
+    return (
+      <div>
+        <PageHeader kicker="Print · laminate · use" title="Printables" subtitle="Visual supports, colouring, learning cards and AAC boards." />
+        <div className="locked-overlay">
+          <p style={{ margin: "0 0 8px", fontWeight: 700, color: "var(--navy)" }}>Home toolkit for communication & routines</p>
+          <p style={{ margin: "0 0 14px" }}>Download organised PDFs — choice boards, schedules, colouring pages, alphabet, numbers and AAC symbol sets. Print what you need, add more packs later.</p>
+          <button type="button" className="btn-primary" onClick={onRequestUnlock}>Unlock Printables · {PREMIUM_PRICE}</button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div>
+      <PageHeader kicker="Print · laminate · use" title="Printables" subtitle="Organised by category. Download the full pack or one section." />
+      <div className="community-note">
+        Family use — supports routines and communication at home. Not a clinical AAC system. Laminate cards for daily use.
+      </div>
+      <div className="printables-grid">
+        {PRINTABLES_PACKS.map((p) => (
+          <div className="print-pack" key={p.id} style={p.primary ? { borderColor: "var(--amber)", borderWidth: 2 } : undefined}>
+            <div className="pp-kicker">{p.kicker}</div>
+            <h3>{p.title}</h3>
+            <p>{p.desc}</p>
+            <div className="pp-meta">{p.meta}</div>
+            <a
+              className={p.primary ? "btn-amber" : "btn-primary"}
+              href={PRINTABLES_BASE + p.file}
+              target="_blank"
+              rel="noopener noreferrer"
+              download
+            >
+              {p.primary ? "Download complete toolkit" : "Download PDF"}
+            </a>
+          </div>
+        ))}
+      </div>
+      <p className="footer-note">More sheets can be added later without losing your logs.</p>
+    </div>
+  );
+}
+
 function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onOpenPaywall, showToast }) {
 
   const daily = dataStore["daily-log-entries"] || [];
@@ -1788,6 +1895,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
         <button type="button" className="quick-link" onClick={() => onNavigate("insights")}><span className="ql-ico">📊</span><strong>See patterns</strong><span>Triggers, sleep, energy trends</span></button>
         <button type="button" className="quick-link" onClick={() => onNavigate("report")}><span className="ql-ico">📄</span><strong>Pro report</strong><span>Print for school / GP</span></button>
         <button type="button" className="quick-link" onClick={() => onNavigate("community")}><span className="ql-ico">💬</span><strong>Community</strong><span>Peer notes &amp; support</span></button>
+        <button type="button" className="quick-link" onClick={() => onNavigate("printables")}><span className="ql-ico">🖨️</span><strong>Printables</strong><span>Visuals, colouring, AAC</span></button>
       </div>
       <div className="card">
         <div className="stat-label">Why unlock helps</div>
@@ -2297,7 +2405,7 @@ function App() {
 
       try {
         const t = new URLSearchParams(window.location.search).get("tab");
-        if (t && ["today","track","insights","report","community","discover"].includes(t)) setMainTab(t);
+        if (t && ["today","track","insights","report","community","discover","printables","home"].includes(t)) setMainTab(t === "today" ? "home" : t);
       } catch (e) {}
 
       setLoaded(true);
@@ -2497,6 +2605,7 @@ function App() {
     { id: "report", label: "Report", ico: "▤" },
     { id: "community", label: "Community", ico: "◉" },
     { id: "discover", label: "Discover", ico: "✦" },
+    { id: "printables", label: "Print", ico: "⬇" },
   ];
 
   if (CLOUD_ENABLED && authReady && (!session || recoveryMode)) {
@@ -2540,7 +2649,8 @@ function App() {
           : mainTab === "community" ? (
             <CommunityPage posts={communityPosts} likes={communityLikes} onAddPost={addCommunityPost} onToggleLike={toggleLike} showToast={showToast} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} onRefreshCloud={refreshCommunity} />
           )
-          : mainTab === "discover" ? <DiscoverPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} memberPosts={discoverPosts} onAddDiscover={addDiscoverPost} onRefreshDiscover={refreshDiscover} /> : null}
+          : mainTab === "discover" ? <DiscoverPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} memberPosts={discoverPosts} onAddDiscover={addDiscoverPost} onRefreshDiscover={refreshDiscover} />
+          : mainTab === "printables" ? <PrintablesPage unlocked={unlocked} onRequestUnlock={requestUnlock} /> : null}
       </main>
       <nav className="bottom-nav no-print" aria-label="Main">
         {bottom.map((b) => (
@@ -2574,6 +2684,7 @@ function App() {
               <li>Printable professional report for school / GP / therapy</li>
               <li>Full Discover library (toys, events, tips)</li>
               <li>Community posting</li>
+              <li>Printables toolkit (visuals, colouring, AAC)</li>
             </ul>
             <button type="button" className="btn-amber" onClick={handleUnlock}>Unlock now · {PREMIUM_PRICE}</button>
             <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 12, textAlign: "center" }}>Demo: simulates purchase — no real payment taken</p>
