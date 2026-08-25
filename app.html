@@ -1265,33 +1265,81 @@ function buildTalkingPoints(analysis) {
 
 
 
-function AuthScreen({ onAuthed }) {
-  const [mode, setMode] = useState("login");
+function AuthScreen({ onAuthed, recoveryMode }) {
+  const [mode, setMode] = useState(recoveryMode ? "update" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [info, setInfo] = useState("");
+
+  useEffect(() => {
+    if (recoveryMode) {
+      setMode("update");
+      setErr("");
+      setInfo("Choose a new password for your account.");
+    }
+  }, [recoveryMode]);
 
   async function submit(e) {
     e.preventDefault();
     setErr("");
+    setInfo("");
     const sb = getSupabase();
     if (!sb) {
-      setErr("Cloud login is not configured yet. Add SUPABASE_URL and SUPABASE_ANON_KEY in app.html (see setup guide).");
-      return;
-    }
-    if (!email.trim() || password.length < 6) {
-      setErr("Use a valid email and a password of at least 6 characters.");
+      setErr("Cloud login is not configured yet.");
       return;
     }
     setBusy(true);
     try {
-      if (mode === "login") {
+      if (mode === "forgot") {
+        if (!email.trim()) {
+          setErr("Enter the email you used to join.");
+          setBusy(false);
+          return;
+        }
+        const redirectTo = (typeof window !== "undefined" && window.location && window.location.origin)
+          ? (window.location.origin + (window.location.pathname.indexOf("app.html") >= 0 ? window.location.pathname : "/"))
+          : "https://theplaybook.cloud/";
+        const { error } = await sb.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+        if (error) throw error;
+        setInfo("If an account exists for that email, a reset link is on its way. Check inbox and spam, then open the link on this device.");
+      } else if (mode === "update") {
+        if (password.length < 6) {
+          setErr("New password must be at least 6 characters.");
+          setBusy(false);
+          return;
+        }
+        if (password !== password2) {
+          setErr("Passwords do not match.");
+          setBusy(false);
+          return;
+        }
+        const { data, error } = await sb.auth.updateUser({ password });
+        if (error) throw error;
+        setInfo("Password updated. You're signed in.");
+        if (data && data.user) {
+          const { data: sessData } = await sb.auth.getSession();
+          if (sessData && sessData.session) onAuthed(sessData.session);
+          else onAuthed({ user: data.user });
+        }
+      } else if (mode === "login") {
+        if (!email.trim() || password.length < 6) {
+          setErr("Use a valid email and a password of at least 6 characters.");
+          setBusy(false);
+          return;
+        }
         const { data, error } = await sb.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
         onAuthed(data.session);
       } else {
+        if (!email.trim() || password.length < 6) {
+          setErr("Use a valid email and a password of at least 6 characters.");
+          setBusy(false);
+          return;
+        }
         const { data, error } = await sb.auth.signUp({
           email: email.trim(),
           password,
@@ -1308,6 +1356,12 @@ function AuthScreen({ onAuthed }) {
     }
   }
 
+  const titleHint = mode === "forgot"
+    ? "We'll email you a secure link to choose a new password."
+    : mode === "update"
+    ? "Set a new password to get back into THE PLAYBOOK."
+    : "A calm companion for families — private tracking, shared support.";
+
   return (
     <div className="auth-screen">
       <style>{CSS}</style>
@@ -1317,14 +1371,29 @@ function AuthScreen({ onAuthed }) {
             <svg viewBox="0 0 24 24"><path d="M4 3h7v18H6a2 2 0 0 1-2-2V3zm9 0h7v16a2 2 0 0 1-2 2h-5V3z"/></svg>
           </div>
           <h1>THE PLAYBOOK</h1>
-          <p className="auth-tagline">A calm companion for families — private tracking, shared support.</p>
+          <p className="auth-tagline">{titleHint}</p>
         </div>
         <div className="auth-card">
-          <div className="auth-tabs">
-            <button type="button" className={mode === "login" ? "active" : ""} onClick={() => { setMode("login"); setErr(""); }}>Log in</button>
-            <button type="button" className={mode === "signup" ? "active" : ""} onClick={() => { setMode("signup"); setErr(""); }}>Join free</button>
-          </div>
+          {mode !== "update" && mode !== "forgot" ? (
+            <div className="auth-tabs">
+              <button type="button" className={mode === "login" ? "active" : ""} onClick={() => { setMode("login"); setErr(""); setInfo(""); }}>Log in</button>
+              <button type="button" className={mode === "signup" ? "active" : ""} onClick={() => { setMode("signup"); setErr(""); setInfo(""); }}>Join free</button>
+            </div>
+          ) : null}
+          {mode === "forgot" ? (
+            <div style={{ marginBottom: 16 }}>
+              <div className="kicker" style={{ marginBottom: 6 }}>Password reset</div>
+              <p style={{ margin: 0, fontSize: 14, color: "var(--soft)", lineHeight: 1.45 }}>Enter your account email. We'll send a link — open it on this phone or tablet.</p>
+            </div>
+          ) : null}
+          {mode === "update" ? (
+            <div style={{ marginBottom: 16 }}>
+              <div className="kicker" style={{ marginBottom: 6 }}>New password</div>
+              <p style={{ margin: 0, fontSize: 14, color: "var(--soft)", lineHeight: 1.45 }}>You're almost back in. Choose a password you'll remember.</p>
+            </div>
+          ) : null}
           {err ? <div className="auth-error">{err}</div> : null}
+          {info ? <div className="cloud-banner" style={{ marginBottom: 14 }}>{info}</div> : null}
           <form onSubmit={submit}>
             {mode === "signup" && (
               <div className="field">
@@ -1332,23 +1401,54 @@ function AuthScreen({ onAuthed }) {
                 <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="What others see in the community" autoComplete="nickname" />
               </div>
             )}
-            <div className="field">
-              <label className="field-label">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" autoComplete="email" required />
-            </div>
-            <div className="field">
-              <label className="field-label">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={6} />
-            </div>
+            {(mode === "login" || mode === "signup" || mode === "forgot") && (
+              <div className="field">
+                <label className="field-label">Email</label>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" autoComplete="email" required />
+              </div>
+            )}
+            {(mode === "login" || mode === "signup") && (
+              <div className="field">
+                <label className="field-label">Password</label>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={6} />
+              </div>
+            )}
+            {mode === "update" && (
+              <>
+                <div className="field">
+                  <label className="field-label">New password</label>
+                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" autoComplete="new-password" required minLength={6} />
+                </div>
+                <div className="field">
+                  <label className="field-label">Confirm new password</label>
+                  <input type="password" value={password2} onChange={(e) => setPassword2(e.target.value)} placeholder="Type it again" autoComplete="new-password" required minLength={6} />
+                </div>
+              </>
+            )}
             <button type="submit" className="auth-submit" disabled={busy}>
-              {busy ? "Please wait…" : (mode === "login" ? "Log in securely" : "Create your account")}
+              {busy ? "Please wait…"
+                : mode === "forgot" ? "Send reset link"
+                : mode === "update" ? "Save new password"
+                : mode === "login" ? "Log in securely"
+                : "Create your account"}
             </button>
           </form>
-          <p className="auth-note">
-            {mode === "login"
-              ? "Your tracking stays on this device. Community & Discover are shared when you are online."
-              : "Join free to track. Unlock once for Insights, reports and posting to the community."}
-          </p>
+          {mode === "login" ? (
+            <p className="auth-note">
+              <button type="button" onClick={() => { setMode("forgot"); setErr(""); setInfo(""); setPassword(""); }} style={{ background: "none", border: "none", color: "var(--amber)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "inherit", padding: 0 }}>Forgot password?</button>
+            </p>
+          ) : null}
+          {mode === "forgot" || mode === "update" ? (
+            <p className="auth-note">
+              <button type="button" onClick={() => { setMode("login"); setErr(""); setInfo(""); setPassword(""); setPassword2(""); }} style={{ background: "none", border: "none", color: "var(--amber)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "inherit", padding: 0 }}>← Back to log in</button>
+            </p>
+          ) : (
+            <p className="auth-note">
+              {mode === "login"
+                ? "Your tracking stays on this device. Community & Discover are shared when you are online."
+                : "Join free to track. Unlock once for Insights, reports and posting to the community."}
+            </p>
+          )}
         </div>
         <div className="auth-trust">
           <span>Private logs</span>
@@ -2160,6 +2260,7 @@ function App() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [session, setSession] = useState(null);
   const [authReady, setAuthReady] = useState(!CLOUD_ENABLED);
+  const [recoveryMode, setRecoveryMode] = useState(false);
   const fileInputRef = useRef(null);
   const { show: showToast, ToastEl } = useToast();
   const cloudMode = CLOUD_ENABLED;
@@ -2214,8 +2315,13 @@ function App() {
       setSession(data.session || null);
       setAuthReady(true);
     });
-    const { data: sub } = sb.auth.onAuthStateChange((_event, sess) => {
+    const { data: sub } = sb.auth.onAuthStateChange((event, sess) => {
       setSession(sess);
+      if (event === "PASSWORD_RECOVERY") setRecoveryMode(true);
+      if (event === "SIGNED_IN" && event !== "PASSWORD_RECOVERY") {
+        /* keep recovery until password updated */
+      }
+      if (event === "USER_UPDATED") setRecoveryMode(false);
     });
     return () => { try { sub.subscription.unsubscribe(); } catch (e) {} };
   }, []);
@@ -2393,8 +2499,8 @@ function App() {
     { id: "discover", label: "Discover", ico: "✦" },
   ];
 
-  if (CLOUD_ENABLED && authReady && !session) {
-    return <AuthScreen onAuthed={(s) => setSession(s)} />;
+  if (CLOUD_ENABLED && authReady && (!session || recoveryMode)) {
+    return <AuthScreen recoveryMode={recoveryMode} onAuthed={(s) => { setSession(s); setRecoveryMode(false); }} />;
   }
   if (CLOUD_ENABLED && !authReady) {
     return <div className="app-root" style={{ padding: 40, textAlign: "center", color: "var(--soft)" }}>Starting secure session…</div>;
