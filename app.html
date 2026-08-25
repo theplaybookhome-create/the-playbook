@@ -1,27 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>THE PLAYBOOK — Loading…</title>
-  <style>body{margin:0;background:#F7F6F4;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;color:#2C3E50}p{opacity:.7}</style>
-</head>
-<body>
-  <p>Loading THE PLAYBOOK…</p>
-  <script>
-  (function(){
-    var urls = [
-      'https://cdn.jsdelivr.net/gh/theplaybookhome-create/the-playbook@339eac0a139ee3ccb47caceacd73018dd6e6ee28/app.html',
-      'https://raw.githubusercontent.com/theplaybookhome-create/the-playbook/339eac0a139ee3ccb47caceacd73018dd6e6ee28/app.html'
-    ];
-    function load(i){
-      if(i>=urls.length){document.body.innerHTML='<p style="padding:24px;text-align:center">Could not load app. Open <a href="https://theplaybook.cloud/">theplaybook.cloud</a> again shortly.</p>';return;}
-      fetch(urls[i]).then(function(r){if(!r.ok)throw new Error('bad');return r.text()}).then(function(html){
-        document.open();document.write(html);document.close();
-      }).catch(function(){load(i+1)});
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>THE PLAYBOOK</title></head>
+<body><p style="font-family:sans-serif;text-align:center;margin-top:40vh;color:#5C6570">Loading THE PLAYBOOK…</p>
+<script>
+(function(){
+  Promise.all([
+    fetch("pb_part1.txt").then(function(r){return r.text()}),
+    fetch("pb_part2.txt").then(function(r){return r.text()})
+  ]).then(function(parts){
+    var b64 = parts[0]+parts[1];
+    var bin = atob(b64);
+    var u8 = new Uint8Array(bin.length);
+    for (var i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+    if (!window.DecompressionStream) {
+      document.body.innerHTML = "<p style=\"text-align:center;padding:24px\">Please use Safari or Chrome.</p>";
+      return;
     }
-    load(0);
-  })();
-  </script>
-</body>
-</html>
+    return new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+  }).then(function(html){
+    if (!html) return;
+    document.open(); document.write(html); document.close();
+  }).catch(function(e){
+    console.error(e);
+    document.body.innerHTML = "<p style=\"text-align:center;padding:24px\">Could not start. Hard-refresh the page.</p>";
+  });
+})();
+</script></body></html>
