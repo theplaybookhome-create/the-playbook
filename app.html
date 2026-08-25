@@ -11,12 +11,12 @@
   <script>
   (function () {
     var urls = [
-      "./app-multi-child-printables.html",
-      "https://cdn.jsdelivr.net/gh/theplaybookhome-create/the-playbook@339eac0a139ee3ccb47caceacd73018dd6e6ee28/app.html"
+      "./app.html.html",
+      "./app-multi-child-printables.html"
     ];
     function load(i) {
       if (i >= urls.length) {
-        document.body.innerHTML = '<p style="padding:24px;text-align:center">Could not load. Hard-refresh or open <a href="https://theplaybook.cloud/">theplaybook.cloud</a> again.</p>';
+        document.body.innerHTML = '<p style="padding:24px;text-align:center">Could not load. Hard-refresh the page.</p>';
         return;
       }
       fetch(urls[i], { cache: "no-store" })
