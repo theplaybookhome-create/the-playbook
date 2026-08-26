@@ -3,8 +3,8 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - v33_polish_patch.py
       - v32_brand_icons_patch.py
-      - v31_nav_social_patch.py
       - .github/workflows/v28-like.yml
 permissions:
   contents: write
@@ -13,18 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply V32 brand icons + orange cards
+      - name: Apply V33 polish
         run: |
           set -euo pipefail
-          python3 v32_brand_icons_patch.py app.html
-          grep -q THEME_BUILD_V32 app.html
-          grep -q "V32 WINNING brand tiles" app.html
-          grep -q "V32 brand icons" app.html
-          grep -q "X (Twitter)" app.html
-          sed -i 's/playbook-v31/playbook-v32/g; s/playbook-v30/playbook-v32/g' sw.js
-          grep -q playbook-v32 sw.js
+          python3 v33_polish_patch.py app.html
+          grep -q THEME_BUILD_V33 app.html
+          grep -q "V33 polish" app.html
+          grep -q "M19.59 6.69" app.html
+          grep -q "grid-column: 1 / -1" app.html
+          sed -i 's/playbook-v32/playbook-v33/g; s/playbook-v31/playbook-v33/g' sw.js
+          grep -q playbook-v33 sw.js
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
-          git add app.html sw.js v32_brand_icons_patch.py
-          git diff --cached --quiet || git commit -m "V32: official brand social tiles and orange borders on connect + quick-link cards"
+          git add app.html sw.js v33_polish_patch.py
+          git diff --cached --quiet || git commit -m "V33: official TikTok glyph, full-width Why Unlock, hover animations"
           git push origin HEAD:main
