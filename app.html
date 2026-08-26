@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V16 -->
+  <!-- THEME_BUILD_V18 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -798,16 +798,35 @@ textarea { resize: vertical; min-height: 56px; }
 .connect-btn.ig .cb-ico { background: radial-gradient(circle at 30% 30%, #f9ce34, #ee2a7b 55%, #6228d7) !important; }
 .connect-btn.wa .cb-ico { background: #25D366 !important; }
 
+
 /* ===== Android + mockup layout lock ===== */
 .app-main { max-width: 1120px !important; width: 100%; }
 .home-today { max-width: 1120px; margin: 0 auto; }
 .connect-links { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
-.connect-btn { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px !important; width: 100% !important; max-width: none !important; background: #fff !important; border: 1.5px solid #E8ECF0 !important; border-radius: 16px !important; padding: 10px 12px !important; min-height: 62px !important; text-align: left !important; }
-.connect-btn .cb-ico { width: 42px !important; height: 42px !important; border-radius: 50% !important; flex: 0 0 42px !important; }
+.connect-btn { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px !important; width: 100% !important; max-width: none !important; background: #fff !important; border: 1.5px solid #E8ECF0 !important; border-radius: 16px !important; padding: 10px 12px !important; min-height: 62px !important; text-align: left !important; text-decoration: none !important; color: inherit !important; }
+.connect-btn .cb-ico { width: 42px !important; height: 42px !important; border-radius: 12px !important; flex: 0 0 42px !important; display: grid !important; place-items: center !important; box-shadow: 0 3px 8px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.25) !important; }
+.connect-btn .cb-ico svg { width: 22px !important; height: 22px !important; display: block !important; fill: none !important; }
 .connect-btn .cb-text { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .connect-btn::after { content: "›"; margin-left: auto; color: #C4CAD1; font-size: 18px; }
+.connect-btn.tt .cb-ico { background: #111 !important; }
+.connect-btn.xx .cb-ico { background: #0F1419 !important; }
+.connect-btn.fb .cb-ico { background: #1877F2 !important; }
+.connect-btn.em .cb-ico { background: #fff !important; border: 1px solid #E6E8EC; }
+.connect-btn.em .cb-ico svg { width: 24px !important; height: 24px !important; }
 .quick-links { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
 .why-card { background: #FFF8F0 !important; border: 1px solid #F0E0CC !important; border-radius: 18px !important; padding: 14px 16px !important; margin: 0 !important; }
+.header-chips button.hchip, .header-chips .hchip {
+  background: transparent; border: none; color: rgba(255,255,255,.72);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: 10px; font-family: inherit;
+}
+.header-chips .hchip:hover { background: rgba(255,255,255,.08); color: #fff; }
+.header-chips .hchip.active { background: rgba(232,137,44,.18); color: #F3C38A; }
+.header-chips span { display: none; }
+.energy-spark-wrap { cursor: pointer; border-radius: 18px; }
+.energy-spark-wrap:hover .energy-spark { border-color: #E8C9A0; }
+.energy-spark-wrap .es-avg { color: #C4CAD1; font-size: 18px; line-height: 1; }
 @media (max-width: 559px) {
   .connect-links { grid-template-columns: 1fr 1fr !important; }
   .quick-links { grid-template-columns: 1fr 1fr !important; }
@@ -1139,7 +1158,8 @@ async function grantLocalPremium() {
 const SOCIAL_LINKS = [
   { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@the.playbook311", hint: "Videos" },
   { id: "x", label: "X", href: "https://x.com/theplaybookhome", hint: "Updates" },
-  { id: "facebook", label: "Facebook", href: "https://www.facebook.com/groups/2217693205459716/", hint: "Group" }
+  { id: "facebook", label: "Facebook", href: "https://www.facebook.com/groups/2217693205459716/", hint: "Group" },
+  { id: "email", label: "Email", href: "mailto:Theplaybookhome@gmail.com", hint: "Support" }
 ];
 const SUPPORT_EMAIL = "Theplaybookhome@gmail.com";
 
@@ -2079,7 +2099,7 @@ function EnergySpark({ values, avg }) {
     <div className="energy-spark">
       <div className="es-top">
         <h3>Energy ({pts.length} logs)</h3>
-        <div className="es-avg">›</div>
+        <div className="es-avg" aria-hidden="true">›</div>
       </div>
       {pts.length < 2 ? (
         <p className="es-empty">A sparkline appears after two energy logs.</p>
@@ -2183,35 +2203,39 @@ function QuickLog({ setDataStore, showToast, activeChildId }) {
 function SocialIcon({ id }) {
   if (id === "facebook") {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.89v2.26h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M15.1 8.2h2.4V4.7h-2.4c-2.9 0-4.8 1.8-4.8 4.9v2H8v3.6h2.3V22h3.7v-6.8h2.5l.6-3.6h-3.1V9.8c0-1.1.5-1.6 1.6-1.6z"/></svg>
     );
   }
   if (id === "tiktok") {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.53.02C13.54 0 14.49.01 15.43.02c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.95a8.06 8.06 0 0 1-6.63 3.38c-1.76.1-3.57-.4-4.97-1.47a7.98 7.98 0 0 1-2.79-4.22 8.2 8.2 0 0 1-.1-3.37c.4-2.14 1.7-4.08 3.55-5.2 1.5-.93 3.35-1.3 5.1-1.1.01 1.5-.01 3-.01 4.5-.7-.22-1.5-.2-2.18.1-.7.32-1.26.9-1.5 1.62-.27.7-.2 1.55.2 2.18.5.78 1.45 1.2 2.38 1.1.8-.05 1.58-.5 2-1.16.2-.3.3-.64.33-.99.06-3.7.03-7.4.04-11.1z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#25F4EE" d="M16.6 4.3c.55 1.35 1.55 2.45 2.95 2.95V9.7c-1.2-.05-2.35-.35-3.4-.85-.5-.25-1-.55-1.4-.9.0 2.35 0 4.7 0 7.05-.05 1.15-.45 2.3-1.15 3.25-.95 1.3-2.5 2.15-4.15 2.2-1.45.05-2.9-.45-4-1.4-1.55-1.3-2.25-3.4-1.8-5.35.4-1.75 1.7-3.25 3.4-4 .95-.45 2.05-.6 3.1-.45v3.65c-.55-.15-1.15-.1-1.65.15-.55.25-1 .75-1.15 1.35-.2.7.05 1.5.6 1.95.5.45 1.25.55 1.85.35.7-.2 1.2-.8 1.3-1.5.05-2.95.05-5.9.05-8.85h3.05z"/>
+        <path fill="#FE2C55" d="M15.35 3.05c.55 1.35 1.55 2.45 2.95 2.95V8.45c-1.2-.05-2.35-.35-3.4-.85-.5-.25-1-.55-1.4-.9.0 2.35 0 4.7 0 7.05-.05 1.15-.45 2.3-1.15 3.25-.95 1.3-2.5 2.15-4.15 2.2-1.45.05-2.9-.45-4-1.4v-3.15c.9.85 2.15 1.3 3.4 1.2 1.15-.05 2.2-.65 2.85-1.6.45-.65.7-1.45.7-2.25 0-2.4 0-4.8 0-7.2h3.2z"/>
+        <path fill="#fff" d="M14.7 3.7c.55 1.35 1.55 2.45 2.95 2.95v2.45c-1.2-.05-2.35-.35-3.4-.85-.5-.25-1-.55-1.4-.9v7.05c-.05 1.15-.45 2.3-1.15 3.25-.95 1.3-2.5 2.15-4.15 2.2-1.45.05-2.9-.45-4-1.4-.7-.6-1.2-1.4-1.5-2.25.7.55 1.55.9 2.45.95 1.15.05 2.25-.4 3-1.25.5-.55.8-1.3.85-2.05V6.15c.95-.15 1.95 0 2.8.45.55.25 1.05.65 1.4 1.1V3.7h2.15z"/>
+      </svg>
     );
   }
   if (id === "x") {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 1.15h3.67l-8.02 9.16L24 22.85h-7.4l-5.8-7.58-6.63 7.58H.49l8.58-9.8L0 1.15h7.59l5.24 6.93L18.9 1.15zm-1.29 19.53h2.03L6.53 3.24H4.35l13.26 17.44z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M17.6 3.5h2.9l-6.4 7.3L22 20.5h-5.9l-4.6-6-5.3 6H3.3l6.8-7.8L2 3.5h6.1l4.2 5.5 5.3-5.5zm-1 15.3h1.6L7.5 5.1H5.8l10.8 13.7z"/></svg>
     );
   }
-  if (id === "instagram") {
+  if (id === "email") {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7.2A4.8 4.8 0 1 0 16.8 12 4.8 4.8 0 0 0 12 7.2zm0 7.9A3.1 3.1 0 1 1 15.1 12 3.1 3.1 0 0 1 12 15.1z"/><circle cx="17.3" cy="6.7" r="1.15"/><path d="M12 2.2c-2.7 0-3 .01-4.1.06-2.7.12-4.1 1.5-4.2 4.2C3.21 9 3.2 9.3 3.2 12s.01 3 .06 4.1c.12 2.7 1.5 4.1 4.2 4.2 1.1.05 1.4.06 4.1.06s3-.01 4.1-.06c2.7-.12 4.1-1.5 4.2-4.2.05-1.1.06-1.4.06-4.1s-.01-3-.06-4.1c-.12-2.7-1.5-4.1-4.2-4.2-1.1-.05-1.4-.06-4.1-.06zm0 1.8c2.6 0 2.9.01 4 .06 1.9.09 2.9 1.05 3 3 .05 1.1.06 1.3.06 4s-.01 2.9-.06 4c-.09 1.9-1.06 2.9-3 3-1.1.05-1.3.06-4 .06s-2.9-.01-4-.06c-1.9-.09-2.9-1.06-3-3-.05-1.1-.06-1.3-.06-4s.01-2.9.06-4c.09-1.9 1.06-2.9 3-3 1.1-.05 1.4-.06 4-.06z"/></svg>
-    );
-  }
-  if (id === "whatsapp") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2.1A9.9 9.9 0 0 0 2.1 12c0 1.74.46 3.44 1.33 4.94L2 22l5.2-1.36A9.9 9.9 0 0 0 12.04 22 9.9 9.9 0 0 0 22 12.04 9.9 9.9 0 0 0 12.04 2.1zm5.77 14.13c-.24.68-1.4 1.25-1.93 1.33-.5.07-1.12.1-1.81-.11-.42-.13-.95-.31-1.64-.6-2.89-1.25-4.77-4.16-4.92-4.35-.14-.2-1.18-1.57-1.18-3 0-1.42.75-2.12 1.01-2.41.26-.29.57-.36.76-.36h.55c.18 0 .41 0 .63.48.24.52.81 2 .88 2.14.07.14.12.31.02.5-.1.2-.14.31-.28.48-.14.16-.3.37-.42.5-.14.14-.29.29-.12.56.16.27.73 1.2 1.57 1.95 1.08.96 1.99 1.26 2.26 1.4.27.14.43.12.59-.07.16-.2.68-.79.86-1.06.18-.27.36-.22.61-.13.24.09 1.55.73 1.81.86.27.14.44.2.51.31.07.11.07.64-.17 1.32z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#4285F4" d="M3 6.2v11.1c0 .6.5 1.1 1.1 1.1h2.2V10.3L12 14.8l5.7-4.5v8.1h2.2c.6 0 1.1-.5 1.1-1.1V6.2L12 13.1 3 6.2z"/>
+        <path fill="#EA4335" d="M20.1 4.6H3.9c-.3 0-.6.1-.8.3L12 11.6l8.9-6.7c-.2-.2-.5-.3-.8-.3z"/>
+        <path fill="#34A853" d="M3 6.2l9 6.9 9-6.9v1.5L12 14.8 3 7.7z"/>
+        <path fill="#FBBC05" d="M3 17.3V7.7l4.3 3.3v7.4H4.1c-.6 0-1.1-.5-1.1-1.1z"/>
+      </svg>
     );
   }
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5L4 8V6l8 5 8-5v2z"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5L4 8V6l8 5 8-5v2z"/></svg>
   );
 }
 function ConnectCard() {
-  const cls = { facebook: "fb", tiktok: "tt", x: "xx" };
+  const cls = { facebook: "fb", tiktok: "tt", x: "xx", email: "em" };
   return (
     <div className="connect-card">
       <h3>Connect with us</h3>
@@ -2226,15 +2250,7 @@ function ConnectCard() {
             </span>
           </a>
         ))}
-        {SUPPORT_EMAIL ? (
-          <a className="connect-btn em" href={"mailto:" + SUPPORT_EMAIL}>
-            <span className="cb-ico"><SocialIcon id="email" /></span>
-            <span className="cb-text">
-              <strong>Email</strong>
-              <span>Support</span>
-            </span>
-          </a>
-        ) : null}
+
       </div>
     </div>
   );
@@ -2402,7 +2418,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
       <div className="home-hero">
         <QuickLog setDataStore={setDataStore} showToast={showToast} activeChildId={activeChildId} />
         <div className="home-side">
-          <EnergySpark values={recentEnergy} avg={avgEnergy} />
+          <div className="energy-spark-wrap" role="button" tabIndex={0} title="Open insights" onClick={() => onNavigate("insights")} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onNavigate("insights"); } }}><EnergySpark values={recentEnergy} avg={avgEnergy} /></div>
           <div className="stat-card">
             <div className="stat-label">Logs this device</div>
             <div className="stat-value">{daily.length + behavior.length}</div>
@@ -3299,7 +3315,13 @@ function App() {
             <input ref={fileInputRef} type="file" accept="application/json,.json" className="hidden-file" onChange={(e) => handleImport(e.target.files?.[0])} />
           </div>
         </div>
-        <div className="header-chips"><span>🔒 Private tracking</span><span>📈 Pattern insights</span><span>📄 Professional report</span><span>👥 Community</span><span>✨ Curated tools</span></div>
+        <div className="header-chips" role="navigation" aria-label="Features">
+          <button type="button" className={"hchip" + (mainTab === "track" ? " active" : "")} onClick={() => navigate("track", "daily")}>🔒 Private tracking</button>
+          <button type="button" className={"hchip" + (mainTab === "insights" ? " active" : "")} onClick={() => navigate("insights")}>📈 Pattern insights</button>
+          <button type="button" className={"hchip" + (mainTab === "report" ? " active" : "")} onClick={() => navigate("report")}>📄 Professional report</button>
+          <button type="button" className={"hchip" + (mainTab === "community" ? " active" : "")} onClick={() => navigate("community")}>👥 Community</button>
+          <button type="button" className={"hchip" + (mainTab === "discover" ? " active" : "")} onClick={() => navigate("discover")}>✨ Curated tools</button>
+        </div>
         {children && children.length > 0 && (
           <div className="child-bar">
             <span className="child-bar-label">CHILD</span>
@@ -3405,7 +3427,7 @@ root.render(React.createElement(App));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=16").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=18").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
