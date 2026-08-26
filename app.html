@@ -89,7 +89,7 @@
 </script>
   <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/dist/umd/supabase.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
   <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
@@ -910,12 +910,33 @@ const SUPABASE_URL = "https://kknaxghkbgjvgblhcaay.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbmF4Z2hrYmdqdmdibGhjYWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1NjUzMzgsImV4cCI6MjEwMzE0MTMzOH0.3HCBXqbqpatgUBApHUORAYpOtg9zX_NfhzlqBtb5W0k";
 const CLOUD_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL.indexOf("http") === 0);
 
+function isClockSkewError(err) {
+  const m = String((err && err.message) || err || "").toLowerCase();
+  return m.indexOf("jwt issued") >= 0 || m.indexOf("issued at future") >= 0 || m.indexOf("future date") >= 0;
+}
 function getSupabase() {
   if (!CLOUD_ENABLED || !window.supabase) return null;
   if (!window.__pb_supabase) {
-    window.__pb_supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.__pb_supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
   }
   return window.__pb_supabase;
+}
+async function safeGetSession(sb) {
+  if (!sb) return { session: null };
+  try {
+    const { data, error } = await sb.auth.getSession();
+    if (error && isClockSkewError(error)) {
+      console.warn("clock skew on getSession", error.message);
+      return { session: data && data.session ? data.session : null };
+    }
+    if (error) console.warn("getSession", error);
+    return { session: data && data.session ? data.session : null };
+  } catch (e) {
+    console.warn("getSession error", e);
+    return { session: null };
+  }
 }
 
 /** Known Stripe payers (emails lowercased) — grants account unlock until metadata syncs */
@@ -1053,6 +1074,7 @@ function useToast() {
   const [toast, setToast] = useState(null);
   const timer = useRef(null);
   const show = useCallback((message, type = "default") => {
+    if (typeof isClockSkewError === "function" && isClockSkewError(message)) return;
     if (timer.current) clearTimeout(timer.current);
     setToast({ message, type });
     timer.current = setTimeout(() => setToast(null), 2400);
@@ -2694,8 +2716,13 @@ function App() {
         if (Array.isArray(parsed) && parsed.length) setCommunityPosts([...parsed, ...SEED_COMMUNITY.filter((s) => !parsed.find((p) => p.id === s.id))]);
       } catch { /* keep seed */ }
       try { setCommunityLikes(cl ? JSON.parse(cl) : {}); } catch { setCommunityLikes({}); }
-      setShowOnboard(ob !== "1");
-      setUnlocked(pu === "1");
+      const alreadyPaid = pu === "1";
+      setShowOnboard(ob !== "1" && !alreadyPaid);
+      setUnlocked(alreadyPaid);
+      if (alreadyPaid) {
+        setShowOnboard(false);
+        try { await storageSet("onboard-seen", "1"); } catch (e) {}
+      }
 
       try {
         const params = new URLSearchParams(window.location.search);
@@ -2730,6 +2757,8 @@ function App() {
           await grantLocalPremium();
           setUnlocked(true);
           setShowPaywall(false);
+          setShowOnboard(false);
+          try { localStorage.setItem("playbook:onboard-seen", "1"); } catch (e) {}
         }
       } catch (e) { console.warn(e); }
     }
@@ -3051,7 +3080,7 @@ function App() {
         ))}
       </nav>
       {ToastEl}
-      {showOnboard && (
+      {showOnboard && !unlocked && (
         <div className="onboard-overlay no-print">
           <div className="onboard-sheet">
             <h2>Welcome to THE PLAYBOOK</h2>
