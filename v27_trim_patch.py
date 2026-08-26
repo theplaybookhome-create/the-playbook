@@ -39,39 +39,7 @@ NEW_SOCIAL = '''const SOCIAL_LINKS = [
 ];'''
 ok &= sub(OLD_SOCIAL, NEW_SOCIAL, "social")
 
-OLD_SUN = '''      <svg className="ql-sun" viewBox="0 0 260 200" aria-hidden="true">
-        <defs>
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#F8E4C4" stopOpacity="0.95"/>
-            <stop offset="0.55" stopColor="#FBEED8" stopOpacity="0.35"/>
-            <stop offset="1" stopColor="#FFFFFF" stopOpacity="0"/>
-          </linearGradient>
-          <radialGradient id="sunGlow" cx="62%" cy="42%" r="42%">
-            <stop offset="0" stopColor="#FFE7A8"/>
-            <stop offset="0.45" stopColor="#F6B84A"/>
-            <stop offset="1" stopColor="#F6B84A" stopOpacity="0"/>
-          </radialGradient>
-          <linearGradient id="mtFar" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#C5D3E4"/>
-            <stop offset="1" stopColor="#E4EDF5"/>
-          </linearGradient>
-          <linearGradient id="mtMid" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#9FB4CC"/>
-            <stop offset="1" stopColor="#D5E2EE"/>
-          </linearGradient>
-        </defs>
-        <rect width="260" height="200" fill="url(#sky)"/>
-        <circle cx="168" cy="86" r="70" fill="url(#sunGlow)"/>
-        <circle cx="168" cy="86" r="28" fill="#F4B84A"/>
-        <ellipse cx="70" cy="58" rx="34" ry="12" fill="#F7D7B8" opacity="0.7"/>
-        <ellipse cx="108" cy="48" rx="22" ry="9" fill="#F8E0C6" opacity="0.65"/>
-        <ellipse cx="210" cy="40" rx="28" ry="10" fill="#F6D3B4" opacity="0.55"/>
-        <path d="M8 200 L48 118 L86 168 L118 96 L156 150 L188 108 L232 162 L260 128 L260 200 Z" fill="url(#mtFar)" opacity="0.9"/>
-        <path d="M0 200 L36 142 L72 176 L110 120 L148 168 L186 132 L230 176 L260 150 L260 200 Z" fill="url(#mtMid)" opacity="0.88"/>
-        <path d="M0 200 C40 168 78 176 118 186 C160 196 200 170 260 184 L260 200 Z" fill="#E9D7BE" opacity="0.55"/>
-      </svg>'''
-
-NEW_SUN = '''      <svg className="ql-sun" viewBox="0 0 280 220" aria-hidden="true">
+NEW_SUN = '''<svg className="ql-sun" viewBox="0 0 280 220" aria-hidden="true">
         <defs>
           <linearGradient id="qlSky" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#F6D7A8"/>
@@ -109,7 +77,21 @@ NEW_SUN = '''      <svg className="ql-sun" viewBox="0 0 280 220" aria-hidden="tr
         <path d="M42 98 q10-9 20 0" fill="none" stroke="#C48A4A" strokeWidth="1.7" strokeLinecap="round"/>
         <path d="M68 88 q8-7 16 0" fill="none" stroke="#C48A4A" strokeWidth="1.5" strokeLinecap="round"/>
       </svg>'''
-ok &= sub(OLD_SUN, NEW_SUN, "sun")
+
+sun_start = t.find('<svg className="ql-sun"')
+if "qlHill3" in t:
+    print("skip sun")
+elif sun_start < 0:
+    print("MISSING sun")
+    ok = False
+else:
+    sun_end = t.find("</svg>", sun_start)
+    if sun_end < 0:
+        print("MISSING sun-end")
+        ok = False
+    else:
+        t = t[:sun_start] + NEW_SUN + t[sun_end + len("</svg>"):]
+        print("ok sun")
 
 CSS_ADD = """
 .connect-links { grid-template-columns: repeat(4, 1fr) !important; }
@@ -126,19 +108,16 @@ CSS_ADD = """
   .ql-sun { width: 132px !important; height: 108px !important; opacity: .95 !important; }
 }
 """
-if "grid-template-columns: repeat(4, 1fr) !important;" not in t or "qlHill3" in t:
-    if "/* V27 connect + sunrise */" not in t:
-        marker = "@media print {"
-        if marker in t:
-            t = t.replace(marker, "/* V27 connect + sunrise */\n" + CSS_ADD + "\n@media print {", 1)
-            print("ok css")
-        else:
-            print("MISSING css-anchor")
-            ok = False
-    else:
-        print("skip css")
-else:
+if "/* V27 connect + sunrise */" in t:
     print("skip css")
+else:
+    marker = "@media print {"
+    if marker in t:
+        t = t.replace(marker, "/* V27 connect + sunrise */\n" + CSS_ADD + "\n@media print {", 1)
+        print("ok css")
+    else:
+        print("MISSING css-anchor")
+        ok = False
 
 ROOT.write_text(t, encoding="utf-8")
 print("wrote", ROOT, "ok" if ok else "PARTIAL")
