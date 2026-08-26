@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V30 -->
+  <!-- THEME_BUILD_V31 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -1014,6 +1014,95 @@ textarea { resize: vertical; min-height: 56px; }
 
 
 
+
+
+/* ===== V31 social + bottom nav ===== */
+.bottom-nav {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  transform: none !important;
+  display: flex !important;
+  justify-content: space-evenly !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: #0E131F !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom)) !important;
+  z-index: 50 !important;
+  box-shadow: 0 -8px 24px rgba(0,0,0,.18) !important;
+}
+.bottom-btn {
+  flex: 1 1 0 !important;
+  max-width: 132px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  background: transparent !important;
+  color: rgba(255,255,255,.55) !important;
+  border: 2px solid transparent !important;
+  border-radius: 12px !important;
+  padding: 7px 6px !important;
+  min-height: 54px !important;
+  box-sizing: border-box !important;
+}
+.bottom-btn .ico svg {
+  width: 20px !important;
+  height: 20px !important;
+  stroke: currentColor !important;
+  fill: none !important;
+}
+.bottom-btn.active,
+.bottom-btn:focus-visible {
+  border: 2px solid #FF6B00 !important;
+  color: #FF6B00 !important;
+  background: rgba(255,107,0,.08) !important;
+  outline: none !important;
+}
+.bottom-btn.active .lbl,
+.bottom-btn.active .ico svg {
+  color: #FF6B00 !important;
+  stroke: #FF6B00 !important;
+}
+.connect-btn .cb-ico {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  border-radius: 50% !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.04) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.connect-btn.fb .cb-ico,
+.connect-btn.tt .cb-ico,
+.connect-btn.xx .cb-ico,
+.connect-btn.em .cb-ico,
+.connect-btn.ig .cb-ico,
+.connect-btn.yt .cb-ico {
+  background: #FFFFFF !important;
+}
+.connect-btn .cb-ico svg {
+  width: 20px !important;
+  height: 20px !important;
+  stroke: #0E131F !important;
+  fill: none !important;
+  color: #0E131F !important;
+}
+.connect-card {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.04) !important;
+}
 
 /* ===== V30 tablet spec ===== */
 :root {
@@ -2647,50 +2736,71 @@ function QuickLog({ setDataStore, showToast, activeChildId }) {
     </div>
   );
 }
+/* V31 line icons */
 function SocialIcon({ id }) {
-  if (id === "instagram") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm10 1.8H7A2.2 2.2 0 0 0 4.8 7v10A2.2 2.2 0 0 0 7 19.2h10A2.2 2.2 0 0 0 19.2 17V7A2.2 2.2 0 0 0 17 4.8zM12 8.2A3.8 3.8 0 1 1 8.2 12 3.8 3.8 0 0 1 12 8.2zm0 1.6A2.2 2.2 0 1 0 14.2 12 2.2 2.2 0 0 0 12 9.8zM17.35 6.4a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg>
-    );
-  }
-  if (id === "youtube") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M23 12.2s0-3.2-.4-4.6c-.2-.9-.9-1.6-1.8-1.8C18.9 5.4 12 5.4 12 5.4s-6.9 0-8.8.4c-.9.2-1.6.9-1.8 1.8C1 9 1 12.2 1 12.2s0 3.2.4 4.6c.2.9.9 1.6 1.8 1.8 1.9.4 8.8.4 8.8.4s6.9 0 8.8-.4c.9-.2 1.6-.9 1.8-1.8.4-1.4.4-4.6.4-4.6zM9.8 15.5v-6.6l6.3 3.3-6.3 3.3z"/></svg>
-    );
-  }
-  if (id === "facebook") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M15.1 8.2h2.4V4.7h-2.4c-2.9 0-4.8 1.8-4.8 4.9v2H8v3.6h2.3V22h3.7v-6.8h2.5l.6-3.6h-3.1V9.8c0-1.1.5-1.6 1.6-1.6z"/></svg>
-    );
-  }
+  const common = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" };
   if (id === "tiktok") {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="#25F4EE" d="M16.6 4.3c.55 1.35 1.55 2.45 2.95 2.95V9.7c-1.2-.05-2.35-.35-3.4-.85-.5-.25-1-.55-1.4-.9.0 2.35 0 4.7 0 7.05-.05 1.15-.45 2.3-1.15 3.25-.95 1.3-2.5 2.15-4.15 2.2-1.45.05-2.9-.45-4-1.4-1.55-1.3-2.25-3.4-1.8-5.35.4-1.75 1.7-3.25 3.4-4 .95-.45 2.05-.6 3.1-.45v3.65c-.55-.15-1.15-.1-1.65.15-.55.25-1 .75-1.15 1.35-.2.7.05 1.5.6 1.95.5.45 1.25.55 1.85.35.7-.2 1.2-.8 1.3-1.5.05-2.95.05-5.9.05-8.85h3.05z"/>
-        <path fill="#FE2C55" d="M15.35 3.05c.55 1.35 1.55 2.45 2.95 2.95V8.45c-1.2-.05-2.35-.35-3.4-.85-.5-.25-1-.55-1.4-.9.0 2.35 0 4.7 0 7.05-.05 1.15-.45 2.3-1.15 3.25-.95 1.3-2.5 2.15-4.15 2.2-1.45.05-2.9-.45-4-1.4v-3.15c.9.85 2.15 1.3 3.4 1.2 1.15-.05 2.2-.65 2.85-1.6.45-.65.7-1.45.7-2.25 0-2.4 0-4.8 0-7.2h3.2z"/>
-        <path fill="#fff" d="M14.7 3.7c.55 1.35 1.55 2.45 2.95 2.95v2.45c-1.2-.05-2.35-.35-3.4-.85-.5-.25-1-.55-1.4-.9v7.05c-.05 1.15-.45 2.3-1.15 3.25-.95 1.3-2.5 2.15-4.15 2.2-1.45.05-2.9-.45-4-1.4-.7-.6-1.2-1.4-1.5-2.25.7.55 1.55.9 2.45.95 1.15.05 2.25-.4 3-1.25.5-.55.8-1.3.85-2.05V6.15c.95-.15 1.95 0 2.8.45.55.25 1.05.65 1.4 1.1V3.7h2.15z"/>
+      <svg {...common}>
+        <path d="M14.2 3.5v10.2a3.7 3.7 0 1 1-3.2-3.66"/>
+        <path d="M14.2 7.2c1.15.9 2.55 1.45 4.05 1.55"/>
       </svg>
     );
   }
   if (id === "x") {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M17.6 3.5h2.9l-6.4 7.3L22 20.5h-5.9l-4.6-6-5.3 6H3.3l6.8-7.8L2 3.5h6.1l4.2 5.5 5.3-5.5zm-1 15.3h1.6L7.5 5.1H5.8l10.8 13.7z"/></svg>
+      <svg {...common}>
+        <path d="M5 5l14 14M19 5L5 19"/>
+      </svg>
+    );
+  }
+  if (id === "facebook") {
+    return (
+      <svg {...common}>
+        <path d="M15 8h2.2V5.2H15c-2.6 0-4.3 1.6-4.3 4.4v1.7H8.4v2.9h2.3V20h3.2v-5.8h2.4l.5-2.9h-2.9V9.7c0-.9.4-1.7 1.5-1.7z"/>
+      </svg>
     );
   }
   if (id === "email") {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="#4285F4" d="M3 6.2v11.1c0 .6.5 1.1 1.1 1.1h2.2V10.3L12 14.8l5.7-4.5v8.1h2.2c.6 0 1.1-.5 1.1-1.1V6.2L12 13.1 3 6.2z"/>
-        <path fill="#EA4335" d="M20.1 4.6H3.9c-.3 0-.6.1-.8.3L12 11.6l8.9-6.7c-.2-.2-.5-.3-.8-.3z"/>
-        <path fill="#34A853" d="M3 6.2l9 6.9 9-6.9v1.5L12 14.8 3 7.7z"/>
-        <path fill="#FBBC05" d="M3 17.3V7.7l4.3 3.3v7.4H4.1c-.6 0-1.1-.5-1.1-1.1z"/>
+      <svg {...common}>
+        <rect x="3.5" y="5.5" width="17" height="13" rx="2.2"/>
+        <path d="M4.2 7.2L12 13.1l7.8-5.9"/>
+      </svg>
+    );
+  }
+  if (id === "instagram") {
+    return (
+      <svg {...common}>
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/>
+        <circle cx="12" cy="12" r="3.6"/>
+        <circle cx="17.2" cy="6.8" r="0.8" fill="currentColor" stroke="none"/>
+      </svg>
+    );
+  }
+  if (id === "youtube") {
+    return (
+      <svg {...common}>
+        <rect x="2.8" y="6" width="18.4" height="12" rx="3"/>
+        <path d="M10.4 9.2v5.6L15.6 12z" fill="currentColor" stroke="none"/>
+      </svg>
+    );
+  }
+  if (id === "whatsapp") {
+    return (
+      <svg {...common}>
+        <path d="M5.2 18.6l.6-2.2A8 8 0 1 1 7.6 19l-2.4.4z"/>
+        <path d="M9.2 9.4c.2-.4.4-.4.6-.4h.5c.2 0 .4.1.5.4l.4 1c.1.2 0 .4-.1.5l-.5.5c.6 1.1 1.5 2 2.6 2.6l.5-.5c.2-.2.4-.2.6-.1l1 .4c.2.1.3.3.3.5v.5c0 .2 0 .4-.4.6A4.8 4.8 0 0 1 12 16.6 4.8 4.8 0 0 1 9.2 9.4z"/>
       </svg>
     );
   }
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5L4 8V6l8 5 8-5v2z"/></svg>
+    <svg {...common}>
+      <circle cx="12" cy="12" r="8"/>
+    </svg>
   );
 }
+
 function ConnectCard() {
   const cls = { facebook: "fb", tiktok: "tt", x: "xx", email: "em", instagram: "ig", youtube: "yt" };
   return (
@@ -3956,7 +4066,7 @@ root.render(React.createElement(App));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=30").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=31").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
