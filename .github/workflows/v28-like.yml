@@ -6,7 +6,7 @@ on:
       - v28_like_patch.py
       - v29_home_patch.py
       - v30_spec_patch.py
-      - sunrise.b64
+      - v31_nav_social_patch.py
       - .github/workflows/v28-like.yml
 permissions:
   contents: write
@@ -15,17 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply V30 tablet spec
+      - name: Apply V31 social + nav
         run: |
           set -euo pipefail
-          python3 v30_spec_patch.py app.html
-          grep -q THEME_BUILD_V30 app.html
-          grep -q "V30 tablet spec" app.html
-          grep -q "#FF6B00" app.html
-          sed -i 's/playbook-v29/playbook-v30/g; s/playbook-v28/playbook-v30/g' sw.js
-          grep -q playbook-v30 sw.js
+          python3 v31_nav_social_patch.py app.html
+          grep -q THEME_BUILD_V31 app.html
+          grep -q "V31 social + bottom nav" app.html
+          grep -q "V31 line icons" app.html
+          sed -i 's/playbook-v30/playbook-v31/g; s/playbook-v29/playbook-v31/g' sw.js
+          grep -q playbook-v31 sw.js
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
-          git add app.html sw.js v30_spec_patch.py
-          git diff --cached --quiet || git commit -m "V30: tablet spec — orange active states, premium cards, navy header"
+          git add app.html sw.js v31_nav_social_patch.py
+          git diff --cached --quiet || git commit -m "V31: matching line social icons and 5-item navy nav with orange active border"
           git push origin HEAD:main
