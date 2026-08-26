@@ -2,303 +2,150 @@
 <html lang="en-GB">
 <head>
   <script>
-    // After Stripe pay: ?unlocked=1 → save unlock + open the real app
     (function () {
       try {
         var params = new URLSearchParams(window.location.search);
         if (params.get("unlocked") === "1") {
           try { localStorage.setItem("playbook:premium-unlocked", "1"); } catch (e) {}
           window.location.replace("./app.html?unlocked=1");
+          return;
         }
+        if (params.get("stay") === "1" || params.get("landing") === "1") return;
+        if ((window.location.hash || "") === "#buy") return;
+        var returning = false;
+        try {
+          if (localStorage.getItem("playbook:onboard-seen") === "1") returning = true;
+          if (localStorage.getItem("playbook:premium-unlocked") === "1") returning = true;
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i) || "";
+            if (k.indexOf("auth-token") !== -1 || k.indexOf("-auth-token") !== -1) { returning = true; break; }
+          }
+        } catch (e) {}
+        if (returning) window.location.replace("./app.html");
       } catch (e) {}
     })();
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-
-  <meta name="theme-color" content="#2C3E50" />
-  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0B1219" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Playbook" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icon-180.png" />
   <link rel="icon" type="image/png" href="favicon.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
-
-  <title>THE PLAYBOOK — £2.99 once · For neurodivergent families</title>
-  <meta name="description" content="Track daily life, spot patterns, and print a professional report for school or GP. Built for mums, dads, carers and the whole team. One-time unlock £2.99. No subscription." />
-  <meta property="og:title" content="THE PLAYBOOK — For neurodivergent families" />
-  <meta property="og:description" content="Calm tracking, insights, and a printable report. £2.99 once. No subscription." />
+  <title>THE PLAYBOOK — For neurodivergent families</title>
+  <meta name="description" content="Track daily life, spot patterns, and print a professional report. Log in to continue. One-time unlock £2.99." />
   <style>
-    :root {
-      --navy: #2C3E50;
-      --navy-dark: #1A252F;
-      --amber: #C1752E;
-      --amber-tint: #FBF1E7;
-      --paper: #F7F6F4;
-      --ink: #1F1F1F;
-      --soft: #5C6570;
-      --line: #E2E6EA;
-      --white: #fff;
-    }
+    :root { --navy:#0E1822; --navy-dark:#0B1219; --amber:#E8892C; --amber-deep:#C1752E; --amber-tint:#FFF4E8; --paper:#F4F6F8; --ink:#111827; --soft:#5C6570; --line:#E2E6EA; --white:#fff; }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: var(--paper);
-      color: var(--ink);
-      line-height: 1.5;
-    }
-    a { color: var(--amber); }
-    .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
-    header {
-      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-dark) 100%);
-      color: white;
-      padding: 28px 0 48px;
-    }
-    .brand {
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .brand-mark {
-      width: 12px; height: 12px;
-      background: var(--amber);
-      border: 2px solid white;
-      border-radius: 2px;
-    }
-    .hero { padding-top: 28px; }
-    .hero h1 {
-      font-size: clamp(28px, 5vw, 40px);
-      line-height: 1.15;
-      margin: 0 0 14px;
-      font-weight: 800;
-    }
-    .hero p.lead {
-      font-size: 17px;
-      opacity: 0.9;
-      max-width: 34em;
-      margin: 0 0 22px;
-    }
-    .price-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 10px 16px;
-      margin-bottom: 18px;
-    }
-    .price {
-      font-size: 36px;
-      font-weight: 800;
-      color: #F5C98A;
-    }
-    .price span { font-size: 16px; font-weight: 600; opacity: 0.85; margin-left: 6px; }
-    .btn {
-      display: inline-block;
-      background: var(--amber);
-      color: white;
-      font-weight: 700;
-      text-decoration: none;
-      padding: 14px 22px;
-      border-radius: 12px;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .btn-ghost {
-      display: inline-block;
-      background: transparent;
-      color: white;
-      font-weight: 600;
-      text-decoration: none;
-      padding: 14px 18px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.35);
-      font-size: 15px;
-      margin-left: 8px;
-    }
-    .trust { font-size: 13px; opacity: 0.8; margin-top: 16px; }
-    main { padding: 36px 0 48px; }
-    h2 { font-size: 22px; margin: 0 0 8px; color: var(--navy); }
-    .sub { color: var(--soft); margin: 0 0 20px; }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-    @media (min-width: 560px) {
-      .grid { grid-template-columns: 1fr 1fr; }
-    }
-    .card {
-      background: var(--white);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 16px;
-    }
-    .badge {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 999px;
-      margin-bottom: 8px;
-    }
-    .badge.free { background: #E8F5EE; color: #1E7A46; }
-    .badge.pro { background: var(--amber-tint); color: var(--amber); }
-    .card h3 { margin: 0 0 6px; font-size: 16px; color: var(--navy); }
-    .card p { margin: 0; font-size: 14px; color: var(--soft); }
-    #buy {
-      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-dark) 100%);
-      color: white;
-      padding: 36px 0;
-      margin-top: 28px;
-    }
-    #buy h2 { color: white; }
-    #buy .sub { color: rgba(255,255,255,0.8); }
-    .buy-box {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 16px;
-      padding: 20px;
-    }
-    .config-note {
-      background: #fff3cd;
-      color: #664d03;
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin: 16px 0;
-      display: none;
-    }
-    .config-note.show { display: block; }
-    footer {
-      padding: 28px 0 40px;
-      font-size: 13px;
-      color: var(--soft);
-      text-align: center;
-    }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--paper); color:var(--ink); line-height:1.5; }
+    a { color:var(--amber-deep); }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:linear-gradient(165deg,#121A22 0%,#1A252F 40%,#0B1219 100%); color:#fff; padding:22px 0 52px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .brand { font-weight:800; letter-spacing:1.4px; font-size:14px; display:flex; align-items:center; gap:10px; }
+    .brand img { width:28px; height:28px; border-radius:8px; object-fit:cover; }
+    .login-link { color:#fff; text-decoration:none; font-weight:700; font-size:13px; border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.08); padding:8px 14px; border-radius:999px; }
+    .hero { padding-top:28px; }
+    .hero h1 { font-size:clamp(28px,5vw,40px); line-height:1.15; margin:0 0 14px; font-weight:800; letter-spacing:-.03em; }
+    .lead { font-size:17px; opacity:.9; max-width:34em; margin:0 0 22px; }
+    .price { font-size:32px; font-weight:800; color:#F5C98A; margin:0 0 18px; }
+    .price span { font-size:15px; font-weight:600; opacity:.85; margin-left:6px; }
+    .cta-row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    .btn { display:inline-block; background:var(--amber); color:#fff; font-weight:800; text-decoration:none; padding:14px 20px; border-radius:12px; font-size:15px; border:0; cursor:pointer; }
+    .btn-ghost { display:inline-block; background:transparent; color:#fff; font-weight:700; text-decoration:none; padding:13px 18px; border-radius:12px; border:1px solid rgba(255,255,255,.32); font-size:15px; }
+    .btn-soft { display:inline-block; background:#fff; color:var(--navy); font-weight:800; text-decoration:none; padding:14px 20px; border-radius:12px; font-size:15px; }
+    .trust { font-size:13px; opacity:.8; margin-top:16px; }
+    main { padding:36px 0 20px; }
+    h2 { font-size:22px; margin:0 0 8px; color:var(--navy); }
+    .sub { color:var(--soft); margin:0 0 20px; }
+    .grid { display:grid; grid-template-columns:1fr; gap:12px; }
+    @media (min-width:560px) { .grid { grid-template-columns:1fr 1fr; } }
+    .card { background:var(--white); border:1px solid var(--line); border-radius:16px; padding:16px; }
+    .badge { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; border-radius:999px; margin-bottom:8px; }
+    .badge.free { background:#E8F5EE; color:#1E7A46; }
+    .badge.pro { background:var(--amber-tint); color:var(--amber-deep); }
+    .card h3 { margin:0 0 6px; font-size:16px; color:var(--navy); }
+    .card p { margin:0; font-size:14px; color:var(--soft); }
+    #buy { background:linear-gradient(160deg,var(--navy) 0%,var(--navy-dark) 100%); color:#fff; padding:36px 0; margin-top:28px; }
+    #buy h2 { color:#fff; }
+    #buy .sub { color:rgba(255,255,255,.8); }
+    .buy-box { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:20px; }
+    footer { padding:28px 0 40px; font-size:13px; color:var(--soft); text-align:center; }
   </style>
 </head>
 <body>
   <header>
     <div class="wrap">
-      <div class="brand"><span class="brand-mark"></span> THE PLAYBOOK</div>
+      <div class="topbar">
+        <div class="brand"><img src="icon-192.png" width="28" height="28" alt="" /> THE PLAYBOOK</div>
+        <a class="login-link" href="./app.html?login=1">Log in</a>
+      </div>
       <div class="hero">
         <h1>The calm companion for neurodivergent families</h1>
-        <p class="lead">Track the days that matter. Spot patterns. Hand school or your GP a clear one-page summary — without another subscription or another app that judges you.</p>
-        <div class="price-row">
-          <div class="price">£2.99 <span>once · no subscription</span></div>
-        </div>
+        <p class="lead">Track the days that matter. Spot patterns. Hand school or your GP a clear one-page summary — without another subscription.</p>
+        <div class="price">£2.99 <span>once · no subscription</span></div>
+        <div class="cta-row">
+          <a class="btn-soft" href="./app.html">Open the app</a>
+          <a class="btn-ghost" href="./app.html?login=1">Log in</a>
           <a class="btn" id="buy-btn" href="#buy">Unlock full access</a>
-          <a class="btn-ghost" href="./app.html">Try free tracking first</a>
-        <p class="trust">For mums, dads, grandparents, foster carers — anyone in the child’s corner. Data stays on your device.</p>
+        </div>
+        <p class="trust">Already using THE PLAYBOOK? Log in or tap Open the app — your logs stay on this device.</p>
       </div>
     </div>
   </header>
-
   <main>
     <section>
       <div class="wrap">
         <h2>What’s free vs what’s unlocked</h2>
-        <p class="sub">Try the heart of the product before you pay.</p>
+        <p class="sub">Try tracking first. An account is optional. Log in if you already have one.</p>
         <div class="grid">
-          <div class="card">
-            <div class="badge free">Free</div>
-            <h3>Full tracking</h3>
-            <p>Daily log, behaviour, sensory, sleep & food, therapy, meds, milestones, self-care, wins, brain dump, At a Glance profile.</p>
-          </div>
-          <div class="card">
-            <div class="badge free">Free</div>
-            <h3>Private on your device</h3>
-            <p>No account required for core logging. Export / import your own backup anytime.</p>
-          </div>
-          <div class="card">
-            <div class="badge pro">£2.99 unlock</div>
-            <h3>Insights</h3>
-            <p>Plain-English patterns from your logs — energy, triggers, sleep links, what already helps.</p>
-          </div>
-          <div class="card">
-            <div class="badge pro">£2.99 unlock</div>
-            <h3>Professional report</h3>
-            <p>Printable one-pager + talking points for school, GP, or therapy appointments.</p>
-          </div>
-          <div class="card">
-            <div class="badge pro">£2.99 unlock</div>
-            <h3>Discover + Community post</h3>
-            <p>Toys, events, tips matched to your logs — and share with other paid members when signed in. Plus autism visual supports, colouring & AAC printables.</p>
-          </div>
+          <div class="card"><div class="badge free">Free</div><h3>Full tracking</h3><p>Daily log, behaviour, sensory, sleep &amp; food, therapy, meds, milestones, self-care, wins, brain dump, At a Glance.</p></div>
+          <div class="card"><div class="badge free">Free</div><h3>Private on your device</h3><p>No account required for core logging. Export / import a backup anytime.</p></div>
+          <div class="card"><div class="badge pro">£2.99 unlock</div><h3>Insights</h3><p>Plain-English patterns from your logs — energy, triggers, sleep links, what already helps.</p></div>
+          <div class="card"><div class="badge pro">£2.99 unlock</div><h3>Professional report</h3><p>Printable one-pager + talking points for school, GP, or therapy.</p></div>
+          <div class="card"><div class="badge pro">£2.99 unlock</div><h3>Discover + Community</h3><p>Toys, events, tips, and member posts when signed in. Plus visual supports, colouring &amp; AAC printables.</p></div>
         </div>
       </div>
     </section>
-
     <section id="buy">
       <div class="wrap">
         <h2>Unlock everything</h2>
-        <p class="sub">One payment. Keep it forever on this device.</p>
+        <p class="sub">One payment. Keep it on this device.</p>
         <div class="buy-box">
           <p>One-time £2.99. No subscription. Card, Apple Pay, Google Pay where available.</p>
           <a class="btn" id="buy-btn-2" href="#buy" style="margin-top:12px">Pay £2.99 · unlock now</a>
-          <p class="trust" style="margin-top:14px">Or <a href="./app.html" style="color:#F5C98A">open the free tracker</a> first</p>
-        </div>
-        <div class="config-note" id="config-note">
-          <strong>Seller setup:</strong> Stripe Payment Link is configured.
+          <p class="trust" style="margin-top:14px">
+            <a href="./app.html?login=1" style="color:#F5C98A">Log in</a> ·
+            <a href="./app.html" style="color:#F5C98A">Open the free tracker</a>
+          </p>
         </div>
       </div>
     </section>
   </main>
-
   <footer>
     <div class="wrap">
       THE PLAYBOOK · Made for neurodivergent families<br />
       Not a substitute for professional medical or educational advice.<br />
       <p style="margin:12px 0 6px">
-        <a href="https://www.facebook.com/groups/2217693205459716/" target="_blank" rel="noopener" style="color:var(--amber);margin:0 8px;text-decoration:none;font-weight:600">Facebook group</a>
-        ·
-        <a href="https://www.tiktok.com/@the.playbook311" target="_blank" rel="noopener" style="color:var(--amber);margin:0 8px;text-decoration:none;font-weight:600">TikTok</a>
-        ·
-        <a href="https://x.com/theplaybookhome" target="_blank" rel="noopener" style="color:var(--amber);margin:0 8px;text-decoration:none;font-weight:600">X</a>
-        ·
-        <a href="mailto:Theplaybookhome@gmail.com" style="color:var(--amber);margin:0 8px;text-decoration:none;font-weight:600">Email</a>
+        <a href="https://www.facebook.com/groups/2217693205459716/" target="_blank" rel="noopener" style="color:var(--amber-deep);margin:0 8px;text-decoration:none;font-weight:600">Facebook group</a> ·
+        <a href="https://www.tiktok.com/@the.playbook311" target="_blank" rel="noopener" style="color:var(--amber-deep);margin:0 8px;text-decoration:none;font-weight:600">TikTok</a> ·
+        <a href="https://x.com/theplaybookhome" target="_blank" rel="noopener" style="color:var(--amber-deep);margin:0 8px;text-decoration:none;font-weight:600">X</a> ·
+        <a href="mailto:Theplaybookhome@gmail.com" style="color:var(--amber-deep);margin:0 8px;text-decoration:none;font-weight:600">Email</a>
       </p>
-      <a href="privacy.html" style="color:var(--amber);text-decoration:none;font-weight:600">Privacy</a><br /><span id="year"></span>
+      <a href="privacy.html" style="color:var(--amber-deep);text-decoration:none;font-weight:600">Privacy</a>
+      · <a href="./index.html?stay=1" style="color:var(--soft);text-decoration:none">Stay on landing</a>
+      <br /><span id="year"></span>
     </div>
   </footer>
-
   <script>
-    /* ========== SELLER CONFIG ========== */
     const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/bJe4gB2R9fbb96O52C38403";
-
     document.getElementById("year").textContent = new Date().getFullYear();
-
     function goBuy(e) {
       if (e) e.preventDefault();
-      if (!STRIPE_PAYMENT_LINK) {
-        document.getElementById("config-note").classList.add("show");
-        document.getElementById("config-note").scrollIntoView({ behavior: "smooth" });
-        alert("Stripe Payment Link not configured yet.");
-        return;
-      }
       window.location.href = STRIPE_PAYMENT_LINK;
     }
     document.getElementById("buy-btn").addEventListener("click", goBuy);
     document.getElementById("buy-btn-2").addEventListener("click", goBuy);
   </script>
-
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js").catch(function (e) {
-          console.warn("SW register failed", e);
-        });
-      });
-    }
-  </script>
-
 </body>
 </html>

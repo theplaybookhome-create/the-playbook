@@ -1,0 +1,38 @@
+name: publish-media
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "media_b64/**"
+      - ".github/workflows/publish-media.yml"
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode media_b64 into site images
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          root = Path('.')
+          src = root / 'media_b64'
+          if not src.is_dir():
+              print('no media_b64')
+              raise SystemExit(0)
+          for f in sorted(src.glob('*.b64')):
+              name = f.name[:-4]
+              raw = ''.join(f.read_text(encoding='utf-8').split())
+              data = base64.b64decode(raw)
+              dest = root / name
+              dest.write_bytes(data)
+              print('wrote', dest, len(data))
+          PY
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add connect-banner.jpg cover-complete.jpg cover-visual.jpg cover-colouring.jpg cover-learning.jpg cover-aac.jpg || true
+          git diff --cached --quiet || git commit -m "Publish printable covers and connect banner"
+          git push origin HEAD:main
