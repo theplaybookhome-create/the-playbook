@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V18 -->
+  <!-- THEME_BUILD_V19 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -799,6 +799,7 @@ textarea { resize: vertical; min-height: 56px; }
 .connect-btn.wa .cb-ico { background: #25D366 !important; }
 
 
+
 /* ===== Android + mockup layout lock ===== */
 .app-main { max-width: 1120px !important; width: 100%; }
 .home-today { max-width: 1120px; margin: 0 auto; }
@@ -841,6 +842,10 @@ textarea { resize: vertical; min-height: 56px; }
   .quick-links { grid-template-columns: repeat(3, 1fr) !important; }
   .header-chips { flex-wrap: nowrap; overflow-x: auto; }
 }
+
+.brand-mark-img { width:28px; height:28px; border-radius:8px; object-fit:cover; flex-shrink:0; box-shadow:0 4px 10px rgba(11,18,25,.28); }
+.print-pack .pp-cover { width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:14px; margin:0 0 10px; background:#1A252F; display:block; }
+.print-pack .pp-emoji { display:none; }
 
 @media print {
   .app-header, .bottom-nav, .report-actions, .header-btn, .toast, .onboard-overlay, .no-print { display: none !important; }
@@ -946,7 +951,8 @@ const TRACK_ITEMS = [
   { id: "weekly", label: "Weekly", storageKey: "weekly-overview-entries", title: "Weekly Overview", fields: weeklyFields },
   { id: "selfcare", label: "Self-care", storageKey: "self-care-entries", title: "Self-Care Check-In", subtitle: "You matter here too.", fields: selfCareFields, footerNote: "Taking care of yourself isn't selfish." },
   { id: "wins", label: "Wins", storageKey: "wins-entries", title: "Small Wins", subtitle: "If it felt good, it counts.", fields: winsFields },
-  { id: "learning", label: "Play ideas", type: "learning" },
+  { id: "learning",
+    cover: "cover-learning.jpg", label: "Play ideas", type: "learning" },
   { id: "braindump", label: "Brain dump", type: "brainDump" },
   { id: "glance", label: "At a Glance", type: "atAGlance" },
 ];
@@ -1015,6 +1021,7 @@ const PRINTABLES_BASE = "./";
 const PRINTABLES_PACKS = [
   {
     id: "complete",
+    cover: "cover-complete.jpg",
     emoji: "📦",
     kicker: "Full pack",
     title: "Complete Toolkit",
@@ -1026,6 +1033,7 @@ const PRINTABLES_PACKS = [
   },
   {
     id: "visual",
+    cover: "cover-visual.jpg",
     emoji: "📋",
     kicker: "Category 1",
     title: "Visual Supports",
@@ -1036,6 +1044,7 @@ const PRINTABLES_PACKS = [
   },
   {
     id: "colouring",
+    cover: "cover-colouring.jpg",
     emoji: "🎨",
     kicker: "Category 2",
     title: "Colouring Book",
@@ -1056,6 +1065,7 @@ const PRINTABLES_PACKS = [
   },
   {
     id: "aac",
+    cover: "cover-aac.jpg",
     emoji: "💬",
     kicker: "Category 4",
     title: "AAC Symbol Sets",
@@ -1944,7 +1954,7 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock }) {
       <div className="card" id="professional-report">
         <div className="report-hero">
           <div>
-            <div className="brand" style={{ color: "var(--navy)", marginBottom: 4 }}><span className="brand-mark" />THE PLAYBOOK</div>
+            <div className="brand" style={{ color: "var(--navy)", marginBottom: 4 }}><img className="brand-mark-img" src="icon-192.png" width="28" height="28" alt="" />THE PLAYBOOK</div>
             <p className="rh-title">Care summary</p>
             <p className="rh-sub">{dayLabel} · Generated {new Date().toLocaleDateString()} · Parent/carer notes — not a clinical assessment</p>
           </div>
@@ -2358,7 +2368,7 @@ function PrintablesGallery({ unlocked, onRequestUnlock, embedded }) {
             key={p.id}
             style={p.primary ? { borderColor: "var(--amber)", borderWidth: 2 } : undefined}
           >
-            <div className="pp-emoji" aria-hidden="true">{p.emoji || "📄"}</div>
+            {p.cover ? <img className="pp-cover" src={p.cover} alt="" /> : <div className="pp-emoji" aria-hidden="true">{p.emoji || "📄"}</div>}
             <div className="pp-kicker">{p.kicker}</div>
             <h3>{p.title}</h3>
             <p>{p.desc}</p>
@@ -3303,7 +3313,7 @@ function App() {
       <header className="app-header no-print">
         <div className="header-top">
           <div>
-            <div className="brand"><span className="brand-mark" />THE PLAYBOOK</div>
+            <div className="brand"><img className="brand-mark-img" src="icon-192.png" width="28" height="28" alt="" />THE PLAYBOOK</div>
             <div className="brand-sub">{unlocked ? "Full access on this device" : "Track free · unlock once"}{user ? " · " + (user.email || "signed in") : ""}</div>
           </div>
           <div className="header-actions">
