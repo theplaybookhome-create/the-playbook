@@ -4,7 +4,9 @@ on:
   push:
     paths:
       - ".github/workflows/remodel-theme.yml"
-      - "critical_fix.py"
+      - "theme_payload.0"
+      - "theme_payload.1"
+      - "theme_payload.2"
       - "sw.js"
 permissions:
   contents: write
@@ -13,14 +15,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply paid-user and JWT fixes
+      - name: Decode remodeled app.html
         run: |
           set -euo pipefail
-          python3 critical_fix.py
-          grep -q "showOnboard && !unlocked" app.html
+          cat theme_payload.0 theme_payload.1 theme_payload.2 | base64 -d | gzip -dc > app.html
+          test "$(wc -c < app.html)" -gt 170000
+          grep -q "home-greet" app.html
+          grep -q "EnergySpark" app.html
+          grep -q "dash-kpis" app.html
+          grep -q "alreadyPaid" app.html
           grep -q "isClockSkewError" app.html
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
           git add app.html sw.js
-          git diff --cached --quiet || git commit -m "Fix: hide welcome sheet for paid users, suppress JWT clock-skew banner"
+          git diff --cached --quiet || git commit -m "Remodel: Today, login, printables grid, Insights dashboard"
           git push origin HEAD:main
