@@ -1,0 +1,30 @@
+name: v27-trim
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - v27_trim_patch.py
+      - .github/workflows/v27-trim.yml
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V27 trim
+        run: |
+          set -euo pipefail
+          python3 v27_trim_patch.py app.html
+          grep -q THEME_BUILD_V27 app.html
+          grep -q qlHill3 app.html
+          grep -q 'id: "tiktok"' app.html
+          ! grep -q 'label: "Instagram"' app.html
+          ! grep -q 'label: "YouTube"' app.html
+          sed -i 's/playbook-v26/playbook-v27/g; s/playbook-v25/playbook-v27/g' sw.js
+          grep -q playbook-v27 sw.js
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add app.html sw.js v27_trim_patch.py
+          git diff --cached --quiet || git commit -m "V27: four socials only + watercolor sunrise from tablet mockup"
+          git push origin HEAD:main
