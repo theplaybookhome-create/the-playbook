@@ -1,0 +1,31 @@
+name: v29-home
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - v29_home_patch.py
+      - sunrise.b64
+      - .github/workflows/v29-home.yml
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V29 mockup home
+        run: |
+          set -euo pipefail
+          test -f sunrise.b64
+          python3 v29_home_patch.py app.html
+          grep -q THEME_BUILD_V29 app.html
+          grep -q ql-sun-photo app.html
+          grep -q hdr-exim app.html
+          grep -q "V29 mockup home" app.html
+          sed -i 's/playbook-v28/playbook-v29/g; s/playbook-v27/playbook-v29/g' sw.js
+          grep -q playbook-v29 sw.js
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add app.html sw.js v29_home_patch.py sunrise.b64
+          git diff --cached --quiet || git commit -m "V29: tablet mockup home — cropped sunrise, side cards, Export/Import"
+          git push origin HEAD:main
