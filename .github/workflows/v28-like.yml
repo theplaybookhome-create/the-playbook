@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - v28_like_patch.py
+      - v29_home_patch.py
+      - sunrise.b64
       - .github/workflows/v28-like.yml
 permissions:
   contents: write
@@ -12,20 +14,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply V28 like-for-like mockup
+      - name: Apply V29 mockup home
         run: |
           set -euo pipefail
-          python3 v28_like_patch.py app.html
-          grep -q THEME_BUILD_V28 app.html
-          grep -q ql-sun-art app.html
-          grep -q v28sky app.html
-          grep -q home-mid app.html
-          ! grep -q 'label: "Instagram"' app.html
-          ! grep -q 'label: "YouTube"' app.html
-          sed -i 's/playbook-v27/playbook-v28/g; s/playbook-v26/playbook-v28/g' sw.js
-          grep -q playbook-v28 sw.js
+          python3 v29_home_patch.py app.html
+          grep -q THEME_BUILD_V29 app.html
+          grep -q ql-sun-photo app.html
+          grep -q hdr-exim app.html
+          sed -i 's/playbook-v28/playbook-v29/g; s/playbook-v27/playbook-v29/g' sw.js
+          grep -q playbook-v29 sw.js
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
-          git add app.html sw.js v28_like_patch.py
-          git diff --cached --quiet || git commit -m "V28: like-for-like tablet mockup — mountain sunrise, four social cards, dark header"
+          git add app.html sw.js
+          git diff --cached --quiet || git commit -m "V29: tablet mockup home - cropped sunrise, side cards, Export Import"
           git push origin HEAD:main
