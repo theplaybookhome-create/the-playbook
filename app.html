@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V19 -->
+  <!-- THEME_BUILD_V21 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -1681,7 +1681,7 @@ function buildTalkingPoints(analysis) {
 
 
 
-function AuthScreen({ onAuthed, recoveryMode }) {
+function AuthScreen({ onAuthed, onSkip, recoveryMode }) {
   const [mode, setMode] = useState(recoveryMode ? "update" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -1873,6 +1873,11 @@ function AuthScreen({ onAuthed, recoveryMode }) {
           <span>·</span>
           <span>£2.99 unlock</span>
         </div>
+        {onSkip && !recoveryMode ? (
+          <p className="auth-footer">
+            <button type="button" onClick={onSkip} style={{ background: "none", border: "none", color: "#E8A317", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "inherit", padding: 0 }}>Continue on this device without logging in</button>
+          </p>
+        ) : null}
         <p className="auth-footer">Need help? <a href="mailto:Theplaybookhome@gmail.com">Theplaybookhome@gmail.com</a></p>
       </div>
     </div>
@@ -3299,11 +3304,40 @@ function App() {
     { id: "discover", label: "Discover", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5l-1.2 4.3-4.3 1.2 1.2-4.3z"/></svg> },
   ];
 
-  if (CLOUD_ENABLED && authReady && (!session || recoveryMode)) {
-    return <AuthScreen recoveryMode={recoveryMode} onAuthed={(s) => { setSession(s); setRecoveryMode(false); }} />;
-  }
+  const forceLogin = (function () {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("login") === "1" || params.get("mode") === "login";
+    } catch (e) { return false; }
+  })();
   if (CLOUD_ENABLED && !authReady) {
-    return <div className="app-root" style={{ padding: 40, textAlign: "center", color: "var(--soft)" }}>Starting secure session…</div>;
+    return <div className="app-root" style={{ padding: 40, textAlign: "center", color: "var(--soft)" }}>Starting THE PLAYBOOK…</div>;
+  }
+  if (CLOUD_ENABLED && (recoveryMode || (forceLogin && !session))) {
+    return (
+      <AuthScreen
+        recoveryMode={recoveryMode}
+        onAuthed={(sess) => {
+          setSession(sess);
+          setRecoveryMode(false);
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("login");
+            url.searchParams.delete("mode");
+            window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+          } catch (e) {}
+        }}
+        onSkip={() => {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("login");
+            url.searchParams.delete("mode");
+            window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+          } catch (e) {}
+          setRecoveryMode(false);
+        }}
+      />
+    );
   }
 
 
@@ -3320,7 +3354,9 @@ function App() {
             {!unlocked && <button type="button" className="header-btn header-pill" onClick={requestUnlock}>{PREMIUM_PRICE}</button>}
             <button type="button" className="header-btn header-pill ico-btn" onClick={handleExport}><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 21h14"/></svg>Export</button>
             <button type="button" className="header-btn header-pill ico-btn" onClick={() => fileInputRef.current?.click()}><svg viewBox="0 0 24 24"><path d="M12 21V9"/><path d="M7 16l5 5 5-5"/><path d="M5 3h14"/></svg>Import</button>
-            {CLOUD_ENABLED && user ? <button type="button" className="header-btn header-pill signout-quiet" onClick={handleSignOut}>Sign out</button> : null}
+            {CLOUD_ENABLED && user ? <button type="button" className="header-btn header-pill signout-quiet" onClick={handleSignOut}>Sign out</button> : (
+              <a className="header-btn header-pill" href="./app.html?login=1">Log in</a>
+            )}
             {user ? <div className="header-avatar" title={user.email || ""}>{initialsOf(user)}<span className="dot" /></div> : null}
             <input ref={fileInputRef} type="file" accept="application/json,.json" className="hidden-file" onChange={(e) => handleImport(e.target.files?.[0])} />
           </div>
@@ -3437,7 +3473,7 @@ root.render(React.createElement(App));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=18").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=21").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
