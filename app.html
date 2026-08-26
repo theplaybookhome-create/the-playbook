@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V24 -->
+  <!-- THEME_BUILD_V25 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-  <meta name="theme-color" content="#0B1219" />
+  <meta name="theme-color" content="#F4F6F8" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Playbook" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icon-180.png" />
@@ -847,60 +847,158 @@ textarea { resize: vertical; min-height: 56px; }
 
 
 
-/* ===== V24 mockup fidelity ===== */
-.header-chips{display:flex!important;align-items:center}
-.header-chips .hchip:not(:last-child)::after{content:"·";margin-left:10px;color:rgba(255,255,255,.28);font-weight:700}
-.child-manage{margin-left:auto!important}
-.bottom-nav{display:flex!important;max-width:920px!important}
-.app-root{padding-bottom:112px!important}
-.es-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
-.stat-ico{font-size:13px;margin-right:6px}
-.owned-card{display:flex!important;align-items:center!important;gap:12px!important;padding:16px!important;background:#FFF8F0!important;border:1px solid #F0E0CC!important;border-radius:18px!important}
-.owned-card p{display:block!important}
-.owned-card .price-pill{background:#16A34A!important;color:#fff!important;border-radius:999px!important;padding:4px 10px!important;font-size:12px!important;font-weight:800!important;margin-left:auto;flex:0 0 auto}
-.home-top{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(260px,340px)!important;align-items:start!important;gap:16px!important;margin-bottom:18px!important}
-.home-top .paywall-card,.home-top .owned-card{width:100%;max-width:340px;margin:0 0 0 auto!important}
-.home-hero{display:grid!important;grid-template-columns:minmax(0,1.75fr) minmax(230px,.72fr)!important;gap:14px!important;align-items:stretch!important}
-.home-side{display:flex;flex-direction:column;gap:12px;height:100%}
-.energy-spark,.stat-card{flex:1}
-.quick-log-card{position:relative!important;overflow:hidden!important;min-height:292px;padding:18px 210px 16px 18px!important;background:radial-gradient(280px 170px at 92% 10%,rgba(252,211,140,.5),transparent 70%),radial-gradient(220px 140px at 100% 46%,rgba(186,214,232,.32),transparent 65%),#fff!important}
-.ql-sec-label{font-size:13px;font-weight:800;color:#111827;margin:0 0 8px;display:block}
-.ql-sun{width:228px!important;height:168px!important;right:0!important;top:6px!important;opacity:1!important}
-.scale-row{gap:10px!important}
-.scale-btn{width:52px!important;height:52px!important;border-radius:14px!important;font-size:16px!important}
-.connect-banner{display:none!important}
-.connect-card{position:relative;overflow:hidden;background:#fff!important;border:1px solid #E8ECF0!important}
-.connect-card::after{content:"";position:absolute;right:-10px;top:0;bottom:0;width:140px;background-image:radial-gradient(#D7E6F5 1.1px,transparent 1.2px);background-size:10px 10px;opacity:.55;pointer-events:none}
-.connect-links{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:10px!important}
-.connect-btn{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;width:100%!important;max-width:none!important;background:#fff!important;border:1.5px solid #E8ECF0!important;border-radius:16px!important;padding:10px 28px 10px 12px!important;min-height:64px!important;text-align:left!important}
-.connect-btn .cb-ico{width:40px!important;height:40px!important;border-radius:50%!important;flex:0 0 40px!important;display:grid!important;place-items:center!important}
-.connect-btn .cb-ico svg{width:18px!important;height:18px!important;fill:#fff!important}
-.connect-btn.tt .cb-ico{background:#111!important}
-.connect-btn.xx .cb-ico{background:#0F1419!important}
-.connect-btn.fb .cb-ico{background:#1877F2!important}
-.connect-btn.em .cb-ico{background:#E8892C!important;border:none!important}
-.connect-btn.em .cb-ico svg,.connect-btn.em .cb-ico svg path{fill:#fff!important}
-.quick-links{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:12px!important}
-.quick-link{display:flex!important;flex-direction:column!important;align-items:flex-start!important;text-align:left!important;padding:16px 28px 16px 16px!important;min-height:118px}
-.quick-link .ql-ico{width:44px!important;height:44px!important;border-radius:50%!important;display:grid!important;place-items:center!important;margin-bottom:10px!important;font-size:18px!important}
-.quick-link strong{font-size:15px;color:#111827}
-.quick-link .ql-hint{display:block;margin-top:4px;font-size:13px;color:#6B7280;line-height:1.35;font-weight:500}
-.why-card{position:relative;padding:16px 28px 16px 16px!important;min-height:118px}
-.why-label{text-transform:none!important;letter-spacing:0!important;font-size:14px!important;color:#111827!important;display:flex;align-items:center;gap:6px}
-.why-check{color:#E8892C;font-weight:800}
-.why-card::after{content:"›";position:absolute;right:14px;bottom:14px;top:auto;color:#C4CAD1;font-size:20px}
-.energy-spark svg{height:78px}
-.bottom-btn.active .ico svg{stroke:#F08A2A;fill:#F08A2A}
-.header-actions .signout-quiet{display:none}
-@media (max-width:759px){
-.home-top{grid-template-columns:1fr!important}
-.home-top .paywall-card,.home-top .owned-card{max-width:none;margin:0!important}
-.home-hero{grid-template-columns:1fr!important}
-.quick-log-card{padding:18px!important;min-height:0}
-.ql-sun{width:128px!important;height:96px!important;opacity:.78!important}
-.quick-links{grid-template-columns:1fr 1fr!important}
-.connect-links{grid-template-columns:1fr 1fr!important}
-.scale-btn{width:46px!important;height:46px!important}
+/* ===== V25 light home (Tuesday mockup) ===== */
+.app-root { background: #F3F5F7 !important; padding-bottom: 108px !important; }
+.app-header {
+  background: #F7F8FA !important;
+  color: #111827 !important;
+  padding: 10px 18px 8px !important;
+  border-bottom: 1px solid #EEF1F4 !important;
+}
+.header-top { align-items: center !important; gap: 10px !important; }
+.header-chips { display: none !important; }
+.brand { color: #111827 !important; letter-spacing: 0.6px !important; font-size: 16px !important; }
+.brand-sub { color: #6B7280 !important; font-size: 12px !important; margin-top: 2px !important; }
+.header-btn, .header-pill {
+  background: #fff !important;
+  border: 1px solid #E6E8EC !important;
+  color: #374151 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(15,24,34,.04) !important;
+}
+.header-ico {
+  width: 40px !important; height: 40px !important; padding: 0 !important;
+  display: grid !important; place-items: center !important;
+  border-radius: 12px !important;
+}
+.header-ico svg { width: 18px; height: 18px; stroke: #374151; fill: none; stroke-width: 2; }
+.header-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #FDE8D6 !important; border: none !important;
+  color: #C1752E !important; font-weight: 800;
+}
+.header-avatar .dot { border-color: #F7F8FA; }
+.menu-btn { width: 40px; height: 40px; border: none; background: transparent; color: #111827; border-radius: 10px; }
+.menu-btn svg { width: 22px; height: 22px; }
+.child-bar {
+  margin-top: 8px !important; padding-top: 8px !important;
+  border-top: 1px solid #EEF1F4 !important;
+}
+.child-bar-label { color: #9CA3AF !important; }
+.child-chip {
+  border: 1px solid #E6E8EC !important;
+  background: #fff !important;
+  color: #374151 !important;
+}
+.child-chip.active { background: #E8892C !important; border-color: #E8892C !important; color: #fff !important; }
+.child-manage { color: #6B7280 !important; }
+.app-main {
+  background: transparent !important;
+  border-radius: 0 !important;
+  margin-top: 0 !important;
+  box-shadow: none !important;
+  max-width: 1080px !important;
+  margin-left: auto; margin-right: auto;
+  padding: 18px 20px 36px !important;
+}
+.home-greet .hi { font-size: 28px !important; }
+.owned-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 14px 16px !important;
+  background: #FDEFE6 !important;
+  border: 1px solid #F4D7C4 !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+  max-width: 340px;
+  margin-left: auto !important;
+}
+.owned-card p { display: block !important; margin: 4px 0 0 !important; font-size: 12.5px !important; color: #6B7280 !important; }
+.owned-card .price-pill {
+  background: #16A34A !important; color: #fff !important;
+  border-radius: 999px !important; padding: 4px 10px !important;
+  font-size: 12px !important; font-weight: 800 !important; margin-left: auto; flex: 0 0 auto;
+}
+.home-top {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) minmax(240px,320px) !important;
+  align-items: start !important;
+  gap: 16px !important;
+  margin-bottom: 16px !important;
+}
+.home-hero { display: block !important; }
+.home-side { display: none !important; }
+.quick-log-card {
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+  padding: 18px 240px 16px 18px !important;
+  background: #fff !important;
+  border: 1px solid #E8ECF0 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 24px rgba(15,24,34,.04) !important;
+}
+.ql-sun {
+  width: 260px !important; height: 200px !important;
+  right: 8px !important; top: 8px !important;
+  opacity: 1 !important; z-index: 0;
+}
+.connect-card::after { display: none !important; }
+.connect-links {
+  display: grid !important;
+  grid-template-columns: repeat(6, 1fr) !important;
+  gap: 8px !important;
+  justify-items: center;
+}
+.connect-btn {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  max-width: 110px !important;
+  background: transparent !important;
+  border: none !important;
+  min-height: 0 !important;
+  text-align: center !important;
+  box-shadow: none !important;
+}
+.connect-btn::after { display: none !important; content: none !important; }
+.connect-btn .cb-ico {
+  width: 52px !important; height: 52px !important;
+  border-radius: 16px !important;
+  flex: 0 0 52px !important;
+}
+.connect-btn.ig .cb-ico { background: radial-gradient(circle at 30% 30%, #f9ce34, #ee2a7b 55%, #6228d7) !important; }
+.connect-btn.yt .cb-ico { background: #FF0000 !important; }
+.connect-btn.em .cb-ico { background: #22A06B !important; border: none !important; }
+.progress-row { display: grid; grid-template-columns: 1.15fr .85fr; gap: 12px; margin: 0 0 14px; }
+.progress-card, .inside-card { background: #fff; border: 1px solid #E8ECF0; border-radius: 20px; padding: 16px; }
+.quick-links { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 12px !important; }
+.quick-link { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 12px !important; padding: 16px !important; min-height: 88px; background: #fff !important; }
+.quick-link::after { display: none !important; content: none !important; }
+.quick-link.t-disc .ql-ico { background: #FFF3D6; }
+.why-banner { background: #EEF5FF !important; border: 1px solid #D7E6F7 !important; border-radius: 16px !important; padding: 14px 16px !important; }
+.why-info { width: 18px; height: 18px; border-radius: 50%; background: #3B82F6; color: #fff; font-size: 12px; font-weight: 800; display: grid; place-items: center; }
+.bottom-nav {
+  display: flex !important;
+  background: #fff !important;
+  border: 1px solid #E8ECF0 !important;
+  border-radius: 22px !important;
+  max-width: 640px !important;
+  box-shadow: 0 12px 32px rgba(15,24,34,.10) !important;
+}
+.bottom-btn { color: #9CA3AF !important; }
+.bottom-btn.active, .bottom-btn.active .lbl { color: #E07A1A !important; }
+.spark-embed .es-top, .spark-embed .es-big, .spark-embed .es-hint, .spark-embed .es-empty, .spark-embed .es-dots { display: none !important; }
+@media (max-width: 759px) {
+  .home-top { grid-template-columns: 1fr !important; }
+  .quick-log-card { padding: 16px !important; }
+  .ql-sun { width: 140px !important; height: 110px !important; }
+  .quick-links { grid-template-columns: 1fr 1fr !important; }
+  .connect-links { grid-template-columns: repeat(3, 1fr) !important; }
+  .progress-row { grid-template-columns: 1fr !important; }
 }
 
 @media print {
@@ -1222,8 +1320,10 @@ async function grantLocalPremium() {
 
 
 const SOCIAL_LINKS = [
+  { id: "instagram", label: "Instagram", href: "https://www.instagram.com/theplaybookhome", hint: "Community" },
   { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@the.playbook311", hint: "Videos" },
-  { id: "x", label: "X", href: "https://x.com/theplaybookhome", hint: "Updates" },
+  { id: "x", label: "X (Twitter)", href: "https://x.com/theplaybookhome", hint: "Updates" },
+  { id: "youtube", label: "YouTube", href: "https://www.youtube.com/@theplaybookhome", hint: "Videos" },
   { id: "facebook", label: "Facebook", href: "https://www.facebook.com/groups/2217693205459716/", hint: "Group" },
   { id: "email", label: "Email", href: "mailto:Theplaybookhome@gmail.com", hint: "Support" }
 ];
@@ -1947,7 +2047,7 @@ function PaywallCard({ onUnlock, unlocked, compact }) {
         <div className="owned-crown" aria-hidden="true">👑</div>
         <div>
           <div className="stat-label" style={{ textTransform: "none", letterSpacing: 0, fontSize: 14, color: "#111827" }}>Full access on this device</div>
-          <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "var(--soft)", lineHeight: 1.35 }}>Insights, report, Discover, Printables<br/>& more unlocked.</p>
+          <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "var(--soft)", lineHeight: 1.35 }}>Insights, reports, printables & more</p>
         </div>
         <span className="price-pill">Owned</span>
       </div>
@@ -2287,6 +2387,16 @@ function QuickLog({ setDataStore, showToast, activeChildId }) {
   );
 }
 function SocialIcon({ id }) {
+  if (id === "instagram") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm10 1.8H7A2.2 2.2 0 0 0 4.8 7v10A2.2 2.2 0 0 0 7 19.2h10A2.2 2.2 0 0 0 19.2 17V7A2.2 2.2 0 0 0 17 4.8zM12 8.2A3.8 3.8 0 1 1 8.2 12 3.8 3.8 0 0 1 12 8.2zm0 1.6A2.2 2.2 0 1 0 14.2 12 2.2 2.2 0 0 0 12 9.8zM17.35 6.4a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg>
+    );
+  }
+  if (id === "youtube") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M23 12.2s0-3.2-.4-4.6c-.2-.9-.9-1.6-1.8-1.8C18.9 5.4 12 5.4 12 5.4s-6.9 0-8.8.4c-.9.2-1.6.9-1.8 1.8C1 9 1 12.2 1 12.2s0 3.2.4 4.6c.2.9.9 1.6 1.8 1.8 1.9.4 8.8.4 8.8.4s6.9 0 8.8-.4c.9-.2 1.6-.9 1.8-1.8.4-1.4.4-4.6.4-4.6zM9.8 15.5v-6.6l6.3 3.3-6.3 3.3z"/></svg>
+    );
+  }
   if (id === "facebook") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M15.1 8.2h2.4V4.7h-2.4c-2.9 0-4.8 1.8-4.8 4.9v2H8v3.6h2.3V22h3.7v-6.8h2.5l.6-3.6h-3.1V9.8c0-1.1.5-1.6 1.6-1.6z"/></svg>
@@ -2321,7 +2431,7 @@ function SocialIcon({ id }) {
   );
 }
 function ConnectCard() {
-  const cls = { facebook: "fb", tiktok: "tt", x: "xx", email: "em" };
+  const cls = { facebook: "fb", tiktok: "tt", x: "xx", email: "em", instagram: "ig", youtube: "yt" };
   return (
     <div className="connect-card">
       <h3>Connect with us</h3>
@@ -2497,7 +2607,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
       <div className="home-top">
         <div className="home-greet">
           <p className="hi">{hello}{who ? ", " + who : ""}{who ? " 👋" : ""}</p>
-          <p className="sub">{activeChildName ? (<span>Logging for <b>{activeChildName}</b> · track what matters.</span>) : "Track what matters. Spot patterns. Look after yourself too."}</p>
+          <p className="sub">"Track what matters. Build what lasts."</p>
         </div>
         <PaywallCard compact onUnlock={onUnlock} unlocked={unlocked} />
       </div>
@@ -2516,13 +2626,38 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
         </div>
       </div>
       <ConnectCard />
-      {null}
+      <div className="progress-row">
+        <div className="progress-card" role="button" tabIndex={0} onClick={() => onNavigate("insights")}>
+          <h3>Your progress</h3>
+          <div className="progress-energy">
+            <div>
+              <div className="pe-label">Energy ({recentEnergy.length} logs)</div>
+              <div className="spark-embed"><EnergySpark values={recentEnergy} avg={avgEnergy} /></div>
+            </div>
+            <div className="pe-avg"><b>{avgEnergy}</b><span>Average</span></div>
+          </div>
+          <div className="progress-logs">
+            <div className="pl-k">Logs this device</div>
+            <div className="pl-v"><b>{daily.length + behavior.length}</b><span>Daily + behaviour</span></div>
+          </div>
+        </div>
+        <div className="inside-card">
+          <h3>What's inside</h3>
+          <ul className="inside-list">
+            <li><span className="tick-ok">OK</span> Track energy, mood & habits</li>
+            <li><span className="tick-ok">OK</span> See patterns that matter</li>
+            <li><span className="tick-ok">OK</span> Unlock reports & printables</li>
+            <li><span className="tick-ok">OK</span> Join a support community</li>
+          </ul>
+        </div>
+      </div>
       <div className="quick-links">
         <button type="button" className="quick-link t-log" onClick={() => onNavigate("track", "daily")}><span className="ql-ico">✏️</span><strong>Log today</strong><span className="ql-hint">Energy, mood, what went well</span></button>
         <button type="button" className="quick-link t-ins" onClick={() => onNavigate("insights")}><span className="ql-ico">📊</span><strong>See patterns</strong><span className="ql-hint">Triggers, sleep, energy trends</span></button>
         <button type="button" className="quick-link t-rep" onClick={() => onNavigate("report")}><span className="ql-ico">📄</span><strong>Pro report</strong><span className="ql-hint">Print for school / GP</span></button>
         <button type="button" className="quick-link t-com" onClick={() => onNavigate("community")}><span className="ql-ico">💬</span><strong>Community</strong><span className="ql-hint">Peer notes & support</span></button>
-        <button type="button" className="quick-link t-print" onClick={() => onNavigate("discover", null, "printables")}><span className="ql-ico">🖨️</span><strong>Printables</strong><span className="ql-hint">Preview packs · download</span></button>
+        <button type="button" className="quick-link t-print" onClick={() => onNavigate("discover", null, "printables")}><span className="ql-ico">🖨️</span><span><strong>Printables</strong><span className="ql-hint">Preview packs · download</span></span></button>
+        <button type="button" className="quick-link t-disc" onClick={() => onNavigate("discover")}><span className="ql-ico">*</span><span><strong>Discover</strong><span className="ql-hint">Tools, guides & more</span></span></button>
         <div className="why-card">
           <div className="stat-label why-label"><span className="why-check">✓</span> Why unlock helps</div>
         <p style={{ margin: "8px 0 0", fontSize: 13, lineHeight: 1.5, color: "var(--soft)" }}>
@@ -3375,7 +3510,6 @@ function App() {
     { id: "insights", label: "Insights", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 19V10M12 19V5M19 19v-7"/></svg> },
     { id: "report", label: "Report", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 3h8l5 5v13H7z"/><path d="M15 3v5h5"/></svg> },
     { id: "community", label: "Community", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="8" r="3"/><circle cx="16" cy="9" r="2.4"/><path d="M3.5 19c.6-3 2.8-5 5.5-5s4.9 2 5.5 5"/></svg> },
-    { id: "discover", label: "Discover", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5l-1.2 4.3-4.3 1.2 1.2-4.3z"/></svg> },
   ];
 
   const forceLogin = (function () {
@@ -3544,7 +3678,7 @@ root.render(React.createElement(App));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=24").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=25").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
