@@ -8,9 +8,7 @@ const PRECACHE = [
   "./icon-192.png",
   "./icon-512.png",
   "./icon-180.png",
-  "./favicon.png",
-  "./connect-banner.jpg",
-  "./cover-complete.jpg"
+  "./favicon.png"
 ];
 
 self.addEventListener("install", (event) => {
