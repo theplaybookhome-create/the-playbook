@@ -1,0 +1,27 @@
+name: remodel-theme
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/remodel-theme.yml'
+      - 'theme_patch.py'
+permissions:
+  contents: write
+jobs:
+  remodel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply visual remodel
+        run: |
+          set -euo pipefail
+          python3 theme_patch.py
+          test "$(wc -c < app.html)" -gt 160000
+          grep -q "home-greet" app.html
+          grep -q "EnergySpark" app.html
+          grep -q "dash-kpis" app.html
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add app.html
+          git diff --cached --quiet || git commit -m "Remodel: Today, login, printables grid, Insights dashboard"
+          git push origin HEAD:main
