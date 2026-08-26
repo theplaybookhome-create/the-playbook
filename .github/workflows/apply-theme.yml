@@ -24,9 +24,10 @@ jobs:
           grep -q 'Premium dashboard theme' app.html
           grep -q alreadyPaid app.html
           grep -q tiktok app.html
-          grep -q THEME_BUILD_V16 app.html
+          grep -q THEME_BUILD_V17 app.html
+          grep -q hchip app.html
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
           git add app.html
-          git diff --cached --quiet || git commit -m "Today mockup: 4 social tiles + Android layout lock"
+          git diff --cached --quiet || git commit -m "Header chips are active buttons; hide empty energy chevron"
           git push origin HEAD:main
