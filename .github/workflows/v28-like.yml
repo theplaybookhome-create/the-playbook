@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - v28_like_patch.py
-      - sunrise.b64
       - .github/workflows/v28-like.yml
 permissions:
   contents: write
@@ -19,7 +18,7 @@ jobs:
           python3 v28_like_patch.py app.html
           grep -q THEME_BUILD_V28 app.html
           grep -q ql-sun-art app.html
-          grep -q data:image/jpeg app.html
+          grep -q v28sky app.html
           grep -q home-mid app.html
           ! grep -q 'label: "Instagram"' app.html
           ! grep -q 'label: "YouTube"' app.html
@@ -27,6 +26,6 @@ jobs:
           grep -q playbook-v28 sw.js
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
-          git add app.html sw.js v28_like_patch.py sunrise.b64
-          git diff --cached --quiet || git commit -m "V28: like-for-like tablet mockup — finished sunrise art, four social cards, dark header"
+          git add app.html sw.js v28_like_patch.py
+          git diff --cached --quiet || git commit -m "V28: like-for-like tablet mockup — mountain sunrise, four social cards, dark header"
           git push origin HEAD:main
