@@ -3,9 +3,13 @@
 from pathlib import Path
 import base64
 import json
+import shutil
 
 ROOT = Path(".")
-ASSETS_PATH = Path(__file__).with_name("canva_assets.json")
+HERE = Path(__file__).resolve().parent
+B64_DIR = HERE / "canva_b64"
+ASSETS_JSON = HERE / "canva_assets.json"
+ASSETS_COMPACT = HERE / "canva_assets_compact.json"
 
 CSS = """
 .brand-mark-img { width:28px; height:28px; border-radius:8px; object-fit:cover; flex-shrink:0; box-shadow:0 4px 10px rgba(11,18,25,.28); }
@@ -13,17 +17,72 @@ CSS = """
 .print-pack .pp-emoji { display:none; }
 """
 
+EXPECTED = [
+    "brand-1024.png",
+    "icon-512.png",
+    "icon-192.png",
+    "icon-180.png",
+    "icon-maskable-512.png",
+    "favicon.png",
+    "cover-complete.jpg",
+    "cover-visual.jpg",
+    "cover-colouring.jpg",
+    "cover-learning.jpg",
+    "cover-aac.jpg",
+]
+
+
+def _read_clean(path: Path) -> str:
+    return "".join(path.read_text(encoding="utf-8").split())
+
+
+def load_blobs():
+    blobs = {}
+    if B64_DIR.is_dir():
+        for src in sorted(B64_DIR.glob("*.b64")):
+            blobs[src.name[:-4]] = _read_clean(src)
+            print("b64", src.name[:-4], len(blobs[src.name[:-4]]))
+    for candidate in (ASSETS_JSON, ASSETS_COMPACT):
+        if candidate.is_file():
+            extra = json.loads(candidate.read_text(encoding="utf-8"))
+            for name, blob in extra.items():
+                blobs.setdefault(name, blob)
+            print("json", candidate.name, len(extra))
+    if not blobs:
+        raise SystemExit("no Canva assets found (canva_b64/*.b64 or canva_assets.json)")
+    return blobs
+
 
 def write_assets(root: Path) -> None:
-    assets = json.loads(ASSETS_PATH.read_text(encoding="utf-8"))
-    for name, blob in assets.items():
+    blobs = load_blobs()
+    for name in EXPECTED:
+        if name not in blobs:
+            print("missing payload", name)
+            continue
         dest = root / name
-        data = base64.b64decode(blob)
+        try:
+            data = base64.b64decode(blobs[name], validate=False)
+        except Exception as exc:
+            print("skip bad payload", name, exc)
+            continue
+        if len(data) < 32:
+            print("skip tiny payload", name, len(data))
+            continue
+        if data[:2] != b"\xff\xd8" and data[:8] != b"\x89PNG\r\n\x1a\n":
+            print("skip non-image payload", name, data[:8])
+            continue
         if not dest.exists() or dest.read_bytes() != data:
             dest.write_bytes(data)
             print("wrote", dest, len(data))
         else:
-            print("ok", dest)
+            print("ok", dest, len(data))
+    src = root / "cover-complete.jpg"
+    if src.exists() and src.stat().st_size > 32:
+        for name in ("cover-visual.jpg", "cover-colouring.jpg", "cover-learning.jpg", "cover-aac.jpg"):
+            dest = root / name
+            if not dest.exists() or dest.stat().st_size < 32:
+                shutil.copyfile(src, dest)
+                print("copied fallback", dest)
 
 
 def patch_app(root: Path) -> None:
@@ -63,6 +122,7 @@ def patch_sw(root: Path) -> None:
     p = root / "sw.js"
     s = p.read_text(encoding="utf-8")
     s = s.replace('const CACHE = "playbook-v18";', 'const CACHE = "playbook-v19";')
+    s = s.replace("./sw.js?v=18", "./sw.js?v=19")
     if "cover-complete.jpg" not in s:
         s = s.replace(
             '  "./favicon.png"\n];',

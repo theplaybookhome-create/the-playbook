@@ -7,6 +7,8 @@ on:
       - "social_patch.py"
       - "canva_assets_patch.py"
       - "canva_assets.json"
+      - "canva_assets_compact.json"
+      - "canva_b64/**"
       - ".github/workflows/apply-theme.yml"
 permissions:
   contents: write
