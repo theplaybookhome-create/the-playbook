@@ -24,10 +24,13 @@ jobs:
           grep -q 'Premium dashboard theme' app.html
           grep -q alreadyPaid app.html
           grep -q tiktok app.html
-          grep -q THEME_BUILD_V17 app.html
+          grep -q THEME_BUILD_V18 app.html
           grep -q hchip app.html
+          grep -q energy-spark-wrap app.html
+          if grep -q 'id: "instagram"' app.html; then echo "instagram still listed" && exit 1; fi
+          if grep -q 'id: "whatsapp"' app.html; then echo "whatsapp still listed" && exit 1; fi
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
           git add app.html
-          git diff --cached --quiet || git commit -m "Header chips are active buttons; hide empty energy chevron"
+          git diff --cached --quiet || git commit -m "Active header chips, clickable energy card, official social logos"
           git push origin HEAD:main
