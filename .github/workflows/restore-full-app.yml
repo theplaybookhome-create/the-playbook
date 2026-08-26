@@ -1,0 +1,36 @@
+name: restore-full-app
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/restore-full-app.yml'
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore full app.html and apply iOS getSession timeout
+        run: |
+          set -euo pipefail
+          git show 20573627c5a12b069f07977089e492e50897d427:app.html > app.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app.html')
+          html = p.read_text(encoding='utf-8')
+          needle = 'sb.auth.getSession().then(async ({ data }) => {\n      setSession(data.session || null);\n      setAuthReady(true);\n      await applyAccountPremium(data.session || null);\n    });'
+          patch = '''// iOS Chrome can hang indefinitely on getSession; race with timeout so free path always continues\n    const sessionPromise = sb.auth.getSession().then(({ data }) => data).catch((e) => {\n      console.warn("getSession error", e);\n      return { session: null };\n    });\n    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve({ session: null, timedOut: true }), 4000));\n    Promise.race([sessionPromise, timeoutPromise]).then(async (data) => {\n      if (data && data.timedOut) console.warn("getSession timed out (iOS) — continuing without session");\n      const sess = data && data.session ? data.session : null;\n      setSession(sess);\n      setAuthReady(true);\n      await applyAccountPremium(sess);\n    });'''
+          if needle not in html:
+              raise SystemExit('needle not found in app.html')
+          p.write_text(html.replace(needle, patch, 1), encoding='utf-8')
+          print('bytes', p.stat().st_size)
+          PY
+          test "$(wc -c < app.html)" -gt 150000
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add app.html
+          git diff --cached --quiet || git commit -m "Restore full THE PLAYBOOK app.html with iOS getSession timeout fix"
+          git push origin HEAD:main
