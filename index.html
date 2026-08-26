@@ -12,16 +12,8 @@
         }
         if (params.get("stay") === "1" || params.get("landing") === "1") return;
         if ((window.location.hash || "") === "#buy") return;
-        var returning = false;
-        try {
-          if (localStorage.getItem("playbook:onboard-seen") === "1") returning = true;
-          if (localStorage.getItem("playbook:premium-unlocked") === "1") returning = true;
-          for (var i = 0; i < localStorage.length; i++) {
-            var k = localStorage.key(i) || "";
-            if (k.indexOf("auth-token") !== -1 || k.indexOf("-auth-token") !== -1) { returning = true; break; }
-          }
-        } catch (e) {}
-        if (returning) window.location.replace("./app.html");
+        /* Landing stays at / so phones see Open / Log in / Unlock. */
+
       } catch (e) {}
     })();
   </script>
