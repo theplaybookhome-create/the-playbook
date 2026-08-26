@@ -1,355 +1,137 @@
 #!/usr/bin/env python3
-"""Apply visual remodel to THE PLAYBOOK app.html. Safe to re-run."""
 from pathlib import Path
-
-p = Path("app.html")
-s = p.read_text(encoding="utf-8")
-
-THEME_CSS = r"""
-/* ===== Remodel theme overlay ===== */
-:root {
-  --peach: #F4C7A8;
-  --sky: #7EB6D9;
-  --mint: #7BC4A8;
-  --lilac: #B9A7E0;
-  --coral: #E07A6A;
+import sys
+p = Path(sys.argv[1] if len(sys.argv) > 1 else 'app.html')
+s = p.read_text(encoding='utf-8')
+PREMIUM_CSS = r'''
+/* ===== Premium dashboard theme (mockup) ===== */
+:root { --navy:#0E1822; --navy-mid:#15202B; --navy-dark:#0B1219; --amber:#E8892C; --amber-deep:#C1752E; --amber-tint:#FFF4E8; --paper:#F4F6F8; --sheet:#F7F8FA; }
+.app-root { background:var(--navy-dark); padding-bottom:96px; }
+.app-header { background:var(--navy) !important; color:#fff !important; padding:16px 20px 18px !important; border-bottom:none !important; }
+.header-top { align-items:center; }
+.brand { font-weight:800; letter-spacing:1.4px; font-size:15px; display:flex; align-items:center; gap:10px; color:#fff; }
+.brand-mark { width:28px; height:28px; border-radius:8px; background:linear-gradient(180deg,#F5A24A,#E07A1A); box-shadow:0 4px 10px rgba(232,137,44,.35); }
+.brand-sub { color:rgba(255,255,255,.55) !important; font-size:12px; margin-top:3px; }
+.header-btn, .header-pill { background:#1C2A38 !important; border:1px solid rgba(255,255,255,.10) !important; color:#E8EEF4 !important; border-radius:12px !important; padding:8px 14px !important; font-weight:700 !important; font-size:12px !important; box-shadow:none !important; }
+.header-avatar { width:38px; height:38px; border-radius:50%; background:#1C2A38; border:1.5px solid rgba(255,255,255,.14); color:#fff; font-weight:800; font-size:12px; display:grid; place-items:center; position:relative; }
+.header-avatar .dot { position:absolute; right:1px; bottom:1px; width:8px; height:8px; background:#22C55E; border:2px solid var(--navy); border-radius:50%; }
+.header-chips { display:flex; flex-wrap:wrap; gap:6px 4px; margin-top:14px; padding:8px 10px; background:#121C26; border-radius:14px; border:1px solid rgba(255,255,255,.06); }
+.header-chips span { display:inline-flex; align-items:center; gap:6px; color:rgba(255,255,255,.72); font-size:12px; font-weight:600; padding:4px 8px; }
+.header-chips span:not(:last-child)::after { content:"·"; margin-left:10px; color:rgba(255,255,255,.25); }
+.child-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,.08) !important; }
+.child-bar-label { color:rgba(255,255,255,.45); }
+.child-chip { border:1px solid rgba(255,255,255,.14) !important; background:#1C2A38 !important; color:#fff !important; }
+.child-chip.active { background:var(--amber) !important; border-color:var(--amber) !important; color:#fff !important; }
+.child-manage { color:rgba(255,255,255,.7) !important; }
+.app-main { background:var(--sheet); border-radius:28px 28px 0 0; margin-top:-2px; padding:22px 18px 28px; min-height:70vh; box-shadow:0 -12px 40px rgba(0,0,0,.18); }
+.home-today { max-width:1080px; margin:0 auto; }
+.home-top { display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:16px; align-items:start; }
+.home-greet { margin:2px 0 0; }
+.home-greet .hi { font-size:30px; line-height:1.12; margin:0 0 8px; color:#111827; letter-spacing:-0.035em; font-weight:800; }
+.home-greet .sub { margin:0; color:#6B7280; font-size:14.5px; }
+.home-greet .sub b { color:var(--amber-deep); font-weight:700; }
+.owned-chip-card, .paywall-card { border-radius:18px !important; border:1px solid #EEE4D6 !important; background:#FFF8F0 !important; }
+.home-hero { display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:16px; }
+.quick-log-card { position:relative; overflow:hidden; border-radius:22px !important; border:1px solid #E8E2DA !important; background:radial-gradient(280px 160px at 92% 8%, rgba(252,211,140,.55), transparent 70%), radial-gradient(220px 140px at 100% 40%, rgba(186,214,232,.35), transparent 65%), #fff !important; box-shadow:0 10px 30px rgba(15,24,34,.06) !important; padding:18px !important; }
+.quick-log-card h3 { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#111827; display:flex; align-items:center; gap:8px; margin:0 0 4px; }
+.ql-bolt { position:static !important; width:28px !important; height:28px !important; border-radius:8px !important; background:#FFF4E8 !important; border:1px solid #F3D7B3 !important; }
+.scale-btn { width:48px !important; height:48px !important; border-radius:14px !important; border:1.5px solid #E6E8EC !important; background:#fff !important; font-weight:800 !important; }
+.scale-btn.active { background:linear-gradient(180deg,#F08A2A,#E07A1A) !important; border-color:#E07A1A !important; color:#fff !important; box-shadow:0 8px 16px rgba(224,122,26,.28); }
+.tick-chip { border-radius:999px !important; border:1.5px solid #E6E8EC !important; background:#fff !important; padding:8px 12px !important; }
+.tick-chip.active { background:#FFF4E8 !important; border-color:#F3D7B3 !important; }
+.btn-primary, .ql-save { background:#15202B !important; color:#fff !important; border:none !important; border-radius:14px !important; padding:12px 18px !important; font-weight:700 !important; }
+.home-side { display:flex; flex-direction:column; gap:12px; }
+.energy-spark, .stat-card, .connect-card, .quick-link, .chart-card, .print-pack, .card { background:#fff; border:1px solid #E8ECF0; border-radius:20px; box-shadow:0 8px 24px rgba(15,24,34,.04); }
+.energy-spark { padding:16px; }
+.energy-spark h3 { margin:0; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#6B7280; }
+.energy-spark svg { width:100%; height:84px; display:block; }
+.energy-spark .es-big { font-size:32px; font-weight:800; letter-spacing:-.04em; color:#111827; }
+.energy-spark .es-hint { font-size:12px; color:#9CA3AF; }
+.stat-label { font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:#6B7280; font-weight:700; }
+.stat-value { font-size:32px; font-weight:800; letter-spacing:-.04em; color:#111827; margin:6px 0 2px; }
+.connect-card { padding:18px; margin-bottom:14px; }
+.connect-links { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.connect-btn { display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; background:#fff; border:1.5px solid #E8ECF0; border-radius:16px; padding:10px 12px; min-height:64px; }
+.connect-btn .cb-ico { width:40px; height:40px; border-radius:12px; display:grid; place-items:center; flex:0 0 40px; }
+.connect-btn .cb-ico svg { width:18px; height:18px; fill:#fff; }
+.connect-btn.tt .cb-ico { background:#111; }
+.connect-btn.xx .cb-ico { background:#0F1419; }
+.connect-btn.fb .cb-ico { background:#1877F2; }
+.connect-btn.em .cb-ico { background:#E8892C; }
+.quick-links { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:4px 0 16px; }
+.quick-link { text-align:left; padding:16px; cursor:pointer; font-family:inherit; border:1px solid #E8ECF0; }
+.quick-link .ql-ico { width:42px; height:42px; border-radius:50%; display:grid; place-items:center; margin-bottom:10px; font-size:18px; border:none; }
+.quick-link.t-log .ql-ico { background:#FFE8D2; }
+.quick-link.t-ins .ql-ico { background:#EDE4FF; }
+.quick-link.t-rep .ql-ico { background:#DCEBFF; }
+.quick-link.t-com .ql-ico { background:#D8F5E8; }
+.quick-link.t-print .ql-ico { background:#FBD7E8; }
+.why-card { background:#FFF8F0; border:1px solid #F0E0CC; border-radius:18px; padding:14px 16px; }
+.printables-grid { display:grid; grid-template-columns:1fr; gap:12px; }
+.insight-dash { display:flex; flex-direction:column; gap:12px; }
+.dash-kpis, .dash-charts { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.auth-shell { background:radial-gradient(900px 500px at 20% -10%, #1E3346, var(--navy-dark)); min-height:100vh; }
+.bottom-nav { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(10px + env(safe-area-inset-bottom)); width:calc(100% - 24px); max-width:720px; background:#15202B !important; border:none !important; border-radius:22px !important; padding:8px !important; box-shadow:0 16px 40px rgba(11,18,25,.45); display:flex; justify-content:space-between; z-index:40; }
+.bottom-btn { flex:1; color:rgba(255,255,255,.46); background:transparent; border:none; border-radius:14px; padding:8px 4px; font-family:inherit; }
+.bottom-btn .lbl { font-size:10px; font-weight:700; }
+.bottom-btn.active { background:transparent; color:#F08A2A; }
+.bottom-btn.active .lbl { color:#F08A2A !important; }
+@media (min-width:860px) {
+  .app-main { padding:28px 28px 40px; }
+  .home-top { grid-template-columns:1fr 280px; }
+  .home-hero { grid-template-columns:minmax(0,1.6fr) minmax(240px,.9fr); }
+  .connect-links { grid-template-columns:repeat(4,1fr); }
+  .quick-links { grid-template-columns:repeat(3,1fr); }
+  .printables-grid { grid-template-columns:1fr 1fr; }
 }
-.app-root { background:
-  radial-gradient(1200px 420px at 10% -10%, rgba(193,117,46,0.10), transparent 55%),
-  radial-gradient(900px 380px at 110% 8%, rgba(126,182,217,0.16), transparent 50%),
-  var(--paper);
-}
-.app-header {
-  background: linear-gradient(180deg, #ffffff 0%, #fffaf5 100%);
-  border-bottom: 1px solid rgba(44,62,80,0.08);
-}
-.header-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
-.header-btn, .header-pill {
-  background: #fff;
-  border: 1.5px solid var(--line);
-  color: var(--navy);
-  border-radius: 999px;
-  padding: 7px 12px;
-  font-weight: 700;
-  font-size: 12px;
-  cursor: pointer;
-  box-shadow: 0 1px 0 rgba(44,62,80,0.04);
-}
-.header-btn:hover, .header-pill:hover { border-color: var(--amber); background: var(--amber-tint); }
-.btn-primary, .btn-amber, .auth-submit {
-  border-radius: 999px !important;
-  box-shadow: 0 6px 16px rgba(44,62,80,0.16);
-}
-.btn-primary { background: linear-gradient(180deg, #34495E, #2C3E50); }
-.quick-link, .scale-btn, .tick-chip, .range-pill, .child-chip, .connect-btn, .print-pack, .story-card, .stat-card, .insight-metric {
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-}
-.quick-link:hover, .print-pack:hover, .connect-btn:hover, .stat-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(44,62,80,0.10);
-}
-.home-greet { margin: 4px 0 16px; }
-.home-greet .hi {
-  font-size: 26px; line-height: 1.15; margin: 0 0 6px;
-  color: var(--navy); letter-spacing: -0.03em; font-weight: 800;
-}
-.home-greet .hi em { font-style: normal; color: var(--amber); }
-.home-greet .sub { margin: 0; color: var(--soft); font-size: 14px; line-height: 1.45; }
-.energy-spark {
-  background: #fff; border: 1.5px solid #E8D5C0; border-radius: 16px;
-  padding: 14px 14px 10px; margin-bottom: 14px;
-}
-.energy-spark .es-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.energy-spark h3 { margin: 0; font-size: 14px; color: var(--navy); }
-.energy-spark .es-avg { font-size: 12px; color: var(--soft); font-weight: 700; }
-.energy-spark svg { width: 100%; height: 72px; display: block; margin-top: 6px; }
-.energy-spark .es-empty { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
-.dash-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-.dash-kpis .stat-card { border: 1.5px solid var(--line); border-radius: 16px; background: #fff; padding: 14px; }
-.owned-chip-card { border: 1.5px solid #C9E8D6 !important; background: linear-gradient(135deg, #F3FBF6, #fff); }
-.quick-log-card {
-  position: relative; overflow: hidden;
-  border-radius: 18px !important; border: 1.5px solid #E8D5C0 !important;
-  box-shadow: 0 10px 28px rgba(193,117,46,0.10);
-}
-.quick-log-card .ql-bolt {
-  position: absolute; top: 12px; right: 14px;
-  width: 34px; height: 34px; border-radius: 12px;
-  display: grid; place-items: center;
-  background: #fff; border: 1.5px solid #E8D5C0; font-size: 16px;
-}
-.scale-btn { width: 40px; height: 40px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-weight: 800; }
-.scale-btn.active { background: linear-gradient(180deg, #D48A45, #C1752E); border-color: #C1752E; color: #fff; }
-.quick-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0 16px; }
-.quick-link {
-  text-align: left; background: #fff; border: 1.5px solid var(--line);
-  border-radius: 16px; padding: 12px 12px 13px; cursor: pointer; font-family: inherit;
-}
-.quick-link .ql-ico {
-  width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center;
-  background: var(--amber-tint); border: 1.5px solid #E8D5C0; margin-bottom: 8px; font-size: 16px;
-}
-.quick-link strong { display: block; color: var(--navy); font-size: 14px; }
-.quick-link span:last-child { display: block; color: var(--soft); font-size: 12px; margin-top: 2px; }
-.connect-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.connect-btn {
-  display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;
-  background: #fff; border: 1.5px solid var(--line); border-radius: 16px; padding: 10px 12px; min-height: 64px;
-}
-.connect-btn .cb-ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: 0 0 40px; }
-.connect-btn .cb-ico svg { width: 20px; height: 20px; fill: #fff; }
-.connect-btn.fb .cb-ico { background: #1877F2; }
-.connect-btn.tt .cb-ico { background: #111; }
-.connect-btn.xx .cb-ico { background: #0F1419; }
-.connect-btn.em .cb-ico { background: #C1752E; }
-.connect-btn .cb-text { display: flex; flex-direction: column; min-width: 0; }
-.connect-btn .cb-text strong { font-size: 13px; color: var(--navy); }
-.connect-btn .cb-text span { font-size: 11px; color: var(--soft); }
-.printables-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-@media (min-width: 560px) { .printables-grid { grid-template-columns: 1fr 1fr; } }
-.print-pack { background: #fff; border: 1.5px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
-.print-pack .pp-emoji {
-  width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center;
-  background: var(--amber-tint); border: 1.5px solid #E8D5C0; font-size: 22px;
-}
-.print-pack button { width: 100%; margin-top: 8px; }
-.insight-dash { display: flex; flex-direction: column; gap: 12px; }
-.dash-charts { display: grid; grid-template-columns: 1fr; gap: 12px; }
-@media (min-width: 560px) { .dash-charts { grid-template-columns: 1fr 1fr; } }
-.chart-card { background: #fff; border: 1.5px solid var(--line); border-radius: 16px; padding: 14px; }
-.chart-card h3 { margin: 0 0 8px; font-size: 13px; color: var(--navy); }
-.insight-metric { background: #fff; border: 1.5px solid var(--line); border-radius: 16px; padding: 14px; }
-.insight-metric .im-val { font-size: 26px; font-weight: 800; color: var(--navy); letter-spacing: -0.03em; }
-.insight-metric .im-label { font-size: 12px; color: var(--soft); font-weight: 600; }
-.auth-features { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 16px 0 4px; }
-.auth-features span {
-  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 12px; padding: 10px; font-size: 12px; font-weight: 700; color: #F6E6D4; text-align: center;
-}
-.auth-card { border-radius: 20px !important; box-shadow: 0 20px 50px rgba(0,0,0,0.28); }
-.auth-submit { width: 100%; }
-.bottom-nav {
-  background: #1A252F !important; border-top: none !important;
-  border-radius: 22px 22px 0 0; max-width: 680px; margin: 0 auto;
-  padding: 8px 8px calc(10px + env(safe-area-inset-bottom)) !important;
-  box-shadow: 0 -10px 30px rgba(26,37,47,0.25);
-}
-.bottom-btn { color: rgba(255,255,255,0.55); }
-.bottom-btn .lbl { font-size: 10px; font-weight: 700; }
-.bottom-btn.active { background: rgba(255,255,255,0.1); border-radius: 14px; color: #fff; }
-.bottom-btn.active .lbl { color: #F4C7A8 !important; }
-.app-main { padding-bottom: 92px; }
-"""
-
-if "Remodel theme overlay" not in s:
-    css_close = "\n@media print {"
-    if css_close not in s:
-        raise SystemExit("css print block not found")
-    s = s.replace(css_close, THEME_CSS + "\n@media print {", 1)
-
-ENERGY_FN = '''
-function greetingForNow() {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
-}
-function EnergySpark({ values, avg }) {
-  const pts = (values || []).filter((n) => n != null && !isNaN(n));
-  const w = 280, h = 72, pad = 8;
-  let path = "";
-  if (pts.length) {
-    const max = 5, min = 1;
-    pts.forEach((v, i) => {
-      const x = pad + (pts.length === 1 ? (w - pad * 2) / 2 : i * ((w - pad * 2) / Math.max(pts.length - 1, 1)));
-      const y = h - pad - ((v - min) / (max - min)) * (h - pad * 2);
-      path += (i === 0 ? "M" : "L") + x.toFixed(1) + " " + y.toFixed(1) + " ";
-    });
-  }
-  return (
-    <div className="energy-spark">
-      <div className="es-top">
-        <h3>Energy spark</h3>
-        <div className="es-avg">{avg !== "—" ? ("avg " + avg + "/5") : "log a few days"}</div>
-      </div>
-      {pts.length < 2 ? (
-        <p className="es-empty">A tiny sparkline appears after two energy logs.</p>
-      ) : (
-        <svg viewBox={"0 0 " + w + " " + h} aria-hidden="true">
-          <path d={path} fill="none" stroke="#C1752E" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      )}
-    </div>
-  );
+@media (max-width:559px) {
+  .connect-links, .dash-kpis, .dash-charts { grid-template-columns:1fr; }
+  .home-greet .hi { font-size:26px; }
 }
 '''
-
-if "function EnergySpark" not in s:
-    needle = "function QuickLog({ setDataStore, showToast, activeChildId }) {"
-    if needle not in s:
-        raise SystemExit("QuickLog not found")
-    s = s.replace(needle, ENERGY_FN + "\n" + needle, 1)
-
-if "ql-bolt" not in s:
-    old_ql = '<div className="quick-log-card">\n      <h3>Quick log</h3>'
-    new_ql = '<div className="quick-log-card">\n      <span className="ql-bolt" aria-hidden="true">⚡</span>\n      <h3>Quick log</h3>'
-    if old_ql not in s:
-        raise SystemExit("quick log card header not found")
-    s = s.replace(old_ql, new_ql, 1)
-
-if 'className="home-greet"' not in s:
-    old_home = '''  const lastWin = wins[0];
-  return (
-    <div>
-      <PageHeader kicker="Your companion" title="Today" subtitle={activeChildName ? ("Logging for " + activeChildName + " · track what matters.") : "Track what matters. Spot patterns. Look after yourself too."} />
-      <PaywallCard onUnlock={onUnlock} unlocked={unlocked} />
-      <QuickLog setDataStore={setDataStore} showToast={showToast} activeChildId={activeChildId} />
-      <ConnectCard />
-      <div className="dash-grid">
-        <div className="stat-card"><div className="stat-label">Energy (7 logs)</div><div className="stat-value">{avgEnergy}{avgEnergy !== "—" ? "/5" : ""}</div><div className="stat-hint">Your average lately</div></div>
-        <div className="stat-card"><div className="stat-label">Logs this device</div><div className="stat-value">{daily.length + behavior.length}</div><div className="stat-hint">Daily + behaviour</div></div>
-      </div>'''
-    new_home = '''  const lastWin = wins[0];
-  const hello = greetingForNow();
-  return (
-    <div>
-      <div className="home-greet">
-        <p className="hi">{hello}{activeChildName ? <em> · {activeChildName}</em> : null}</p>
-        <p className="sub">{activeChildName ? ("Logging for " + activeChildName + " · track what matters today.") : "Track what matters. Spot patterns. Look after yourself too."}</p>
-      </div>
-      <PaywallCard onUnlock={onUnlock} unlocked={unlocked} />
-      <QuickLog setDataStore={setDataStore} showToast={showToast} activeChildId={activeChildId} />
-      <EnergySpark values={recentEnergy} avg={avgEnergy} />
-      <div className="dash-kpis">
-        <div className="stat-card"><div className="stat-label">Energy (7 logs)</div><div className="stat-value">{avgEnergy}{avgEnergy !== "—" ? "/5" : ""}</div><div className="stat-hint">Your average lately</div></div>
-        <div className="stat-card"><div className="stat-label">Logs this device</div><div className="stat-value">{daily.length + behavior.length}</div><div className="stat-hint">Daily + behaviour</div></div>
-      </div>
-      <ConnectCard />'''
-    if old_home not in s:
-        raise SystemExit("HomePage return block not found")
-    s = s.replace(old_home, new_home, 1)
-
-if "owned-chip-card" not in s:
-    s = s.replace(
-        '<div className="card" style={{ borderColor: "var(--amber)" }}>',
-        '<div className="card owned-chip-card" style={{ borderColor: "var(--amber)" }}>',
-        1,
-    )
-
-if 'className="auth-features"' not in s:
-    old_auth_trust = '''        <div className="auth-trust">
-          <span>Private logs</span>
-          <span>·</span>
-          <span>No subscription required</span>
-          <span>·</span>
-          <span>£2.99 unlock</span>
-        </div>'''
-    new_auth_trust = '''        <div className="auth-features">
-          <span>Private logs</span>
-          <span>No subscription</span>
-          <span>Track free first</span>
-          <span>£2.99 unlock</span>
-        </div>
-        <div className="auth-trust">
-          <span>Private logs</span>
-          <span>·</span>
-          <span>No subscription required</span>
-          <span>·</span>
-          <span>£2.99 unlock</span>
-        </div>'''
-    if old_auth_trust not in s:
-        raise SystemExit("auth-trust not found")
-    s = s.replace(old_auth_trust, new_auth_trust, 1)
-
-if "const sleep7" not in s:
-    old_last7 = '''  const last7 = useMemo(() => {
-    const daily = [...(dataStore["daily-log-entries"] || [])].filter((e) => e.date).sort((a, b) => a.date.localeCompare(b.date));
-    return daily.slice(-7);
-  }, [dataStore]);
-
-  if (!unlocked) {'''
-    new_last7 = '''  const last7 = useMemo(() => {
-    const daily = [...(dataStore["daily-log-entries"] || [])].filter((e) => e.date).sort((a, b) => a.date.localeCompare(b.date));
-    return daily.slice(-7);
-  }, [dataStore]);
-  const sleep7 = useMemo(() => {
-    const sleep = [...(dataStore["sleep-food-entries"] || [])].filter((e) => e.date).sort((a, b) => a.date.localeCompare(b.date));
-    return sleep.slice(-7);
-  }, [dataStore]);
-
-  if (!unlocked) {'''
-    if old_last7 not in s:
-        raise SystemExit("last7 block not found")
-    s = s.replace(old_last7, new_last7, 1)
-
-if 'className="insight-dash"' not in s:
-    old_ins = '<PageHeader kicker="Patterns, not perfection" title="Insights" subtitle="Built only from what you\'ve logged on this device." />'
-    new_ins = '<PageHeader kicker="Patterns, not perfection" title="Insights" subtitle="A dashboard from what you\'ve logged on this device." />'
-    if old_ins not in s:
-        raise SystemExit("insights header not found")
-    s = s.replace(old_ins, new_ins, 1)
-    s = s.replace(
-        "  return (\n    <div>\n      <PageHeader kicker=\"Patterns, not perfection\" title=\"Insights\" subtitle=\"A dashboard from what you've logged on this device.\" />",
-        "  return (\n    <div className=\"insight-dash\">\n      <PageHeader kicker=\"Patterns, not perfection\" title=\"Insights\" subtitle=\"A dashboard from what you've logged on this device.\" />",
-        1,
-    )
-
-if "Sleep quality" not in s:
-    old_bar = '''      <div className="card">
-        <div className="stat-label">Energy — last daily scores</div>
-        {last7.length === 0 ? <p className="insight-empty">Log daily energy to see a trend.</p> : (
-          <div className="insight-bar">
-            {last7.map((e) => (
-              <div className="insight-col" key={e.id}>
-                <div className="insight-fill" style={{ height: e.energy ? (e.energy / 5) * 72 : 4 }} title={e.energy ? `${e.energy}/5` : "—"} />
-                <span className="insight-day">{e.date ? e.date.slice(5) : ""}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>'''
-    new_bar = '''      <div className="dash-charts">
-      <div className="chart-card">
-        <h3>Energy — last daily scores</h3>
-        {last7.length === 0 ? <p className="insight-empty">Log daily energy to see a trend.</p> : (
-          <div className="insight-bar">
-            {last7.map((e) => (
-              <div className="insight-col" key={e.id}>
-                <div className="insight-fill" style={{ height: e.energy ? (e.energy / 5) * 72 : 4 }} title={e.energy ? `${e.energy}/5` : "—"} />
-                <span className="insight-day">{e.date ? e.date.slice(5) : ""}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="chart-card">
-        <h3>Sleep quality</h3>
-        {sleep7.length === 0 ? <p className="insight-empty">Log sleep to see nights side by side.</p> : (
-          <div className="insight-bar">
-            {sleep7.map((e) => (
-              <div className="insight-col" key={e.id}>
-                <div className="insight-fill" style={{ height: e.sleepQuality ? (e.sleepQuality / 5) * 72 : 4, background: "#7EB6D9" }} title={e.sleepQuality ? `${e.sleepQuality}/5` : "—"} />
-                <span className="insight-day">{e.date ? e.date.slice(5) : ""}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      </div>'''
-    if old_bar not in s:
-        raise SystemExit("energy bar card not found")
-    s = s.replace(old_bar, new_bar, 1)
-
-s = s.replace('className="header-btn"', 'className="header-btn header-pill"')
-s = s.replace('<meta name="theme-color" content="#2C3E50" />', '<meta name="theme-color" content="#1A252F" />', 1)
-
-old_ph = "Browse every pack below. Each card shows example sheets so you know what you're getting — then open or save the PDF without leaving the app."
-new_ph = "A grid of packs you can preview, open and save — without leaving the app."
-s = s.replace(old_ph, new_ph, 1)
-
-for must in ["home-greet", "EnergySpark", "dash-kpis", "alreadyPaid", "isClockSkewError", "auth-features", "insight-dash", "ql-bolt"]:
-    if must not in s:
-        raise SystemExit("missing marker " + must)
-
-p.write_text(s, encoding="utf-8")
-print("patched", p.stat().st_size)
+START = '/* ===== Remodel theme overlay ===== */'
+END = '.app-main { padding-bottom: 92px; }'
+if START in s and END in s:
+    a = s.find(START); b = s.find(END)+len(END)
+    s = s[:a] + PREMIUM_CSS + s[b:]
+    print('replaced overlay')
+elif 'Premium dashboard theme' not in s:
+    s = s.replace('\n@media print {', PREMIUM_CSS + '\n@media print {', 1)
+    print('injected css')
+if 'function firstNameOf' not in s:
+    old = 'function greetingForNow() {\n  const h = new Date().getHours();\n  if (h < 12) return "Good morning";\n  if (h < 17) return "Good afternoon";\n  return "Good evening";\n}'
+    new = old + '''\nfunction firstNameOf(user) {\n  if (!user) return "";\n  const md = user.user_metadata || {};\n  const raw = String(md.display_name || md.name || md.full_name || "").trim();\n  if (raw) return raw.split(/\\s+/)[0];\n  const em = String(user.email || "").split("@")[0];\n  const cleaned = em.replace(/[0-9]+/g, " ").replace(/[._-]+/g, " ").trim();\n  const word = (cleaned.split(/\\s+/)[0] || em);\n  return word ? word.charAt(0).toUpperCase() + word.slice(1) : "";\n}\nfunction initialsOf(user) {\n  const n = firstNameOf(user);\n  if (n.length >= 2) return (n[0] + n[1]).toUpperCase();\n  const em = String((user && user.email) || "U");\n  return (em[0] + (em[1] || "P")).toUpperCase();\n}\n'''
+    if old not in s: raise SystemExit('greetingForNow missing')
+    s = s.replace(old, new, 1)
+s = s.replace('function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onOpenPaywall, showToast, activeChildId, activeChildName }) {', 'function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onOpenPaywall, showToast, activeChildId, activeChildName, firstName }) {', 1)
+old_home = '''  const hello = greetingForNow();\n  return (\n    <div>\n      <div className="home-greet">\n        <p className="hi">{hello}{activeChildName ? <em> · {activeChildName}</em> : null}</p>\n        <p className="sub">{activeChildName ? ("Logging for " + activeChildName + " · track what matters today.") : "Track what matters. Spot patterns. Look after yourself too."}</p>\n      </div>\n      <PaywallCard onUnlock={onUnlock} unlocked={unlocked} />\n      <QuickLog setDataStore={setDataStore} showToast={showToast} activeChildId={activeChildId} />\n      <EnergySpark values={recentEnergy} avg={avgEnergy} />\n      <div className="dash-kpis">\n        <div className="stat-card"><div className="stat-label">Energy (7 logs)</div><div className="stat-value">{avgEnergy}{avgEnergy !== "—" ? "/5" : ""}</div><div className="stat-hint">Your average lately</div></div>\n        <div className="stat-card"><div className="stat-label">Logs this device</div><div className="stat-value">{daily.length + behavior.length}</div><div className="stat-hint">Daily + behaviour</div></div>\n      </div>\n      <ConnectCard />'''
+new_home = '''  const hello = greetingForNow();\n  const who = firstName || "";\n  return (\n    <div className="home-today">\n      <div className="home-top">\n        <div className="home-greet">\n          <p className="hi">{hello}{who ? ", " + who : ""}{who ? " 👋" : ""}</p>\n          <p className="sub">{activeChildName ? (<span>Logging for <b>{activeChildName}</b> · track what matters.</span>) : "Track what matters. Spot patterns. Look after yourself too."}</p>\n        </div>\n        <PaywallCard onUnlock={onUnlock} unlocked={unlocked} />\n      </div>\n      <div className="home-hero">\n        <QuickLog setDataStore={setDataStore} showToast={showToast} activeChildId={activeChildId} />\n        <div className="home-side">\n          <EnergySpark values={recentEnergy} avg={avgEnergy} />\n          <div className="stat-card">\n            <div className="stat-label">Logs this device</div>\n            <div className="stat-value">{daily.length + behavior.length}</div>\n            <div className="stat-hint">Daily + behaviour</div>\n          </div>\n        </div>\n      </div>\n      <ConnectCard />'''
+if old_home in s:
+    s = s.replace(old_home, new_home, 1); print('home layout')
+else:
+    print('WARN home mismatch')
+s = s.replace('onClick={() => onNavigate("track", "daily")}><span className="ql-ico">', 'onClick={() => onNavigate("track", "daily")} className="quick-link t-log"><span className="ql-ico">', 1)
+s = s.replace('onClick={() => onNavigate("insights")}><span className="ql-ico">', 'onClick={() => onNavigate("insights")} className="quick-link t-ins"><span className="ql-ico">', 1)
+s = s.replace('onClick={() => onNavigate("report")}><span className="ql-ico">', 'onClick={() => onNavigate("report")} className="quick-link t-rep"><span className="ql-ico">', 1)
+s = s.replace('onClick={() => onNavigate("community")}><span className="ql-ico">', 'onClick={() => onNavigate("community")} className="quick-link t-com"><span className="ql-ico">', 1)
+s = s.replace('onClick={() => onNavigate("discover", null, "printables")}><span className="ql-ico">', 'onClick={() => onNavigate("discover", null, "printables")} className="quick-link t-print"><span className="ql-ico">', 1)
+s = s.replace('className="quick-link" onClick={() => onNavigate("track", "daily")} className="quick-link t-log"', 'className="quick-link t-log" onClick={() => onNavigate("track", "daily")}')
+s = s.replace('className="quick-link" onClick={() => onNavigate("insights")} className="quick-link t-ins"', 'className="quick-link t-ins" onClick={() => onNavigate("insights")}')
+s = s.replace('className="quick-link" onClick={() => onNavigate("report")} className="quick-link t-rep"', 'className="quick-link t-rep" onClick={() => onNavigate("report")}')
+s = s.replace('className="quick-link" onClick={() => onNavigate("community")} className="quick-link t-com"', 'className="quick-link t-com" onClick={() => onNavigate("community")}')
+s = s.replace('className="quick-link" onClick={() => onNavigate("discover", null, "printables")} className="quick-link t-print"', 'className="quick-link t-print" onClick={() => onNavigate("discover", null, "printables")}')
+s = s.replace('<div className="card">\n        <div className="stat-label">Why unlock helps</div>', '<div className="why-card">\n        <div className="stat-label">Why unlock helps</div>', 1)
+old_hdr = '''        <div className="header-value">Private tracking · pattern insights · professional report · community · curated tools</div>'''
+new_hdr = '''        <div className="header-chips"><span>🔒 Private tracking</span><span>📈 Pattern insights</span><span>📄 Professional report</span><span>👥 Community</span><span>✨ Curated tools</span></div>'''
+if old_hdr in s:
+    s = s.replace(old_hdr, new_hdr, 1)
+    print('header chips')
+if 'header-avatar' not in s:
+    s = s.replace('{CLOUD_ENABLED && user ? <button type="button" className="header-btn header-pill" onClick={handleSignOut}>Sign out</button> : null}', '{CLOUD_ENABLED && user ? <button type="button" className="header-btn header-pill" onClick={handleSignOut}>Sign out</button> : null}\n            {user ? <div className="header-avatar" title={user.email || ""}>{initialsOf(user)}<span className="dot" /></div> : null}', 1)
+s = s.replace('activeChildName={(children.find((c) => c.id === activeChildId) || {}).name} />', 'activeChildName={(children.find((c) => c.id === activeChildId) || {}).name} firstName={firstNameOf(user)} />', 1)
+s = s.replace('<div className="auth-screen">', '<div className="auth-screen auth-shell">', 1)
+s = s.replace('<meta name="theme-color" content="#1A252F" />', '<meta name="theme-color" content="#0B1219" />', 1)
+for must in ['Premium dashboard theme','home-hero','header-chips','firstNameOf']:
+    if must not in s: raise SystemExit('missing '+must)
+p.write_text(s, encoding='utf-8')
+print('wrote', p.stat().st_size)
