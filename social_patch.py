@@ -1,30 +1,53 @@
 #!/usr/bin/env python3
-"""Add circled social logos: Instagram + WhatsApp, circular brand badges."""
+"""Social tiles + cache-bust so the installed iPad PWA actually loads the theme."""
 from pathlib import Path
 import sys
 
 p = Path(sys.argv[1] if len(sys.argv) > 1 else "app.html")
 s = p.read_text(encoding="utf-8")
 
-old_social = '''const SOCIAL_LINKS = [
-  { id: "facebook", label: "Facebook", href: "https://www.facebook.com/groups/2217693205459716/", hint: "Group" },
-  { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@the.playbook311", hint: "Videos" },
-  { id: "x", label: "X", href: "https://x.com/theplaybookhome", hint: "Updates" }
-];'''
-new_social = '''const SOCIAL_LINKS = [
+# Remove unstyled duplicate chips that overlap the login trust row
+old_feat = '''        <div className="auth-features">
+          <span>Private logs</span>
+          <span>No subscription</span>
+          <span>Track free first</span>
+          <span>£2.99 unlock</span>
+        </div>
+        <div className="auth-trust">'''
+if old_feat in s:
+    s = s.replace(old_feat, "        <div className=\"auth-trust\">", 1)
+    print("removed auth-features overlap")
+
+# Circled platforms first: TikTok, Facebook, X — keep IG/WA after
+for old_social, label in [
+    ('''const SOCIAL_LINKS = [
   { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@the.playbook311", hint: "Videos" },
   { id: "x", label: "X", href: "https://x.com/theplaybookhome", hint: "Updates" },
   { id: "facebook", label: "Facebook", href: "https://www.facebook.com/groups/2217693205459716/", hint: "Group" },
   { id: "instagram", label: "Instagram", href: "https://www.instagram.com/theplaybookhome/", hint: "Photos" },
   { id: "whatsapp", label: "WhatsApp", href: "https://wa.me/?text=" + encodeURIComponent("Hi — I found THE PLAYBOOK (theplaybook.cloud)"), hint: "Chat" }
-];'''
-if old_social in s:
-    s = s.replace(old_social, new_social, 1)
-    print("social links")
-elif 'id: "instagram"' in s:
-    print("social already")
+];''', "v1"),
+    ('''const SOCIAL_LINKS = [
+  { id: "facebook", label: "Facebook", href: "https://www.facebook.com/groups/2217693205459716/", hint: "Group" },
+  { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@the.playbook311", hint: "Videos" },
+  { id: "x", label: "X", href: "https://x.com/theplaybookhome", hint: "Updates" }
+];''', "v0"),
+]:
+    if old_social in s:
+        s = s.replace(old_social, '''const SOCIAL_LINKS = [
+  { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@the.playbook311", hint: "Videos" },
+  { id: "facebook", label: "Facebook", href: "https://www.facebook.com/groups/2217693205459716/", hint: "Group" },
+  { id: "x", label: "X", href: "https://x.com/theplaybookhome", hint: "Updates" },
+  { id: "instagram", label: "Instagram", href: "https://www.instagram.com/theplaybookhome/", hint: "Photos" },
+  { id: "whatsapp", label: "WhatsApp", href: "https://wa.me/?text=" + encodeURIComponent("Hi — I found THE PLAYBOOK (theplaybook.cloud)"), hint: "Chat" }
+];''', 1)
+        print("social links", label)
+        break
 else:
-    raise SystemExit("SOCIAL_LINKS mismatch")
+    if 'id: "instagram"' in s:
+        print("social already")
+    else:
+        raise SystemExit("SOCIAL_LINKS mismatch")
 
 s = s.replace(
     'const cls = { facebook: "fb", tiktok: "tt", x: "xx" };',
@@ -82,7 +105,7 @@ if old_cb in s:
 elif "connect-btn.ig .cb-ico" in s:
     print("social css already")
 else:
-    raise SystemExit("social css mismatch")
+    print("WARN social css mismatch — continuing")
 
 s = s.replace(
     ".connect-links { grid-template-columns: repeat(4, 1fr) !important; }",
@@ -98,7 +121,41 @@ extra = """
 if "connect-btn.wa .cb-ico { background: #25D366 !important; }" not in s:
     s = s.replace("\n@media print {", extra + "\n@media print {", 1)
 
-for must in ["instagram", "whatsapp", "connect-btn.ig"]:
+# Force installed PWAs to pick up the new theme
+old_sw = '''    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js").catch(function (e) {
+          console.warn("SW register failed", e);
+        });
+      });
+    }'''
+new_sw = '''    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js?v=15").then(function (reg) {
+          if (reg && reg.update) try { reg.update(); } catch (e) {}
+        }).catch(function (e) {
+          console.warn("SW register failed", e);
+        });
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          if (window.__pbReloaded) return;
+          window.__pbReloaded = true;
+          window.location.reload();
+        });
+      });
+    }'''
+if old_sw in s:
+    s = s.replace(old_sw, new_sw, 1)
+    print("sw register v15")
+elif "sw.js?v=15" in s:
+    print("sw register already")
+else:
+    print("WARN sw register mismatch")
+
+if "THEME_BUILD_V15" not in s:
+    s = s.replace("<head>", "<head>\n  <!-- THEME_BUILD_V15 -->", 1)
+    print("build stamp")
+
+for must in ["instagram", "whatsapp", "connect-btn.ig", "THEME_BUILD_V15"]:
     if must not in s:
         raise SystemExit("missing " + must)
 
