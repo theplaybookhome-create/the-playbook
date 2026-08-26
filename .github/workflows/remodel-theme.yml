@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/remodel-theme.yml'
       - 'theme_patch.py'
+      - 'sw.js'
 permissions:
   contents: write
 jobs:
@@ -15,13 +16,16 @@ jobs:
       - name: Apply visual remodel
         run: |
           set -euo pipefail
+          test -f theme_patch.py
           python3 theme_patch.py
           test "$(wc -c < app.html)" -gt 160000
           grep -q "home-greet" app.html
           grep -q "EnergySpark" app.html
           grep -q "dash-kpis" app.html
+          grep -q "isClockSkewError" app.html
+          grep -q "alreadyPaid" app.html
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
-          git add app.html
-          git diff --cached --quiet || git commit -m "Remodel: Today, login, printables grid, Insights dashboard"
+          git add app.html sw.js
+          git diff --cached --quiet || git commit -m "Remodel: Today, login, printables grid, Insights dashboard, hide welcome for paid, JWT clock-skew"
           git push origin HEAD:main
