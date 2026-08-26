@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V15 -->
+  <!-- THEME_BUILD_V16 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -768,7 +768,7 @@ textarea { resize: vertical; min-height: 56px; }
   .app-header, .app-main { padding-left: 22px; padding-right: 22px; }
   .home-top { grid-template-columns: 1fr 300px !important; }
   .home-hero { grid-template-columns: minmax(0, 1.55fr) minmax(250px, 0.9fr) !important; }
-  .connect-links { grid-template-columns: repeat(3, 1fr) !important; }
+  .connect-links { grid-template-columns: repeat(4, 1fr) !important; }
   .quick-links { grid-template-columns: repeat(3, 1fr) !important; }
 }
 .quick-log-card { min-height: 280px; }
@@ -797,6 +797,31 @@ textarea { resize: vertical; min-height: 56px; }
 .connect-btn .cb-ico { border-radius: 50% !important; box-shadow: 0 3px 8px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.28); }
 .connect-btn.ig .cb-ico { background: radial-gradient(circle at 30% 30%, #f9ce34, #ee2a7b 55%, #6228d7) !important; }
 .connect-btn.wa .cb-ico { background: #25D366 !important; }
+
+/* ===== Android + mockup layout lock ===== */
+.app-main { max-width: 1120px !important; width: 100%; }
+.home-today { max-width: 1120px; margin: 0 auto; }
+.connect-links { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+.connect-btn { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px !important; width: 100% !important; max-width: none !important; background: #fff !important; border: 1.5px solid #E8ECF0 !important; border-radius: 16px !important; padding: 10px 12px !important; min-height: 62px !important; text-align: left !important; }
+.connect-btn .cb-ico { width: 42px !important; height: 42px !important; border-radius: 50% !important; flex: 0 0 42px !important; }
+.connect-btn .cb-text { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.connect-btn::after { content: "›"; margin-left: auto; color: #C4CAD1; font-size: 18px; }
+.quick-links { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+.why-card { background: #FFF8F0 !important; border: 1px solid #F0E0CC !important; border-radius: 18px !important; padding: 14px 16px !important; margin: 0 !important; }
+@media (max-width: 559px) {
+  .connect-links { grid-template-columns: 1fr 1fr !important; }
+  .quick-links { grid-template-columns: 1fr 1fr !important; }
+  .home-greet .hi { font-size: 26px; }
+}
+@media (min-width: 640px) {
+  .connect-links { grid-template-columns: repeat(4, 1fr) !important; }
+  .home-top { grid-template-columns: 1fr 280px !important; }
+  .home-hero { grid-template-columns: minmax(0, 1.55fr) minmax(240px, 0.9fr) !important; }
+}
+@media (min-width: 720px) {
+  .quick-links { grid-template-columns: repeat(3, 1fr) !important; }
+  .header-chips { flex-wrap: nowrap; overflow-x: auto; }
+}
 
 @media print {
   .app-header, .bottom-nav, .report-actions, .header-btn, .toast, .onboard-overlay, .no-print { display: none !important; }
@@ -1113,10 +1138,8 @@ async function grantLocalPremium() {
 
 const SOCIAL_LINKS = [
   { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@the.playbook311", hint: "Videos" },
-  { id: "facebook", label: "Facebook", href: "https://www.facebook.com/groups/2217693205459716/", hint: "Group" },
   { id: "x", label: "X", href: "https://x.com/theplaybookhome", hint: "Updates" },
-  { id: "instagram", label: "Instagram", href: "https://www.instagram.com/theplaybookhome/", hint: "Photos" },
-  { id: "whatsapp", label: "WhatsApp", href: "https://wa.me/?text=" + encodeURIComponent("Hi — I found THE PLAYBOOK (theplaybook.cloud)"), hint: "Chat" }
+  { id: "facebook", label: "Facebook", href: "https://www.facebook.com/groups/2217693205459716/", hint: "Group" }
 ];
 const SUPPORT_EMAIL = "Theplaybookhome@gmail.com";
 
@@ -2188,7 +2211,7 @@ function SocialIcon({ id }) {
   );
 }
 function ConnectCard() {
-  const cls = { facebook: "fb", tiktok: "tt", x: "xx", instagram: "ig", whatsapp: "wa" };
+  const cls = { facebook: "fb", tiktok: "tt", x: "xx" };
   return (
     <div className="connect-card">
       <h3>Connect with us</h3>
@@ -2395,15 +2418,15 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
         <button type="button" className="quick-link t-rep" onClick={() => onNavigate("report")}><span className="ql-ico">📄</span><strong>Pro report</strong><span>Print for school / GP</span></button>
         <button type="button" className="quick-link t-com" onClick={() => onNavigate("community")}><span className="ql-ico">💬</span><strong>Community</strong><span>Peer notes & support</span></button>
         <button type="button" className="quick-link t-print" onClick={() => onNavigate("discover", null, "printables")}><span className="ql-ico">🖨️</span><strong>Printables</strong><span>Preview packs · download</span></button>
-      </div>
-      <div className="why-card">
-        <div className="stat-label">Why unlock helps</div>
+        <div className="why-card">
+          <div className="stat-label">Why unlock helps</div>
         <p style={{ margin: "8px 0 0", fontSize: 13, lineHeight: 1.5, color: "var(--soft)" }}>
           Appointments go better with a one-page snapshot. Patterns only show up when they're written down. On hard days, your wins list is proof you're not failing. Tracking stays free to try — full insights & report unlock with a single purchase.
         </p>
         {!unlocked && (
           <button type="button" className="btn-ghost" style={{ marginTop: 8 }} onClick={onOpenPaywall}>See what's included →</button>
         )}
+        </div>
       </div>
     </div>
   );
@@ -3382,7 +3405,7 @@ root.render(React.createElement(App));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=15").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=16").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
