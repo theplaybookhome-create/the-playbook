@@ -12,16 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply visual remodel to app.html
+      - name: Apply premium dashboard theme to app.html
         run: |
           set -euo pipefail
           python3 apply_theme.py
           test "$(wc -c < app.html)" -gt 165000
-          grep -q 'className="home-greet"' app.html
-          grep -q EnergySpark app.html
+          grep -q 'home-hero' app.html
+          grep -q firstNameOf app.html
+          grep -q 'Premium dashboard theme' app.html
           grep -q alreadyPaid app.html
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
           git add app.html
-          git diff --cached --quiet || git commit -m "Apply Today / login / printables / Insights visual remodel"
+          git diff --cached --quiet || git commit -m "Apply premium Today dashboard theme matching mockup"
           git push origin HEAD:main
