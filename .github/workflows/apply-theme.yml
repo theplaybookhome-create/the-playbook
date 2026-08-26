@@ -23,10 +23,10 @@ jobs:
           grep -q firstNameOf app.html
           grep -q 'Premium dashboard theme' app.html
           grep -q alreadyPaid app.html
-          grep -q instagram app.html
-          grep -q whatsapp app.html
+          grep -q tiktok app.html
+          grep -q THEME_BUILD_V16 app.html
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
           git add app.html
-          git diff --cached --quiet || git commit -m "Apply social brand logos (Instagram + WhatsApp) and Today polish"
+          git diff --cached --quiet || git commit -m "Today mockup: 4 social tiles + Android layout lock"
           git push origin HEAD:main
