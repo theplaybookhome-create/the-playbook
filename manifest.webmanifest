@@ -2,7 +2,7 @@
   "name": "THE PLAYBOOK",
   "short_name": "Playbook",
   "description": "Calm companion for neurodivergent families. Track free. Unlock insights, professional report & more for £2.99 once.",
-  "start_url": "./app.html",
+  "start_url": "./app.html?v=15",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
