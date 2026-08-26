@@ -1,5 +1,5 @@
 /* THE PLAYBOOK — service worker */
-const CACHE = "playbook-v10";
+const CACHE = "playbook-v11";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -30,7 +30,6 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
-  // Always prefer network for HTML so deploys show up immediately
   const isHTML = req.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname === "/" || url.pathname.endsWith("/");
 
   if (isHTML) {
