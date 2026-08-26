@@ -1,5 +1,5 @@
 /* THE PLAYBOOK — service worker */
-const CACHE = "playbook-v19";
+const CACHE = "playbook-v20";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -9,12 +9,8 @@ const PRECACHE = [
   "./icon-512.png",
   "./icon-180.png",
   "./favicon.png",
-  "./cover-complete.jpg",
-  "./cover-visual.jpg",
-  "./cover-colouring.jpg",
-  "./cover-learning.jpg",
-  "./cover-aac.jpg",
-  "./icon-maskable-512.png"
+  "./connect-banner.jpg",
+  "./cover-complete.jpg"
 ];
 
 self.addEventListener("install", (event) => {
