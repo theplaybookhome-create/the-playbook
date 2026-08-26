@@ -1,0 +1,29 @@
+name: v22-layout
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - v22_layout_patch.py
+      - .github/workflows/v22-layout.yml
+      - index.html
+      - sw.js
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V22 layout patch
+        run: |
+          set -euo pipefail
+          python3 v22_layout_patch.py app.html
+          grep -q THEME_BUILD_V22 app.html
+          grep -q "V22 desktop + empty-state polish" app.html
+          grep -q "forceLogin && !session && authReady" app.html
+          grep -q "playbook-v22" sw.js
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add app.html index.html sw.js v22_layout_patch.py
+          git diff --cached --quiet || git commit -m "V22: compact desktop home, restore landing, drop blank boot screens"
+          git push origin HEAD:main
