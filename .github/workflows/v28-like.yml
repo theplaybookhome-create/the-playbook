@@ -5,6 +5,7 @@ on:
     paths:
       - v28_like_patch.py
       - v29_home_patch.py
+      - v30_spec_patch.py
       - sunrise.b64
       - .github/workflows/v28-like.yml
 permissions:
@@ -14,17 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply V29 mockup home
+      - name: Apply V30 tablet spec
         run: |
           set -euo pipefail
-          python3 v29_home_patch.py app.html
-          grep -q THEME_BUILD_V29 app.html
-          grep -q ql-sun-photo app.html
-          grep -q hdr-exim app.html
-          sed -i 's/playbook-v28/playbook-v29/g; s/playbook-v27/playbook-v29/g' sw.js
-          grep -q playbook-v29 sw.js
+          python3 v30_spec_patch.py app.html
+          grep -q THEME_BUILD_V30 app.html
+          grep -q "V30 tablet spec" app.html
+          grep -q "#FF6B00" app.html
+          sed -i 's/playbook-v29/playbook-v30/g; s/playbook-v28/playbook-v30/g' sw.js
+          grep -q playbook-v30 sw.js
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
-          git add app.html sw.js
-          git diff --cached --quiet || git commit -m "V29: tablet mockup home - cropped sunrise, side cards, Export Import"
+          git add app.html sw.js v30_spec_patch.py
+          git diff --cached --quiet || git commit -m "V30: tablet spec — orange active states, premium cards, navy header"
           git push origin HEAD:main
