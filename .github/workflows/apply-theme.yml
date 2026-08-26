@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "apply_theme.py"
+      - "social_patch.py"
       - ".github/workflows/apply-theme.yml"
 permissions:
   contents: write
@@ -16,13 +17,16 @@ jobs:
         run: |
           set -euo pipefail
           python3 apply_theme.py
+          python3 social_patch.py
           test "$(wc -c < app.html)" -gt 165000
           grep -q 'home-hero' app.html
           grep -q firstNameOf app.html
           grep -q 'Premium dashboard theme' app.html
           grep -q alreadyPaid app.html
+          grep -q instagram app.html
+          grep -q whatsapp app.html
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
           git add app.html
-          git diff --cached --quiet || git commit -m "Apply premium Today dashboard theme matching mockup"
+          git diff --cached --quiet || git commit -m "Apply social brand logos (Instagram + WhatsApp) and Today polish"
           git push origin HEAD:main
