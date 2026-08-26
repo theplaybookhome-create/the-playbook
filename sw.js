@@ -1,5 +1,5 @@
 /* THE PLAYBOOK — service worker */
-const CACHE = "playbook-v7";
+const CACHE = "playbook-v8";
 const PRECACHE = [
   "./",
   "./index.html",
