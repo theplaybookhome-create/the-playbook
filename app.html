@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V23 -->
+  <!-- THEME_BUILD_V24 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -846,51 +846,61 @@ textarea { resize: vertical; min-height: 56px; }
 .brand-mark-img { width:28px; height:28px; border-radius:8px; object-fit:cover; flex-shrink:0; box-shadow:0 4px 10px rgba(11,18,25,.28); }
 
 
-/* ===== V23 mockup match ===== */
-.header-chips { display: flex !important; }
-.bottom-nav { display: flex !important; max-width: 860px !important; }
-.app-root { padding-bottom: 108px !important; }
-.es-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-.owned-card p { display: block !important; }
-.home-top {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px) !important;
-  align-items: start !important;
-  gap: 16px !important;
-  margin-bottom: 16px !important;
-}
-.home-top .paywall-card,
-.home-top .owned-card { width: 100%; max-width: 320px; margin: 0 0 0 auto !important; }
-.home-hero {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1.7fr) minmax(220px, 0.78fr) !important;
-  gap: 14px !important;
-  align-items: stretch !important;
-}
-.quick-log-card { min-height: 268px; padding-right: 196px !important; }
-.ql-sun {
-  width: 210px !important;
-  height: 152px !important;
-  right: 4px !important;
-  top: 8px !important;
-  opacity: 1 !important;
-}
-.connect-btn .cb-ico { border-radius: 50% !important; }
-.connect-btn.em .cb-ico { background: #E8892C !important; border: none !important; }
-.quick-links { grid-template-columns: repeat(3, 1fr) !important; }
-.why-card { position: relative; padding-right: 28px !important; }
-.why-card::after { content: "›"; position: absolute; right: 14px; top: 16px; color: #C4CAD1; font-size: 20px; }
-.energy-spark svg { height: 78px; }
-.bottom-btn.active .ico svg { stroke: #F08A2A; fill: #F08A2A; }
-@media (max-width: 759px) {
-  .home-top { grid-template-columns: 1fr !important; }
-  .home-top .paywall-card,
-  .home-top .owned-card { max-width: none; margin: 0 !important; }
-  .home-hero { grid-template-columns: 1fr !important; }
-  .quick-log-card { padding-right: 18px !important; min-height: 0; }
-  .ql-sun { width: 120px !important; height: 88px !important; opacity: 0.8 !important; }
-  .quick-links { grid-template-columns: 1fr 1fr !important; }
-  .connect-links { grid-template-columns: 1fr 1fr !important; }
+
+/* ===== V24 mockup fidelity ===== */
+.header-chips{display:flex!important;align-items:center}
+.header-chips .hchip:not(:last-child)::after{content:"·";margin-left:10px;color:rgba(255,255,255,.28);font-weight:700}
+.child-manage{margin-left:auto!important}
+.bottom-nav{display:flex!important;max-width:920px!important}
+.app-root{padding-bottom:112px!important}
+.es-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.stat-ico{font-size:13px;margin-right:6px}
+.owned-card{display:flex!important;align-items:center!important;gap:12px!important;padding:16px!important;background:#FFF8F0!important;border:1px solid #F0E0CC!important;border-radius:18px!important}
+.owned-card p{display:block!important}
+.owned-card .price-pill{background:#16A34A!important;color:#fff!important;border-radius:999px!important;padding:4px 10px!important;font-size:12px!important;font-weight:800!important;margin-left:auto;flex:0 0 auto}
+.home-top{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(260px,340px)!important;align-items:start!important;gap:16px!important;margin-bottom:18px!important}
+.home-top .paywall-card,.home-top .owned-card{width:100%;max-width:340px;margin:0 0 0 auto!important}
+.home-hero{display:grid!important;grid-template-columns:minmax(0,1.75fr) minmax(230px,.72fr)!important;gap:14px!important;align-items:stretch!important}
+.home-side{display:flex;flex-direction:column;gap:12px;height:100%}
+.energy-spark,.stat-card{flex:1}
+.quick-log-card{position:relative!important;overflow:hidden!important;min-height:292px;padding:18px 210px 16px 18px!important;background:radial-gradient(280px 170px at 92% 10%,rgba(252,211,140,.5),transparent 70%),radial-gradient(220px 140px at 100% 46%,rgba(186,214,232,.32),transparent 65%),#fff!important}
+.ql-sec-label{font-size:13px;font-weight:800;color:#111827;margin:0 0 8px;display:block}
+.ql-sun{width:228px!important;height:168px!important;right:0!important;top:6px!important;opacity:1!important}
+.scale-row{gap:10px!important}
+.scale-btn{width:52px!important;height:52px!important;border-radius:14px!important;font-size:16px!important}
+.connect-banner{display:none!important}
+.connect-card{position:relative;overflow:hidden;background:#fff!important;border:1px solid #E8ECF0!important}
+.connect-card::after{content:"";position:absolute;right:-10px;top:0;bottom:0;width:140px;background-image:radial-gradient(#D7E6F5 1.1px,transparent 1.2px);background-size:10px 10px;opacity:.55;pointer-events:none}
+.connect-links{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:10px!important}
+.connect-btn{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;width:100%!important;max-width:none!important;background:#fff!important;border:1.5px solid #E8ECF0!important;border-radius:16px!important;padding:10px 28px 10px 12px!important;min-height:64px!important;text-align:left!important}
+.connect-btn .cb-ico{width:40px!important;height:40px!important;border-radius:50%!important;flex:0 0 40px!important;display:grid!important;place-items:center!important}
+.connect-btn .cb-ico svg{width:18px!important;height:18px!important;fill:#fff!important}
+.connect-btn.tt .cb-ico{background:#111!important}
+.connect-btn.xx .cb-ico{background:#0F1419!important}
+.connect-btn.fb .cb-ico{background:#1877F2!important}
+.connect-btn.em .cb-ico{background:#E8892C!important;border:none!important}
+.connect-btn.em .cb-ico svg,.connect-btn.em .cb-ico svg path{fill:#fff!important}
+.quick-links{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:12px!important}
+.quick-link{display:flex!important;flex-direction:column!important;align-items:flex-start!important;text-align:left!important;padding:16px 28px 16px 16px!important;min-height:118px}
+.quick-link .ql-ico{width:44px!important;height:44px!important;border-radius:50%!important;display:grid!important;place-items:center!important;margin-bottom:10px!important;font-size:18px!important}
+.quick-link strong{font-size:15px;color:#111827}
+.quick-link .ql-hint{display:block;margin-top:4px;font-size:13px;color:#6B7280;line-height:1.35;font-weight:500}
+.why-card{position:relative;padding:16px 28px 16px 16px!important;min-height:118px}
+.why-label{text-transform:none!important;letter-spacing:0!important;font-size:14px!important;color:#111827!important;display:flex;align-items:center;gap:6px}
+.why-check{color:#E8892C;font-weight:800}
+.why-card::after{content:"›";position:absolute;right:14px;bottom:14px;top:auto;color:#C4CAD1;font-size:20px}
+.energy-spark svg{height:78px}
+.bottom-btn.active .ico svg{stroke:#F08A2A;fill:#F08A2A}
+.header-actions .signout-quiet{display:none}
+@media (max-width:759px){
+.home-top{grid-template-columns:1fr!important}
+.home-top .paywall-card,.home-top .owned-card{max-width:none;margin:0!important}
+.home-hero{grid-template-columns:1fr!important}
+.quick-log-card{padding:18px!important;min-height:0}
+.ql-sun{width:128px!important;height:96px!important;opacity:.78!important}
+.quick-links{grid-template-columns:1fr 1fr!important}
+.connect-links{grid-template-columns:1fr 1fr!important}
+.scale-btn{width:46px!important;height:46px!important}
 }
 
 @media print {
@@ -1937,7 +1947,7 @@ function PaywallCard({ onUnlock, unlocked, compact }) {
         <div className="owned-crown" aria-hidden="true">👑</div>
         <div>
           <div className="stat-label" style={{ textTransform: "none", letterSpacing: 0, fontSize: 14, color: "#111827" }}>Full access on this device</div>
-          <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "var(--soft)", lineHeight: 1.35 }}>Insights, report, Discover, Printables & more unlocked.</p>
+          <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "var(--soft)", lineHeight: 1.35 }}>Insights, report, Discover, Printables<br/>& more unlocked.</p>
         </div>
         <span className="price-pill">Owned</span>
       </div>
@@ -2252,7 +2262,7 @@ function QuickLog({ setDataStore, showToast, activeChildId }) {
       </div>
       <p>One-tap energy & mood — full detail later if you want.</p>
       <div className="quick-log-row">
-        <span className="quick-log-label">Energy</span>
+        <div className="ql-sec-label">Energy</div>
         <div className="scale-row">
           {[1,2,3,4,5].map((n) => (
             <button type="button" key={n} className={"scale-btn" + (energy === n ? " active" : "")} onClick={() => setEnergy(n)}>{n}</button>
@@ -2260,7 +2270,7 @@ function QuickLog({ setDataStore, showToast, activeChildId }) {
         </div>
       </div>
       <div className="quick-log-row" style={{ alignItems: "flex-start" }}>
-        <span className="quick-log-label" style={{ marginTop: 8 }}>Mood</span>
+        <div className="ql-sec-label">Mood</div>
         <div className="tick-row">
           {moodOpts.map((m) => (
             <button type="button" key={m} className={"tick-chip" + (mood.includes(m) ? " active" : "")} onClick={() => toggleMood(m)}>
@@ -2497,7 +2507,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
           <div className="energy-spark-wrap" role="button" tabIndex={0} title="Open insights" onClick={() => onNavigate("insights")} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onNavigate("insights"); } }}><EnergySpark values={recentEnergy} avg={avgEnergy} /></div>
           <div className="stat-card">
             <div className="es-top">
-              <div className="stat-label">Logs this device</div>
+              <div className="stat-label"><span className="stat-ico" aria-hidden="true">📊</span> Logs this device</div>
               <div className="es-avg" aria-hidden="true">›</div>
             </div>
             <div className="stat-value">{daily.length + behavior.length}</div>
@@ -2506,15 +2516,15 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
         </div>
       </div>
       <ConnectCard />
-      {lastWin && <div className="card"><div className="stat-label">Latest win</div><p style={{ margin: "6px 0 0", fontSize: 14, lineHeight: 1.45 }}>{lastWin.win}</p></div>}
+      {null}
       <div className="quick-links">
-        <button type="button" className="quick-link t-log" onClick={() => onNavigate("track", "daily")}><span className="ql-ico">✏️</span><strong>Log today</strong><span>Energy, mood, what went well</span></button>
-        <button type="button" className="quick-link t-ins" onClick={() => onNavigate("insights")}><span className="ql-ico">📊</span><strong>See patterns</strong><span>Triggers, sleep, energy trends</span></button>
-        <button type="button" className="quick-link t-rep" onClick={() => onNavigate("report")}><span className="ql-ico">📄</span><strong>Pro report</strong><span>Print for school / GP</span></button>
-        <button type="button" className="quick-link t-com" onClick={() => onNavigate("community")}><span className="ql-ico">💬</span><strong>Community</strong><span>Peer notes & support</span></button>
-        <button type="button" className="quick-link t-print" onClick={() => onNavigate("discover", null, "printables")}><span className="ql-ico">🖨️</span><strong>Printables</strong><span>Preview packs · download</span></button>
+        <button type="button" className="quick-link t-log" onClick={() => onNavigate("track", "daily")}><span className="ql-ico">✏️</span><strong>Log today</strong><span className="ql-hint">Energy, mood, what went well</span></button>
+        <button type="button" className="quick-link t-ins" onClick={() => onNavigate("insights")}><span className="ql-ico">📊</span><strong>See patterns</strong><span className="ql-hint">Triggers, sleep, energy trends</span></button>
+        <button type="button" className="quick-link t-rep" onClick={() => onNavigate("report")}><span className="ql-ico">📄</span><strong>Pro report</strong><span className="ql-hint">Print for school / GP</span></button>
+        <button type="button" className="quick-link t-com" onClick={() => onNavigate("community")}><span className="ql-ico">💬</span><strong>Community</strong><span className="ql-hint">Peer notes & support</span></button>
+        <button type="button" className="quick-link t-print" onClick={() => onNavigate("discover", null, "printables")}><span className="ql-ico">🖨️</span><strong>Printables</strong><span className="ql-hint">Preview packs · download</span></button>
         <div className="why-card">
-          <div className="stat-label">✓ Why unlock helps</div>
+          <div className="stat-label why-label"><span className="why-check">✓</span> Why unlock helps</div>
         <p style={{ margin: "8px 0 0", fontSize: 13, lineHeight: 1.5, color: "var(--soft)" }}>
           Appointments go better with a one-page snapshot. Patterns only show up when they're written down. On hard days, your wins list is proof you're not failing. Tracking stays free to try — full insights & report unlock with a single purchase.
         </p>
@@ -3534,7 +3544,7 @@ root.render(React.createElement(App));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=23").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=24").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
