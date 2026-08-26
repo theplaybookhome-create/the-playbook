@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- THEME_BUILD_V15 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -1112,8 +1113,8 @@ async function grantLocalPremium() {
 
 const SOCIAL_LINKS = [
   { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@the.playbook311", hint: "Videos" },
-  { id: "x", label: "X", href: "https://x.com/theplaybookhome", hint: "Updates" },
   { id: "facebook", label: "Facebook", href: "https://www.facebook.com/groups/2217693205459716/", hint: "Group" },
+  { id: "x", label: "X", href: "https://x.com/theplaybookhome", hint: "Updates" },
   { id: "instagram", label: "Instagram", href: "https://www.instagram.com/theplaybookhome/", hint: "Photos" },
   { id: "whatsapp", label: "WhatsApp", href: "https://wa.me/?text=" + encodeURIComponent("Hi — I found THE PLAYBOOK (theplaybook.cloud)"), hint: "Chat" }
 ];
@@ -1811,12 +1812,6 @@ function AuthScreen({ onAuthed, recoveryMode }) {
                 : "Join free to track. Unlock once for Insights, reports and posting to the community."}
             </p>
           )}
-        </div>
-        <div className="auth-features">
-          <span>Private logs</span>
-          <span>No subscription</span>
-          <span>Track free first</span>
-          <span>£2.99 unlock</span>
         </div>
         <div className="auth-trust">
           <span>Private logs</span>
@@ -3387,8 +3382,15 @@ root.render(React.createElement(App));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js").catch(function (e) {
+        navigator.serviceWorker.register("./sw.js?v=15").then(function (reg) {
+          if (reg && reg.update) try { reg.update(); } catch (e) {}
+        }).catch(function (e) {
           console.warn("SW register failed", e);
+        });
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          if (window.__pbReloaded) return;
+          window.__pbReloaded = true;
+          window.location.reload();
         });
       });
     }
