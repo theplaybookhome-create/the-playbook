@@ -3,25 +3,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
   <meta name="theme-color" content="#2C3E50" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>THE PLAYBOOK — Restoring</title>
-  <style>
-    body { margin: 0; background: #F7F6F4; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1F1F1F; }
-    .box { max-width: 420px; margin: 48px auto; padding: 28px 22px; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(44,62,80,0.08); text-align: center; }
-    h1 { font-size: 18px; letter-spacing: 1px; color: #2C3E50; margin: 0 0 12px; }
-    p { font-size: 14px; color: #5C6570; line-height: 1.5; margin: 0 0 14px; }
-    a.btn { display: inline-block; background: #C1752E; color: #fff; font-weight: 700; text-decoration: none; padding: 14px 22px; border-radius: 10px; font-size: 15px; }
-    a.secondary { display: block; margin-top: 16px; font-size: 13px; color: #5C6570; }
-  </style>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Playbook" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+
+  <meta name="description" content="THE PLAYBOOK — calm companion for neurodivergent families. Track free. Unlock insights, report & more for £2.99 once." />
+  <title>THE PLAYBOOK — For neurodivergent families</title>
+  <style>body { margin: 0; background: #F7F6F4; }</style>
 </head>
 <body>
-  <div class="box">
-    <h1>THE PLAYBOOK</h1>
-    <p>We’re restoring the full app after a temporary issue.</p>
-    <p>Tap below to open the last working version while the main site is fixed (usually within a few hours).</p>
-    <a class="btn" href="https://raw.githubusercontent.com/theplaybookhome-create/the-playbook/14c235d84416fe7955219fc724b2f23edfe5bea1/app.html">Open working version</a>
-    <a class="secondary" href="https://github.com/theplaybookhome-create/the-playbook/commits/main/app.html">Or restore from GitHub history</a>
-  </div>
+  <div id="root"></div>
+  <script>
+    window.storage = {
+      async get(key) {
+        try {
+          const v = localStorage.getItem("playbook:" + key);
+          return v === null ? null : { value: v };
+        } catch (e) { return null; }
+      },
+      async set(key, value) {
+        try { localStorage.setItem("playbook:" + key, value); return true; }
+        catch (e) { console.error(e); return false; }
+      }
+    };
+  
+
+// Stripe / Payment Link return: ?unlocked=1
+(function() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("unlocked") === "1") {
+      localStorage.setItem("playbook:premium-unlocked", "1");
+      window.__pb_just_unlocked = true;
+      // clean URL without reload loop
+      const url = new URL(window.location.href);
+      url.searchParams.delete("unlocked");
+      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+    }
+  } catch (e) {}
+})();
+
+// Demo seed for screenshots / trailer (?demo=1)
+(function() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("demo") !== "1") return;
+    function d(n) { const x = new Date(); x.setDate(x.getDate() - n); return x.toISOString().slice(0,10); }
+    const daily = [
+      { id: "d0", date: d(0), energy: 4, mood: ["Calm","Happy"], activities: ["School/daycare","Outdoors"], wentWell: "Park after school — smooth transition", challenges: "", notes: "Headphones in bag helped" },
+      { id: "d1", date: d(1), energy: 2, mood: ["Wobbly","Overwhelmed"], activities: ["School/daycare","Appointment"], wentWell: "Got through the morning", challenges: "Loud assembly", notes: "" },
+      { id: "d2", date: d(2), energy: 3, mood: ["Calm"], activities: ["Therapy","Outdoors"], wentWell: "OT session went well", challenges: "", notes: "" },
+      { id: "d3", date: d(3), energy: 5, mood: ["Happy"], activities: ["Outdoors","Screen time"], wentWell: "Full afternoon at the park", challenges: "", notes: "" },
+      { id: "d4", date: d(4), energy: 3, mood: ["Wobbly"], activities: ["School/daycare"], wentWell: "Asked for a break", challenges: "Transition to PE", notes: "" },
+      { id: "d5", date: d(5), energy: 2, mood: ["Overwhelmed","Shutdown"], activities: ["School/daycare","New food"], wentWell: "", challenges: "Canteen noise + new lunch", notes: "Pack familiar snack next time" },
+      { id: "d6", date: d(6), energy: 4, mood: ["Calm","Happy"], activities: ["Therapy","Outdoors"], wentWell: "Speech practice at home", challenges: "", notes: "" }
+    ];
+    localStorage.setItem("playbook:daily-log-entries", JSON.stringify(daily));
+    localStorage.setItem("playbook:behavior-log-entries", JSON.stringify([
+      { id: "b1", date: d(1), timeOfDay: "3:40pm", whatHappened: "Meltdown after school pickup — hands on ears, refused car seat", triggers: ["Transition","Loud noise","Tired"], whatITried: "Quiet voice, offered water", whatHelped: "Noise-cancelling headphones + 5 min swing at park", notesNextTime: "Headphones ready before school bell" },
+      { id: "b2", date: d(5), timeOfDay: "12:15pm", whatHappened: "Shutdown in canteen — stopped eating, head down", triggers: ["Crowd","Texture","Loud noise"], whatITried: "Moved to quieter table", whatHelped: "Familiar snack from home", notesNextTime: "Request quieter seating" }
+    ]));
+    localStorage.setItem("playbook:wins-entries", JSON.stringify([
+      { id: "w1", date: d(0), win: "Asked for headphones before assembly", notes: "Self-advocacy win" },
+      { id: "w2", date: d(4), win: "Used break card in class", notes: "" },
+      { id: "w3", date: d(2), win: "Tried one new food texture without distress", notes: "" }
+    ]));
+    localStorage.setItem("playbook:sleep-food-entries", JSON.stringify([
+      { id: "s1", date: d(0), sleepQuality: 4, notes: "Asleep by 8:30" },
+      { id: "s2", date: d(1), sleepQuality: 2, notes: "Night waking x2" }
+    ]));
+    localStorage.setItem("playbook:onboard-seen", "1");
+    localStorage.setItem("playbook:premium-unlocked", "1");
+    window.__DEMO_TAB = params.get("tab") || "today";
+  } catch (e) { console.error(e); }
+})();
+
+</script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
+  <script type="text/babel" data-presets="react">
+PLACEHOLDER_TOO_LARGE
+  </script>
 </body>
 </html>
