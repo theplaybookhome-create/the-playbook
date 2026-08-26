@@ -1,26 +1,8 @@
 name: v21-auth
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - v21_auth_patch.py
-      - .github/workflows/v21-auth.yml
-permissions:
-  contents: write
 jobs:
-  patch:
+  retired:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Apply optional-login patch to app.html
-        run: |
-          set -euo pipefail
-          python3 v21_auth_patch.py app.html
-          grep -q THEME_BUILD_V21 app.html
-          grep -q forceLogin app.html
-          grep -q 'Continue on this device without logging in' app.html
-          git config user.name "theplaybookhome-create"
-          git config user.email "theplaybookhome@gmail.com"
-          git add app.html v21_auth_patch.py
-          git diff --cached --quiet || git commit -m "App: keep session on refresh, optional login, V21"
-          git push origin HEAD:main
+      - run: echo "V21 patcher retired. Live app is V24. Nothing to apply."

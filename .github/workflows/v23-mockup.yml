@@ -1,27 +1,8 @@
 name: v23-mockup
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - v23_mockup_patch.py
-      - .github/workflows/v23-mockup.yml
-      - sw.js
-permissions:
-  contents: write
 jobs:
-  patch:
+  retired:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Apply V23 mockup match
-        run: |
-          set -euo pipefail
-          python3 v23_mockup_patch.py app.html
-          grep -q THEME_BUILD_V23 app.html
-          grep -q "V23 mockup match" app.html
-          grep -q "playbook-v23" sw.js
-          git config user.name "theplaybookhome-create"
-          git config user.email "theplaybookhome@gmail.com"
-          git add app.html sw.js v23_mockup_patch.py
-          git diff --cached --quiet || git commit -m "V23: match tablet mockup home — both navs, owned card, sun panel"
-          git push origin HEAD:main
+      - run: echo "V23 patcher retired. Live app is V24. Nothing to apply."

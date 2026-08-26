@@ -1,28 +1,8 @@
 name: v24-mockup
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - v24_mockup_patch.py
-      - .github/workflows/v24-mockup.yml
-      - sw.js
-permissions:
-  contents: write
 jobs:
-  patch:
+  retired:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Apply V24 mockup match
-        run: |
-          set -euo pipefail
-          python3 v24_mockup_patch.py app.html
-          grep -q THEME_BUILD_V24 app.html
-          grep -q "V24 mockup fidelity" app.html
-          grep -q "ql-sec-label" app.html
-          grep -q "playbook-v24" sw.js
-          git config user.name "theplaybookhome-create"
-          git config user.email "theplaybookhome@gmail.com"
-          git add app.html sw.js v24_mockup_patch.py
-          git diff --cached --quiet || git commit -m "V24: closer tablet mockup home — stacked quick log, sun panel, connect row"
-          git push origin HEAD:main
+      - run: echo "V24 already applied on main. Manual re-run is a no-op."
