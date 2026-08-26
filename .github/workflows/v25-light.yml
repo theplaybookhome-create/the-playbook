@@ -1,0 +1,29 @@
+name: v25-light
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - v25_light_patch.py
+      - v25_light.css
+      - .github/workflows/v25-light.yml
+      - sw.js
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V25 light home
+        run: |
+          set -euo pipefail
+          python3 v25_light_patch.py app.html
+          grep -q THEME_BUILD_V25 app.html
+          grep -q "What's inside" app.html
+          grep -q "Track what matters. Build what lasts." app.html
+          grep -q playbook-v25 sw.js
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add app.html sw.js v25_light_patch.py v25_light.css
+          git diff --cached --quiet || git commit -m "V25: light Tuesday home — header, 6 socials, progress, Discover card"
+          git push origin HEAD:main
