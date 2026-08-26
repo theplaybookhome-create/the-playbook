@@ -1,0 +1,28 @@
+name: v26-fidelity
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - v26_fidelity_patch.py
+      - .github/workflows/v26-fidelity.yml
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V26 mockup fidelity
+        run: |
+          set -euo pipefail
+          python3 v26_fidelity_patch.py app.html
+          sed -i 's/playbook-v25/playbook-v26/g; s/playbook-v24/playbook-v26/g' sw.js
+          grep -q THEME_BUILD_V26 app.html
+          grep -q 'className="menu-btn"' app.html
+          grep -q "Track what matters. Build what lasts." app.html
+          grep -q playbook-v26 sw.js
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add app.html sw.js v26_fidelity_patch.py
+          git diff --cached --quiet || git commit -m "V26: match Tuesday tablet mockup header and home copy"
+          git push origin HEAD:main
