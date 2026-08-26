@@ -1,0 +1,27 @@
+name: apply-theme
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "apply_theme.py"
+      - ".github/workflows/apply-theme.yml"
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply visual remodel to app.html
+        run: |
+          set -euo pipefail
+          python3 apply_theme.py
+          test "$(wc -c < app.html)" -gt 165000
+          grep -q 'className="home-greet"' app.html
+          grep -q EnergySpark app.html
+          grep -q alreadyPaid app.html
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add app.html
+          git diff --cached --quiet || git commit -m "Apply Today / login / printables / Insights visual remodel"
+          git push origin HEAD:main
