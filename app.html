@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V21 -->
+  <!-- THEME_BUILD_V22 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -771,8 +771,8 @@ textarea { resize: vertical; min-height: 56px; }
   .connect-links { grid-template-columns: repeat(4, 1fr) !important; }
   .quick-links { grid-template-columns: repeat(3, 1fr) !important; }
 }
-.quick-log-card { min-height: 280px; }
-.ql-sun { position: absolute; right: 8px; top: 8px; width: 168px; height: 128px; pointer-events: none; opacity: 0.95; }
+.quick-log-card { min-height: 0; }
+.ql-sun { position: absolute; right: 8px; top: 8px; width: 132px; height: 100px; pointer-events: none; opacity: 0.88; }
 .ql-head { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; position: relative; z-index: 1; }
 .ql-head h3 { margin: 0; }
 .ql-foot { display: flex; gap: 10px; align-items: center; margin-top: 12px; position: relative; z-index: 1; }
@@ -844,6 +844,55 @@ textarea { resize: vertical; min-height: 56px; }
 }
 
 .brand-mark-img { width:28px; height:28px; border-radius:8px; object-fit:cover; flex-shrink:0; box-shadow:0 4px 10px rgba(11,18,25,.28); }
+
+/* ===== V22 desktop + empty-state polish ===== */
+.home-top {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  grid-template-columns: none !important;
+  margin-bottom: 14px !important;
+}
+.home-greet { flex: 1 1 auto; min-width: 0; }
+.home-top .paywall-card,
+.home-top .owned-card {
+  flex: 0 0 auto;
+  width: min(300px, 38%);
+  max-width: 300px;
+  margin: 0 !important;
+}
+.paywall-card.compact { padding: 14px 16px !important; }
+.paywall-card.compact h3 { font-size: 15px; margin: 0 0 4px; color: #111827; }
+.paywall-card.compact p { margin: 0 0 10px; font-size: 12.5px; color: #6B7280; }
+.paywall-card.compact .paywall-features { display: none; }
+.paywall-card.compact .btn-amber { padding: 10px 14px; font-size: 14px; }
+.owned-card.compact { padding: 10px 12px; align-items: center; }
+.owned-card.compact p { display: none; }
+.energy-spark { min-height: 0; }
+.es-empty { margin: 8px 0 4px; font-size: 13px; color: #6B7280; line-height: 1.35; }
+.es-dots { display: flex; gap: 6px; margin: 10px 0 8px; }
+.es-dots i { width: 10px; height: 10px; border-radius: 50%; background: #E8ECF0; display: block; }
+.app-main { min-height: auto; }
+@media (max-width: 859px) {
+  .header-chips { display: none !important; }
+  .home-top { flex-direction: column !important; }
+  .home-top .paywall-card,
+  .home-top .owned-card { width: 100%; max-width: none; }
+  .ql-sun { width: 110px; height: 84px; opacity: 0.7; }
+}
+@media (min-width: 860px) {
+  .bottom-nav { display: none !important; }
+  .app-root { padding-bottom: 28px !important; }
+  .header-chips { display: flex !important; }
+  .home-hero {
+    grid-template-columns: minmax(0, 1.7fr) minmax(220px, 0.75fr) !important;
+    align-items: start;
+  }
+  .ql-sun { width: 120px; height: 92px; }
+}
+
 .print-pack .pp-cover { width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:14px; margin:0 0 10px; background:#1A252F; display:block; }
 .print-pack .pp-emoji { display:none; }
 
@@ -1884,16 +1933,28 @@ function AuthScreen({ onAuthed, onSkip, recoveryMode }) {
   );
 }
 
-function PaywallCard({ onUnlock, unlocked }) {
+function PaywallCard({ onUnlock, unlocked, compact }) {
   if (unlocked) {
     return (
-      <div className="owned-card">
+      <div className={"owned-card" + (compact ? " compact" : "")}>
         <div className="owned-crown" aria-hidden="true">👑</div>
         <div>
           <div className="stat-label" style={{ textTransform: "none", letterSpacing: 0, fontSize: 14, color: "#111827" }}>Full access on this device</div>
-          <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "var(--soft)" }}>Insights, report, Discover, Printables & more unlocked.</p>
+          {!compact && <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "var(--soft)" }}>Insights, report, Discover, Printables & more unlocked.</p>}
         </div>
         <span className="price-pill">Owned</span>
+      </div>
+    );
+  }
+  if (compact) {
+    return (
+      <div className="paywall-card compact">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+          <h3>Unlock full access</h3>
+          <span className="price-pill">{PREMIUM_PRICE}</span>
+        </div>
+        <p>Insights, report and printables. One payment, no subscription.</p>
+        <button type="button" className="btn-amber" onClick={onUnlock}>Unlock · {PREMIUM_PRICE}</button>
       </div>
     );
   }
@@ -2117,7 +2178,10 @@ function EnergySpark({ values, avg }) {
         <div className="es-avg" aria-hidden="true">›</div>
       </div>
       {pts.length < 2 ? (
-        <p className="es-empty">A sparkline appears after two energy logs.</p>
+        <div>
+          <div className="es-dots" aria-hidden="true"><i /><i /><i /><i /><i /></div>
+          <p className="es-empty">Tap energy on the left — a trend line shows after two logs.</p>
+        </div>
       ) : (
         <svg viewBox={"0 0 " + w + " " + h} aria-hidden="true">
           <path d={path} fill="none" stroke="#E07A1A" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -2428,7 +2492,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
           <p className="hi">{hello}{who ? ", " + who : ""}{who ? " 👋" : ""}</p>
           <p className="sub">{activeChildName ? (<span>Logging for <b>{activeChildName}</b> · track what matters.</span>) : "Track what matters. Spot patterns. Look after yourself too."}</p>
         </div>
-        <PaywallCard onUnlock={onUnlock} unlocked={unlocked} />
+        <PaywallCard compact onUnlock={onUnlock} unlocked={unlocked} />
       </div>
       <div className="home-hero">
         <QuickLog setDataStore={setDataStore} showToast={showToast} activeChildId={activeChildId} />
@@ -3310,10 +3374,7 @@ function App() {
       return params.get("login") === "1" || params.get("mode") === "login";
     } catch (e) { return false; }
   })();
-  if (CLOUD_ENABLED && !authReady) {
-    return <div className="app-root" style={{ padding: 40, textAlign: "center", color: "var(--soft)" }}>Starting THE PLAYBOOK…</div>;
-  }
-  if (CLOUD_ENABLED && (recoveryMode || (forceLogin && !session))) {
+  if (CLOUD_ENABLED && (recoveryMode || (forceLogin && !session && authReady))) {
     return (
       <AuthScreen
         recoveryMode={recoveryMode}
@@ -3380,7 +3441,7 @@ function App() {
         )}
       </header>
       <main className="app-main">
-        {!loaded ? <div className="loading">Loading your playbook…</div>
+        {!loaded ? <div className="home-today"><div className="home-greet"><p className="hi">THE PLAYBOOK</p><p className="sub">Opening your tracker…</p></div></div>
           : mainTab === "home" ? (
             <HomePage setDataStore={setDataStore} showToast={showToast} dataStore={dataStore} onNavigate={navigate} unlocked={unlocked} onUnlock={handleUnlock} onOpenPaywall={requestUnlock} activeChildId={activeChildId} activeChildName={(children.find((c) => c.id === activeChildId) || {}).name} firstName={firstNameOf(user)} />
           )
