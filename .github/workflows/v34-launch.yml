@@ -1,0 +1,25 @@
+name: v34-launch
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - v34_launch_patch.py
+      - .github/workflows/v34-launch.yml
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V34 launch patch
+        run: |
+          set -euo pipefail
+          python3 v34_launch_patch.py
+          grep -q handleWipeDevice app.html
+          grep -q "Delete my data" app.html
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add app.html v34_launch_patch.py
+          git diff --cached --quiet || git commit -m "V34: privacy links and delete-my-data on Today"
+          git push origin HEAD:main
