@@ -1,9 +1,12 @@
 /* THE PLAYBOOK — service worker */
-const CACHE = "playbook-v33";
+const CACHE = "playbook-v34";
 const PRECACHE = [
   "./",
   "./index.html",
   "./app.html",
+  "./privacy.html",
+  "./terms.html",
+  "./offline.html",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
@@ -42,7 +45,7 @@ self.addEventListener("fetch", (event) => {
           }
           return res;
         })
-        .catch(() => caches.match(req))
+        .catch(() => caches.match(req).then((cached) => cached || caches.match("./offline.html")))
     );
     return;
   }
