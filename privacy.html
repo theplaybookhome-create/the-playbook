@@ -1,32 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Privacy — THE PLAYBOOK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0B1219" />
+  <title>Privacy Policy — THE PLAYBOOK</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 640px; margin: 0 auto; padding: 24px 18px 48px; color: #1a252f; line-height: 1.55; background: #F7F6F4; }
-    h1 { font-size: 1.5rem; margin: 0 0 8px; }
-    h2 { font-size: 1.05rem; margin: 24px 0 8px; }
-    p, li { font-size: 0.95rem; color: #3a4550; }
-    a { color: #C1752E; }
-    .back { display: inline-block; margin-bottom: 16px; font-weight: 600; text-decoration: none; }
+    :root { --navy:#0E1822; --navy-dark:#0B1219; --amber:#E8892C; --amber-deep:#C1752E; --paper:#F4F6F8; --ink:#111827; --soft:#5C6570; --line:#E2E6EA; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--paper); color:var(--ink); line-height:1.55; }
+    header { background:linear-gradient(165deg,#121A22,#0B1219); color:#fff; padding:20px 0 28px; }
+    .wrap { max-width:720px; margin:0 auto; padding:0 20px; }
+    .back { color:#F5C98A; text-decoration:none; font-weight:700; font-size:13px; }
+    h1 { font-size:28px; margin:14px 0 6px; letter-spacing:-.03em; }
+    .meta { opacity:.8; font-size:13px; }
+    main { padding:28px 0 56px; }
+    h2 { font-size:18px; color:var(--navy); margin:28px 0 8px; }
+    p, li { font-size:15px; color:#3a4550; }
+    a { color:var(--amber-deep); }
+    .note { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+    footer { padding:0 0 40px; font-size:13px; color:var(--soft); }
   </style>
 </head>
 <body>
-  <a class="back" href="index.html">← Back</a>
-  <h1>Privacy</h1>
-  <p><strong>THE PLAYBOOK</strong> is built to keep your family’s notes private.</p>
-  <h2>What we store</h2>
-  <ul>
-    <li>Logs you enter (daily, behaviour, sleep, therapy, wins, etc.) stay in <strong>your browser / device storage</strong> on that device.</li>
-    <li>We do not run a cloud account for your tracking data in this version.</li>
-    <li>Community notes you write stay on your device unless a future online community is added.</li>
-  </ul>
-  <h2>Payments</h2>
-  <p>One-time unlock payments are processed by <strong>Stripe</strong>. Card details are handled by Stripe, not by THE PLAYBOOK servers.</p>
-  <h2>Contact</h2>
-  <p>Questions: <a href="mailto:Theplaybookhome@gmail.com">Theplaybookhome@gmail.com</a></p>
-  <p style="font-size:0.85rem;color:#7a8490;margin-top:32px">Not medical or educational advice. For information only.</p>
+  <header>
+    <div class="wrap">
+      <a class="back" href="./index.html?stay=1">← THE PLAYBOOK</a>
+      <h1>Privacy Policy</h1>
+      <p class="meta">Last updated: 28 August 2026 · United Kingdom</p>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <p class="note">THE PLAYBOOK is a calm companion for parents and carers of neurodivergent children. It is built so that day-to-day logs stay on <strong>your device</strong> unless you choose to create an account or post in Community.</p>
+      <h2>Who we are</h2>
+      <p>THE PLAYBOOK is operated from the United Kingdom. Contact: <a href="mailto:Theplaybookhome@gmail.com">Theplaybookhome@gmail.com</a>.</p>
+      <p>This policy explains what we collect, why, and how you can export or delete it. It is written for a parent or carer using the app — not for a child using it on their own.</p>
+      <h2>Who the app is for</h2>
+      <p>THE PLAYBOOK is designed for adults (parents, carers, family members). Children may appear in logs you write, but the account and device belong to the adult. We do not knowingly create accounts for children under 16. If you think a child has created an account, email us and we will delete it.</p>
+      <h2>What we store on your device</h2>
+      <p>Most information never leaves the phone or tablet you are using. It is saved in the browser’s local storage under keys that start with <code>playbook:</code>. That can include:</p>
+      <ul>
+        <li>Daily energy and mood logs, notes, sleep, food, behaviour, therapy, medication reminders you type, wins, milestones</li>
+        <li>Child nicknames you add and which child is selected</li>
+        <li>At-a-glance profile notes and brain-dump text</li>
+        <li>Whether this device has unlocked the £2.99 features</li>
+        <li>Onboarding “seen” flags and custom tick options</li>
+      </ul>
+      <p>Anyone with access to that device and browser can see this data. We cannot see device-only logs from our side.</p>
+      <h2>What we store if you create an account</h2>
+      <p>An account is optional. If you sign up, we use <strong>Supabase</strong> (hosted in the cloud) to keep:</p>
+      <ul>
+        <li>Email address and an encrypted password</li>
+        <li>A display name if you give one</li>
+        <li>A flag that this account has paid for the one-time unlock</li>
+        <li>Community or Discover posts you choose to publish</li>
+      </ul>
+      <p>Daily tracking logs are <strong>not</strong> automatically uploaded to your account in this version. If that changes, we will update this page first.</p>
+      <h2>Payments</h2>
+      <p>The one-time £2.99 unlock is taken by <strong>Stripe</strong>. Card, Apple Pay or Google Pay details go to Stripe, not to THE PLAYBOOK. Stripe’s privacy policy applies to that payment. After a successful payment we only store that this device (and, if you are signed in, this account) is unlocked.</p>
+      <h2>Analytics, ads and cookies</h2>
+      <p>We do not run advertising networks in the app. We do not sell your data. The site may use essential cookies or local storage so the app can install as a PWA and remember your session. We do not use the data for profiling or remarketing.</p>
+      <h2>Why we process data</h2>
+      <ul>
+        <li><strong>To provide the product you asked for</strong> — saving logs, insights, reports and printables on your device</li>
+        <li><strong>To take payment</strong> — one-time unlock via Stripe</li>
+        <li><strong>To run an optional account</strong> — sign-in, password reset, restore unlock on another device</li>
+        <li><strong>To publish posts you submit</strong> — Community / Discover</li>
+        <li><strong>Legal obligation</strong> — keep payment records Stripe already holds, answer a deletion request</li>
+      </ul>
+      <p>UK GDPR lawful bases: contract (providing the app you opened), legitimate interests (keeping the product secure and working), and consent where you publish a post or create an account.</p>
+      <h2>How long we keep it</h2>
+      <p>Device logs stay until you delete them or clear the browser site data. Account email stays until you ask us to delete the account. Community posts stay until you delete the post or ask us to remove it. Payment records follow Stripe’s retention rules.</p>
+      <h2>Your rights</h2>
+      <p>You can:</p>
+      <ul>
+        <li><strong>Export</strong> a JSON backup from the app (Export in the header)</li>
+        <li><strong>Delete device data</strong> from Today → Your data, or by clearing site data for theplaybook.cloud in the browser</li>
+        <li><strong>Delete an account or a Community post</strong> by emailing <a href="mailto:Theplaybookhome@gmail.com">Theplaybookhome@gmail.com</a> from the same address</li>
+        <li>Ask for a copy of account data we hold, or object to processing</li>
+      </ul>
+      <p>We aim to reply within 30 days. You can also complain to the ICO (ico.org.uk) if you are in the UK.</p>
+      <h2>Sharing</h2>
+      <p>We do not sell family logs. Processors we use:</p>
+      <ul>
+        <li>Stripe — payments</li>
+        <li>Supabase — optional accounts and Community posts</li>
+        <li>GitHub Pages / hosting — serving the website</li>
+      </ul>
+      <p>A professional report you generate is created on your device. If you print it or email it to school or a GP, that share is your choice.</p>
+      <h2>Security</h2>
+      <p>The site is served over HTTPS. Device logs depend on the lock screen and browser of the device you use. Do not log highly sensitive medical detail you would not want on a shared family tablet. This product is not a clinical record system.</p>
+      <h2>Medical and education disclaimer</h2>
+      <p>THE PLAYBOOK is a family organiser. It is not medical advice, a diagnosis tool, or a replacement for a GP, therapist, or school plan.</p>
+      <h2>Changes</h2>
+      <p>If we start syncing logs to the cloud, add analytics, or change processors, we will update this page and the date above.</p>
+    </div>
+  </main>
+  <footer>
+    <div class="wrap">
+      <a href="./terms.html">Terms of use</a> ·
+      <a href="./support.html">Support</a> ·
+      <a href="./app.html">Open the app</a> ·
+      <a href="mailto:Theplaybookhome@gmail.com">Email</a>
+    </div>
+  </footer>
 </body>
 </html>
