@@ -12,8 +12,8 @@
         }
         if (params.get("stay") === "1" || params.get("landing") === "1") return;
         if ((window.location.hash || "") === "#buy") return;
-        /* Landing stays at / so phones see Open / Log in / Unlock. */
-
+        /* Stay on the public landing at / — phones and desktop see Open / Log in / Unlock.
+           Installed PWA still opens app.html from the manifest. */
       } catch (e) {}
     })();
   </script>
@@ -124,7 +124,9 @@
         <a href="https://x.com/theplaybookhome" target="_blank" rel="noopener" style="color:var(--amber-deep);margin:0 8px;text-decoration:none;font-weight:600">X</a> ·
         <a href="mailto:Theplaybookhome@gmail.com" style="color:var(--amber-deep);margin:0 8px;text-decoration:none;font-weight:600">Email</a>
       </p>
-      <a href="privacy.html" style="color:var(--amber-deep);text-decoration:none;font-weight:600">Privacy</a>
+      <a href="./privacy.html" style="color:var(--amber-deep);text-decoration:none;font-weight:600">Privacy</a>
+      · <a href="./terms.html" style="color:var(--amber-deep);text-decoration:none;font-weight:600">Terms</a>
+      · <a href="./support.html" style="color:var(--amber-deep);text-decoration:none;font-weight:600">Support</a>
       · <a href="./index.html?stay=1" style="color:var(--soft);text-decoration:none">Stay on landing</a>
       <br /><span id="year"></span>
     </div>
