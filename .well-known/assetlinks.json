@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "cloud.theplaybook.app",
       "sha256_cert_fingerprints": [
-        "93:EB:88:2A:E0:4F:C7:FE:B3:21:AB:92:E8:9D:06:0C:DD:6B:4D:F9:B6:AC:A0:B3:FD:76:D1:5A:02:1E:D8:0B"
+        "93:EB:88:2A:E0:4F:C7:FE:B3:21:AB:92:E8:9D:06:0C:DD:6B:4D:F9:B6:AC:A0:B3:FD:76:D1:5A:02:1E:D8:0B",
+        "72:56:3A:FD:06:68:88:D0:E4:73:FB:40:8C:FC:B3:0B:C7:DA:1A:C1:0B:42:69:8C:A0:2E:2C:A1:8A:7A:9A:07"
       ]
     }
   }
