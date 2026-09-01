@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V45 -->
+  <!-- THEME_BUILD_V46 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -2934,6 +2934,7 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
       <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
       <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
       <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
+      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
       <p id="share-status" className="no-print" style={{ fontSize: 12, color: "#6B7280", minHeight: 16 }}></p>
 
       <div className="card" id="professional-report">
@@ -3518,7 +3519,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
           <p>Keep school notes in one place. Teachers only get a short form — they never see your diary.</p>
         </div>
         <SchoolLinkCard showToast={showToast} />
-        <SchoolInbox showToast={showToast} />
+        <SchoolInbox showToast={showToast} latestOnly={true} onSeeAll={function () { onNavigate("school"); }} />
       </section>
       <div className="home-hero">
         <QuickLog setDataStore={setDataStore} showToast={showToast} activeChildId={activeChildId} />
@@ -4558,6 +4559,7 @@ function App() {
         </div>
         <div className="header-chips" role="navigation" aria-label="Features">
           <button type="button" className={"hchip" + (mainTab === "school" ? " active" : "")} onClick={() => navigate("school")}>🏫 Teacher notes</button>
+          <button type="button" className={"hchip" + (mainTab === "school" ? " active" : "")} onClick={() => navigate("school")}>🏫 Teacher notes</button>
           <button type="button" className={"hchip" + (mainTab === "track" ? " active" : "")} onClick={() => navigate("track", "daily")}>🔒 Private tracking</button>
           <button type="button" className={"hchip" + (mainTab === "insights" ? " active" : "")} onClick={() => navigate("insights")}>📈 Pattern insights</button>
           <button type="button" className={"hchip" + (mainTab === "report" ? " active" : "")} onClick={() => navigate("report")}>📄 Professional report</button>
@@ -4580,6 +4582,7 @@ function App() {
           : mainTab === "home" ? (
             <HomePage setDataStore={setDataStore} showToast={showToast} dataStore={dataStore} onNavigate={navigate} unlocked={unlocked} onUnlock={handleUnlock} onOpenPaywall={requestUnlock} activeChildId={activeChildId} activeChildName={(children.find((c) => c.id === activeChildId) || {}).name} firstName={firstNameOf(user)} onWipeDevice={() => setPendingWipe(true)} />
           )
+          : mainTab === "school" ? <SchoolNotesPage showToast={showToast} />
           : mainTab === "school" ? <SchoolNotesPage showToast={showToast} />
           : mainTab === "track" ? (
             <TrackPage dataStore={dataStore} setDataStore={setDataStore} learningTicked={learningTicked} setLearningTicked={setLearningTicked}
@@ -4972,57 +4975,7 @@ function SchoolNotesPage({ showToast }) {
   );
 }
 
-) {
-  const [inbox, setInbox] = useState(() => loadSavedSchoolNotes());
-  const [status, setStatus] = useState("");
 
-  async function refresh() {
-    const tokens = loadSchoolLinks().map(function (l) { return l.token; });
-    const result = await fetchSchoolNotesForTokens(tokens);
-    setInbox(result.notes || []);
-    if (result.error) setStatus("Could not reach school inbox yet.");
-    else setStatus(result.notes && result.notes.length ? "" : "No school notes yet.");
-  }
-
-  useEffect(function () {
-    refresh();
-    const id = setInterval(refresh, 20000);
-    return function () { clearInterval(id); };
-  }, []);
-
-  function dismiss(id) {
-    const next = inbox.filter(function (x) { return x.id !== id; });
-    setInbox(next);
-    saveSavedSchoolNotes(next);
-    if (showToast) showToast("School update hidden on this device");
-  }
-
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <h3 style={{ fontSize: 15, margin: "8px 0 8px" }}>Incoming teacher notes</h3>
-      {inbox.map(function (s) {
-        return (
-          <div className="school-entry" key={s.id} role="status">
-            <div className="se-head">
-              <span className="se-date">School · {s.date || ""} · {s.author || "Teacher"}</span>
-              <button type="button" className="se-del" aria-label="Dismiss" onClick={function () { dismiss(s.id); }}>✕</button>
-            </div>
-            <div>
-              <span className="se-tag">{s.child || "Child"}</span>
-              {s.mood ? <span className="se-tag">{s.mood}</span> : null}
-              {s.energy ? <span className="se-tag">Energy: {s.energy}</span> : null}
-              {s.incidents ? <span className="se-tag">Incidents: {s.incidents}</span> : null}
-            </div>
-            {s.wins ? <div className="se-line"><b>Wins:</b> {s.wins}</div> : null}
-            {s.note ? <div className="se-line"><b>Note:</b> {s.note}</div> : null}
-          </div>
-        );
-      })}
-      <button type="button" className="btn-secondary" style={{ padding: "6px 10px", fontSize: 12 }} onClick={refresh}>Refresh school notes</button>
-      {status ? <p style={{ fontSize: 12, color: "#6B7280", margin: "6px 0 0" }}>{status}</p> : null}
-    </div>
-  );
-}
 
 function Root() {
   const shared = decodeShareParam();
@@ -5036,7 +4989,7 @@ root.render(React.createElement(Root));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=45").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=46").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
