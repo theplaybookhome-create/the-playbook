@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V48 -->
+  <!-- THEME_BUILD_V50 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -4777,7 +4777,7 @@ async function revokeSchoolLinkCloud(token) {
     });
   } catch (e) {}
 }
-async async function fetchSchoolNotesForTokens(tokens) {
+async function fetchSchoolNotesForTokens(tokens) {
   const local = loadSavedSchoolNotes();
   const uniq = [];
   (tokens || []).forEach(function (t) {
@@ -5016,7 +5016,7 @@ root.render(React.createElement(Root));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=48").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=50").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
