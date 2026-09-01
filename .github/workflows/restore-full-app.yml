@@ -13,24 +13,49 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Restore full app.html and apply iOS getSession timeout
+      - name: Restore app.html and make export/import icon-only
         run: |
           set -euo pipefail
-          git show 20573627c5a12b069f07977089e492e50897d427:app.html > app.html
+          git show 908d6993bcd033285c4cecbf1821d1b1f9692cee:app.html > app.html
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p = Path('app.html')
-          html = p.read_text(encoding='utf-8')
-          needle = 'sb.auth.getSession().then(async ({ data }) => {\n      setSession(data.session || null);\n      setAuthReady(true);\n      await applyAccountPremium(data.session || null);\n    });'
-          patch = '''// iOS Chrome can hang indefinitely on getSession; race with timeout so free path always continues\n    const sessionPromise = sb.auth.getSession().then(({ data }) => data).catch((e) => {\n      console.warn("getSession error", e);\n      return { session: null };\n    });\n    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve({ session: null, timedOut: true }), 4000));\n    Promise.race([sessionPromise, timeoutPromise]).then(async (data) => {\n      if (data && data.timedOut) console.warn("getSession timed out (iOS) — continuing without session");\n      const sess = data && data.session ? data.session : null;\n      setSession(sess);\n      setAuthReady(true);\n      await applyAccountPremium(sess);\n    });'''
-          if needle not in html:
-              raise SystemExit('needle not found in app.html')
-          p.write_text(html.replace(needle, patch, 1), encoding='utf-8')
+          t = p.read_text(encoding='utf-8')
+          t = t.replace(
+              '.hdr-exim { display: inline-flex !important; align-items: center !important; gap: 7px !important; padding: 8px 14px !important; }\n.hdr-exim svg { stroke: currentColor; fill: none; stroke-width: 2; }',
+              '.hdr-exim { display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 38px !important; min-width: 38px !important; height: 38px !important; padding: 0 !important; gap: 0 !important; font-size: 0 !important; line-height: 0 !important; color: #fff !important; }\n.hdr-exim svg { width: 18px !important; height: 18px !important; stroke: currentColor !important; fill: none !important; stroke-width: 2 !important; color: #fff !important; }',
+          )
+          new_btns = '''<button type="button" className="header-btn header-pill hdr-exim" title="Export backup" aria-label="Export backup" onClick={handleExport}>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 21h14"/></svg>
+            </button>
+            <button type="button" className="header-btn header-pill hdr-exim" title="Import backup" aria-label="Import backup" onClick={() => fileInputRef.current?.click()}>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 15V4"/><path d="M8 11l4 4 4-4"/><path d="M5 21h14"/></svg>
+            </button>'''
+          t2, n = re.subn(
+              r'<button type="button" className="header-btn header-pill hdr-exim" title="Export backup" onClick=\{handleExport\}>[\s\S]*?</button>\s*<button type="button" className="header-btn header-pill hdr-exim" title="Import backup" onClick=\{\(\) => fileInputRef\.current\?\.click\(\)\}>[\s\S]*?</button>',
+              new_btns,
+              t,
+              count=1,
+          )
+          print('button replacements', n)
+          if n != 1:
+              raise SystemExit('button replace failed')
+          t = t2
+          extra = '''\n/* icon-only export / import */\n.header-actions .hdr-exim,\nbutton.header-btn.hdr-exim,\nbutton.header-pill.hdr-exim {\n  width: 38px !important;\n  min-width: 38px !important;\n  height: 38px !important;\n  padding: 0 !important;\n  gap: 0 !important;\n  font-size: 0 !important;\n  line-height: 0 !important;\n  color: #fff !important;\n  display: inline-flex !important;\n  align-items: center !important;\n  justify-content: center !important;\n}\n.header-actions .hdr-exim svg,\nbutton.hdr-exim svg {\n  width: 18px !important;\n  height: 18px !important;\n  stroke: currentColor !important;\n  fill: none !important;\n  stroke-width: 2 !important;\n}\n\n'''
+          needle = '''@media (prefers-reduced-motion: reduce) {\n  .connect-btn, .quick-link, .why-card, .connect-card, .bottom-btn, .connect-btn .cb-ico {\n    transition: none !important;\n  }\n}\n\n`;'''
+          if 'icon-only export / import' not in t:
+              if needle not in t:
+                  raise SystemExit('css needle not found')
+              t = t.replace(needle, needle.replace('\n`;', extra + '`;'), 1)
+          t = t.replace('navigator.serviceWorker.register("./sw.js?v=36")', 'navigator.serviceWorker.register("./sw.js?v=38")')
+          p.write_text(t, encoding='utf-8')
           print('bytes', p.stat().st_size)
           PY
           test "$(wc -c < app.html)" -gt 150000
           git config user.name "theplaybookhome-create"
           git config user.email "theplaybookhome@gmail.com"
           git add app.html
-          git diff --cached --quiet || git commit -m "Restore full THE PLAYBOOK app.html with iOS getSession timeout fix"
+          git diff --cached --stat
+          git diff --cached --quiet || git commit -m "Restore app.html; header Export/Import are icon-only"
           git push origin HEAD:main
