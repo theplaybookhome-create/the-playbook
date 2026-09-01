@@ -11,109 +11,95 @@
 <style>
   :root{ --navy:#0E131F; --orange:#FF6B00; --bg:#F4F6F8; --line:#E2E8F0; --ink:#111827; --soft:#6B7280; }
   *{ box-sizing:border-box; }
-  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); line-height:1.55; }
+  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
   a{ color:var(--orange); font-weight:600; text-decoration:none; }
-  .wrap{ max-width:840px; margin:0 auto; padding:0 20px 56px; }
-  header{ background:var(--navy); color:#fff; padding:16px 20px; }
-  header .inner{ max-width:840px; margin:0 auto; display:flex; align-items:center; gap:12px; }
-  .logo{ width:40px; height:40px; border-radius:10px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,.25); }
-  header h1{ margin:0; font-size:16px; letter-spacing:.4px; }
-  header p{ margin:2px 0 0; font-size:12px; color:rgba(255,255,255,.62); }
-  .cta{ margin-left:auto; display:flex; gap:8px; }
-  .btn{ display:inline-block; padding:10px 16px; border-radius:12px; font-weight:700; font-size:14px; border:0; }
+  .wrap{ max-width:780px; margin:0 auto; padding:0 22px 48px; }
+  header{ background:var(--navy); color:#fff; }
+  header .inner{ max-width:780px; margin:0 auto; padding:14px 22px; display:flex; align-items:center; gap:12px; }
+  .logo{ width:36px; height:36px; border-radius:9px; object-fit:cover; }
+  header h1{ margin:0; font-size:15px; letter-spacing:.3px; }
+  header p{ margin:1px 0 0; font-size:12px; color:rgba(255,255,255,.6); }
+  .hdr-btn{ margin-left:auto; background:var(--orange); color:#fff; padding:8px 14px; border-radius:10px; font-size:13px; font-weight:700; }
+  .hero{ padding:36px 0 8px; }
+  .hero h2{ font-size:30px; line-height:1.18; margin:0 0 12px; letter-spacing:-.02em; }
+  .hero p{ font-size:16px; color:var(--soft); margin:0 0 18px; max-width:46ch; }
+  .hero-actions{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .btn{ display:inline-block; padding:11px 18px; border-radius:12px; font-weight:700; font-size:14px; }
   .btn-primary{ background:var(--orange); color:#fff; }
-  .btn-ghost{ background:transparent; border:1px solid rgba(255,255,255,.25); color:#fff; }
   .btn-dark{ background:var(--navy); color:#fff; }
-  .hero{ padding:40px 0 8px; }
-  .hero h2{ font-size:32px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em; }
-  .hero p{ font-size:17px; color:var(--soft); margin:0 0 20px; max-width:58ch; }
-  .hero-actions{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:8px; }
-  .price{ display:inline-flex; align-items:center; background:#FFF4EB; border:1px solid #F3D7B3; border-radius:999px; padding:7px 14px; font-weight:700; font-size:13px; color:var(--navy); }
-  .price b{ color:var(--orange); }
-  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:24px 0 8px; }
-  .card{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px; }
+  .hint{ margin:10px 0 0; font-size:13px; color:var(--soft); }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:28px 0 0; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px 16px 18px; min-height:148px; }
   .card h3{ margin:0 0 6px; font-size:16px; }
   .card p{ margin:0; font-size:14px; color:var(--soft); }
   .tag{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; border-radius:999px; margin-bottom:8px; }
   .tag.free{ background:#EAF7EF; color:#1E7A46; }
   .tag.paid{ background:#FFF4EB; color:var(--orange); }
-  .steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:28px 0 8px; }
+  .steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:28px 0 0; }
   .step{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px; }
-  .step .n{ width:26px; height:26px; border-radius:8px; background:var(--orange); color:#fff; font-weight:800; display:grid; place-items:center; margin-bottom:8px; font-size:13px; }
+  .step .n{ width:24px; height:24px; border-radius:7px; background:var(--orange); color:#fff; font-weight:800; display:grid; place-items:center; margin-bottom:8px; font-size:12px; }
   .step h4{ margin:0 0 4px; font-size:15px; }
   .step p{ margin:0; font-size:13px; color:var(--soft); }
-  .note{ font-size:13px; color:var(--soft); text-align:center; margin:8px 0 0; }
-  .bottom-cta{ text-align:center; margin:28px 0 0; }
-  footer{ border-top:1px solid var(--line); padding:20px 0 28px; font-size:13px; color:var(--soft); }
+  footer{ border-top:1px solid var(--line); padding:18px 0 28px; font-size:13px; color:var(--soft); }
   footer .links{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:6px; }
   @media (max-width:640px){
     .grid,.steps{ grid-template-columns:1fr; }
     .hero h2{ font-size:26px; }
-    header .inner{ flex-wrap:wrap; }
-    .cta{ margin-left:0; width:100%; }
-    .cta .btn{ flex:1; text-align:center; }
+    .card{ min-height:0; }
   }
 </style>
 </head>
 <body>
 <header>
   <div class="inner">
-    <img class="logo" src="icon-192.png" width="40" height="40" alt="" />
+    <img class="logo" src="icon-192.png" width="36" height="36" alt="" />
     <div>
       <h1>THE PLAYBOOK</h1>
       <p>For neurodivergent families</p>
     </div>
-    <div class="cta">
-      <a class="btn btn-ghost" href="./app.html">Open app</a>
-      <a class="btn btn-primary" href="./app.html">Start free</a>
-    </div>
+    <a class="hdr-btn" href="./app.html">Open app</a>
   </div>
 </header>
 
 <div class="wrap">
   <section class="hero">
     <h2>Track the days that matter.<br>Spot the patterns.<br>Walk into appointments prepared.</h2>
-    <p>A private diary for parents and carers. Log energy, mood, sleep, behaviour and wins — then hand school or your GP a clear one-page summary. No subscription. Logs stay on your device.</p>
+    <p>A private diary for parents and carers. Log energy, mood, sleep and wins — then hand school or your GP a one-page summary. No subscription.</p>
     <div class="hero-actions">
-      <a class="btn btn-dark" href="./app.html">Open the app</a>
+      <a class="btn btn-dark" href="./app.html">Start free tracking</a>
       <a class="btn btn-primary" href="https://buy.stripe.com/bJe4gB2R9fbb96O52C38403">Unlock · £2.99 once</a>
-      <span class="price">£2.99 <b>once</b> · no subscription</span>
     </div>
-    <p class="note">Already using it? Open the app on this device — your logs are still here.</p>
+    <p class="hint">Logs stay on this device. Unlock is a one-time payment, not a subscription.</p>
   </section>
 
   <div class="grid">
     <div class="card">
       <span class="tag free">Free</span>
       <h3>Full tracking</h3>
-      <p>Daily energy, mood, behaviour, sensory, sleep, food, therapy, meds, milestones, self-care and wins. More than one child on the same device.</p>
+      <p>Energy, mood, behaviour, sensory, sleep, food, therapy, meds, milestones and wins. More than one child on the same device.</p>
     </div>
     <div class="card">
-      <span class="tag paid">£2.99 unlock</span>
+      <span class="tag paid">Unlock</span>
       <h3>Insights & report</h3>
-      <p>Plain-English patterns from your own logs, including sleep-to-energy links. A printable one-pager with talking points for school, GP or therapy.</p>
+      <p>Patterns from your logs, including sleep-to-energy links. A printable one-pager for school, GP or therapy.</p>
     </div>
     <div class="card">
       <span class="tag free">School</span>
       <h3>Teacher daily note</h3>
-      <p>Give school a private link. They send mood, energy and one note — no login, no photos, no chat. The same link works every day until you revoke it.</p>
+      <p>Give school a private link. They send mood, energy and one note. Same link every day until you revoke it.</p>
     </div>
     <div class="card">
       <span class="tag free">Private</span>
       <h3>Your data, your device</h3>
-      <p>No account needed to start. Export a backup anytime. Delete my data clears notes on this phone or tablet in one tap.</p>
+      <p>No account needed to start. Export a backup anytime. Delete my data clears notes on this device.</p>
     </div>
   </div>
 
   <section class="steps">
-    <div class="step"><div class="n">1</div><h4>Log in seconds</h4><p>Tap energy, pick a mood, add a note. Thirty seconds on a hard day.</p></div>
-    <div class="step"><div class="n">2</div><h4>See the pattern</h4><p>Insights show triggers, sleep links and what already helps.</p></div>
-    <div class="step"><div class="n">3</div><h4>Hand it over</h4><p>Print the one-page report. Walk in with evidence, not memory.</p></div>
+    <div class="step"><div class="n">1</div><h4>Log in seconds</h4><p>Tap energy, pick a mood, add a note.</p></div>
+    <div class="step"><div class="n">2</div><h4>See the pattern</h4><p>Insights show triggers, sleep links and what helps.</p></div>
+    <div class="step"><div class="n">3</div><h4>Hand it over</h4><p>Print the one-page report for school or GP.</p></div>
   </section>
-
-  <div class="bottom-cta">
-    <a class="btn btn-primary" href="./app.html" style="padding:13px 24px; font-size:16px;">Start free tracking</a>
-  </div>
 </div>
 
 <footer>
@@ -124,7 +110,7 @@
       <a href="./support.html">Support</a>
       <a href="mailto:Theplaybookhome@gmail.com">Theplaybookhome@gmail.com</a>
     </div>
-    <div>THE PLAYBOOK · £2.99 once, no subscription.</div>
+    <div>THE PLAYBOOK · £2.99 once</div>
   </div>
 </footer>
 </body>
