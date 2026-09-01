@@ -25,6 +25,7 @@
     .moods { display:flex; gap:8px; flex-wrap:wrap; }
     .mood { flex:1; min-width:64px; border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:10px 6px; font-size:13px; font-weight:700; color:var(--soft); cursor:pointer; font-family:inherit; }
     .mood.on { border-color:var(--amber); background:#FFF4EB; color:var(--navy); }
+    .mood.custom { border-style:dashed; }
     .btn { width:100%; border:0; border-radius:14px; padding:14px; font-size:16px; font-weight:800; font-family:inherit; cursor:pointer; background:var(--navy); color:#fff; }
     .btn:disabled { opacity:.5; cursor:wait; }
     .ok { background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; border-radius:12px; padding:12px 14px; font-size:14px; line-height:1.4; }
@@ -32,6 +33,9 @@
     .foot { margin-top:18px; font-size:12px; color:var(--soft); line-height:1.5; }
     .foot a { color:var(--amber); font-weight:700; }
     .hidden { display:none; }
+    .custom-row { display:flex; gap:8px; margin-top:8px; }
+    .custom-row input { flex:1; }
+    .custom-row button { border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:0 14px; font-weight:700; color:var(--navy); cursor:pointer; font-family:inherit; }
   </style>
 </head>
 <body>
@@ -59,6 +63,11 @@
             <button type="button" class="mood" data-v="😐 Okay">😐 Okay</button>
             <button type="button" class="mood" data-v="😟 Wobbly">😟 Wobbly</button>
             <button type="button" class="mood" data-v="😤 Upset">😤 Upset</button>
+            <button type="button" class="mood custom" data-v="__custom__">＋ Add your own</button>
+          </div>
+          <div class="custom-row hidden" id="custom-row">
+            <input id="custom-mood" type="text" placeholder="e.g. Focused, Anxious, Silly" maxlength="24" />
+            <button type="button" id="custom-add">Add</button>
           </div>
         </div>
         <div class="field">
@@ -104,12 +113,34 @@
       dateEl.value = new Date().toISOString().slice(0, 10);
 
       let mood = "";
+      const customRow = document.getElementById("custom-row");
+      const customInput = document.getElementById("custom-mood");
+
       document.querySelectorAll("#moods .mood").forEach(function (b) {
         b.addEventListener("click", function () {
           document.querySelectorAll("#moods .mood").forEach(function (x) { x.classList.remove("on"); });
           b.classList.add("on");
-          mood = b.getAttribute("data-v");
+          const v = b.getAttribute("data-v");
+          if (v === "__custom__") {
+            mood = "";
+            customRow.classList.remove("hidden");
+            customInput.focus();
+          } else {
+            mood = v;
+            customRow.classList.add("hidden");
+            customInput.value = "";
+          }
         });
+      });
+
+      document.getElementById("custom-add").addEventListener("click", function () {
+        const v = customInput.value.trim();
+        if (!v) return;
+        mood = v.slice(0, 24);
+        customRow.classList.add("hidden");
+      });
+      customInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); document.getElementById("custom-add").click(); }
       });
 
       const msg = document.getElementById("msg");
@@ -123,6 +154,7 @@
         const child = document.getElementById("child").value.trim();
         if (!child) { show("Please enter the child's first name.", false); return; }
         if (!token) { show("This link is missing its token. Ask the parent for a fresh link.", false); return; }
+        if (!mood) { show("Please pick a mood, or add your own.", false); return; }
 
         const payload = {
           v: 1,
