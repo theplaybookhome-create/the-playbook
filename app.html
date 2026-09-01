@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V42 -->
+  <!-- THEME_BUILD_V43 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -2930,6 +2930,7 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
         }}>Copy meeting-summary link</button>
       </div>
       <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
+      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
       <p id="share-status" className="no-print" style={{ fontSize: 12, color: "#6B7280", minHeight: 16 }}></p>
 
       <div className="card" id="professional-report">
@@ -4073,6 +4074,12 @@ function App() {
   const [session, setSession] = useState(null);
   const [authReady, setAuthReady] = useState(!CLOUD_ENABLED);
   const [recoveryMode, setRecoveryMode] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(function () {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("login") === "1" || params.get("mode") === "login";
+    } catch (e) { return false; }
+  });
   const [pendingWipe, setPendingWipe] = useState(false);
   const fileInputRef = useRef(null);
   const { show: showToast, ToastEl } = useToast();
@@ -4482,13 +4489,14 @@ function App() {
       return params.get("login") === "1" || params.get("mode") === "login";
     } catch (e) { return false; }
   })();
-  if (CLOUD_ENABLED && (recoveryMode || (forceLogin && !session && authReady))) {
+  if (CLOUD_ENABLED && (recoveryMode || ((forceLogin || loginOpen) && !session && authReady))) {
     return (
       <AuthScreen
         recoveryMode={recoveryMode}
         onAuthed={(sess) => {
           setSession(sess);
           setRecoveryMode(false);
+          setLoginOpen(false);
           try {
             const url = new URL(window.location.href);
             url.searchParams.delete("login");
@@ -4504,6 +4512,7 @@ function App() {
             window.history.replaceState({}, "", url.pathname + url.search + url.hash);
           } catch (e) {}
           setRecoveryMode(false);
+          setLoginOpen(false);
         }}
       />
     );
@@ -4532,14 +4541,7 @@ function App() {
   </button>
             {CLOUD_ENABLED && user ? <button type="button" className="header-btn header-pill signout-quiet" onClick={handleSignOut}>Sign out</button> : null}
             {user ? <div className="header-avatar" title={user.email || ""}>{initialsOf(user)}<span className="dot" /></div> : (
-              <button type="button" className="header-btn header-pill" onClick={() => {
-                try {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set("login", "1");
-                  window.history.replaceState({}, "", url.pathname + url.search + url.hash);
-                } catch (e) {}
-                window.location.search = (window.location.search ? window.location.search + "&" : "?") + "login=1";
-              }}>Log in</button>
+              <button type="button" className="header-btn header-pill" onClick={() => setLoginOpen(true)}>Log in</button>
             )}
             <input ref={fileInputRef} type="file" accept="application/json,.json" className="hidden-file" onChange={(e) => handleImport(e.target.files?.[0])} />
           </div>
@@ -4658,20 +4660,6 @@ function App() {
     </div>
   );
 }
-
-function schoolToken(){const b=new Uint8Array(12);if(window.crypto&&window.crypto.getRandomValues)window.crypto.getRandomValues(b);else for(let i=0;i<b.length;i++)b[i]=Math.floor(Math.random()*256);return "s"+Array.from(b,function(x){return x.toString(16).padStart(2,"0")}).join("")}
-function loadSchoolLinks(){try{const a=JSON.parse(localStorage.getItem("playbook:school-links")||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
-function saveSchoolLinks(list){try{localStorage.setItem("playbook:school-links",JSON.stringify(list))}catch(e){}}
-function loadSavedSchoolNotes(){try{const a=JSON.parse(localStorage.getItem("playbook:school-notes")||"[]");return Array.isArray(a)?a:[]}catch(e){return []}}
-function saveSavedSchoolNotes(list){try{localStorage.setItem("playbook:school-notes",JSON.stringify(list.slice(0,40)))}catch(e){}}
-function schoolLinkFor(token){const base=(window.location.origin+window.location.pathname).replace(/app\.html.*$/,"");return base+"school.html?t="+encodeURIComponent(token)}
-function mapSchoolRow(row){return {id:row.id||row.sentAt||String(row.created_at||Date.now()),token:row.token,child:row.child||"Child",date:row.note_date||row.date||"",mood:row.mood||"",energy:row.energy||"",incidents:row.incidents||"",wins:row.wins||"",note:row.body||row.note||"",author:row.author_name||row.author||"Teacher",sentAt:row.created_at||row.sentAt||""}}
-async function publishSchoolLink(entry){const sb=getSupabase();if(!sb)return {ok:false};const {error}=await sb.from("playbook_share_links").upsert({token:entry.token,label:entry.label,active:true});return {ok:!error}}
-async function revokeSchoolLinkCloud(token){const sb=getSupabase();if(!sb)return;await sb.from("playbook_share_links").update({active:false}).eq("token",token)}
-async function fetchSchoolNotesForTokens(tokens){const sb=getSupabase();if(!sb||!tokens.length)return {notes:loadSavedSchoolNotes(),error:null};const {data,error}=await sb.from("playbook_school_notes").select("*").in("token",tokens).order("created_at",{ascending:false}).limit(40);if(error)return {notes:loadSavedSchoolNotes(),error:error};const mapped=(data||[]).map(mapSchoolRow);saveSavedSchoolNotes(mapped);return {notes:mapped,error:null}}
-function SchoolLinkCard({showToast}){const [links,setLinks]=useState(()=>loadSchoolLinks());const [copied,setCopied]=useState("");const [setupHint,setSetupHint]=useState("");async function makeLink(){const token=schoolToken();const entry={token:token,created:todayISO(),label:"School link "+(links.length+1)};const published=await publishSchoolLink(entry);setSetupHint(published.ok?"":"Link copied, but teacher send needs the one-time cloud setup.");const next=[entry,...links].slice(0,20);setLinks(next);saveSchoolLinks(next);const url=schoolLinkFor(token);try{if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(url)}catch(e){}setCopied(url);if(showToast)showToast(published.ok?"School link copied — send to the teacher":"Link copied — cloud setup still needed")}async function copyExisting(token){const url=schoolLinkFor(token);try{if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(url)}catch(e){}setCopied(url);if(showToast)showToast("Link copied")}async function revoke(token){const next=links.filter(function(l){return l.token!==token});setLinks(next);saveSchoolLinks(next);await revokeSchoolLinkCloud(token);if(showToast)showToast("Link revoked")}return (<div className="school-card"><h3>Teacher form link</h3><p><b>This is not the professional report.</b> The teacher gets a short form. Notes come back here on Today.</p><button type="button" className="btn-primary" style={{width:"100%"}} onClick={makeLink}>Create teacher form link</button>{links.map(function(l){return (<div key={l.token} style={{display:"flex",gap:8,alignItems:"center",marginTop:8,flexWrap:"wrap"}}><span style={{fontSize:12,color:"#6B7280",flex:"1 1 160px"}}>{l.label} · {l.created}</span><button type="button" className="btn-secondary" style={{padding:"6px 10px",fontSize:12}} onClick={function(){copyExisting(l.token)}}>Copy</button><button type="button" className="btn-secondary" style={{padding:"6px 10px",fontSize:12,color:"#B03A2E"}} onClick={function(){revoke(l.token)}}>Revoke</button></div>)})}{copied?<p style={{fontSize:11,color:"#9CA3AF",margin:"8px 0 0",wordBreak:"break-all"}}>Last copied: {copied}</p>:null}{setupHint?<div className="school-setup">{setupHint}</div>:null}</div>)}
-function SchoolInbox({showToast}){const [inbox,setInbox]=useState(()=>loadSavedSchoolNotes());const [status,setStatus]=useState("");async function refresh(){const tokens=loadSchoolLinks().map(function(l){return l.token});const result=await fetchSchoolNotesForTokens(tokens);setInbox(result.notes||[]);if(result.error)setStatus("Could not reach school inbox yet.");else setStatus(result.notes&&result.notes.length?"":"No school notes yet.")}useEffect(function(){refresh();const id=setInterval(refresh,20000);return function(){clearInterval(id)}},[]);function dismiss(id){const next=inbox.filter(function(x){return x.id!==id});setInbox(next);saveSavedSchoolNotes(next)}return (<div style={{marginBottom:14}}>{inbox.map(function(s){return (<div className="school-entry" key={s.id}><div className="se-head"><span className="se-date">School · {s.date||""} · {s.author||"Teacher"}</span><button type="button" className="se-del" onClick={function(){dismiss(s.id)}}>✕</button></div><div><span className="se-tag">{s.child||"Child"}</span>{s.mood?<span className="se-tag">{s.mood}</span>:null}{s.energy?<span className="se-tag">Energy: {s.energy}</span>:null}{s.incidents?<span className="se-tag">Incidents: {s.incidents}</span>:null}</div>{s.wins?<div className="se-line"><b>Wins:</b> {s.wins}</div>:null}{s.note?<div className="se-line"><b>Note:</b> {s.note}</div>:null}</div>)})}<button type="button" className="btn-secondary" style={{padding:"6px 10px",fontSize:12}} onClick={refresh}>Refresh school notes</button>{status?<p style={{fontSize:12,color:"#6B7280",margin:"6px 0 0"}}>{status}</p>:null}</div>)}
-
 
 /* ===== V38: School link cloud (teacher adds by link) ===== */
 function schoolToken() {
@@ -4905,7 +4893,7 @@ root.render(React.createElement(Root));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=42").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=43").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
