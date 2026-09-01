@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "v47_school_verify.py"
+      - "v48_today_latest_only.py"
       - "school.html"
       - "SCHOOL_SHARE.sql"
       - ".github/workflows/v38-school.yml"
@@ -20,10 +21,12 @@ jobs:
           python-version: "3.12"
       - name: School tab + verify inbox
         run: python v47_school_verify.py
+      - name: Today latest note only
+        run: python v48_today_latest_only.py
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app.html sw.js school.html SCHOOL_SHARE.sql
-          git diff --cached --quiet || git commit -m "fix: school tab, latest note on Today, check for notes"
+          git diff --cached --quiet || git commit -m "fix: Today shows only the latest teacher note"
           git push
