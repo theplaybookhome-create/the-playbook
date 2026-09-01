@@ -19,16 +19,21 @@
     .card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:14px; }
     .field { margin-bottom:14px; }
     .field label { display:block; font-size:12px; font-weight:700; color:var(--soft); margin-bottom:6px; text-transform:uppercase; }
-    .field input, .field textarea, .field select { width:100%; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; font-size:16px; font-family:inherit; }
+    .field input, .field textarea, .field select { width:100%; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; font-size:16px; font-family:inherit; background:#fff; }
+    .field textarea { min-height:70px; }
     .moods { display:flex; gap:8px; flex-wrap:wrap; }
-    .mood { flex:1; min-width:64px; border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:10px 6px; font-size:13px; font-weight:700; cursor:pointer; }
-    .mood.on { border-color:var(--amber); background:#FFF4EB; }
-    .btn { width:100%; border:0; border-radius:14px; padding:14px; font-size:16px; font-weight:800; background:var(--navy); color:#fff; cursor:pointer; }
+    .mood { flex:1; min-width:64px; border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:10px 6px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+    .mood.on { border-color:var(--amber); background:#FFF4EB; color:var(--navy); }
+    .mood.custom { border-style:dashed; }
+    .btn { width:100%; border:0; border-radius:14px; padding:14px; font-size:16px; font-weight:800; background:var(--navy); color:#fff; cursor:pointer; font-family:inherit; }
     .btn:disabled { opacity:.5; }
     .ok { background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; border-radius:12px; padding:12px 14px; }
     .err { background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; border-radius:12px; padding:12px 14px; }
     .foot { margin-top:18px; font-size:12px; color:var(--soft); }
     .hidden { display:none; }
+    .custom-row { display:flex; gap:8px; margin-top:8px; }
+    .custom-row input { flex:1; }
+    .custom-row button { border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:0 14px; font-weight:700; cursor:pointer; font-family:inherit; }
   </style>
 </head>
 <body>
@@ -42,18 +47,24 @@
         <div class="field"><label>Your name / role</label><input id="author" maxlength="40" placeholder="e.g. Mrs Khan · class teacher" /></div>
         <div class="field"><label>Child's first name</label><input id="child" maxlength="24" placeholder="e.g. Preston" /></div>
         <div class="field"><label>Date</label><input id="date" type="date" /></div>
-        <div class="field"><label>Mood today</label>
+        <div class="field">
+          <label>Mood today</label>
           <div class="moods" id="moods">
             <button type="button" class="mood" data-v="Calm">Calm</button>
             <button type="button" class="mood" data-v="Okay">Okay</button>
             <button type="button" class="mood" data-v="Wobbly">Wobbly</button>
             <button type="button" class="mood" data-v="Upset">Upset</button>
+            <button type="button" class="mood custom" data-v="__custom__">+ Add your own</button>
+          </div>
+          <div class="custom-row hidden" id="custom-row">
+            <input id="custom-mood" type="text" placeholder="e.g. Focused, Anxious, Silly" maxlength="24" />
+            <button type="button" id="custom-add">Add</button>
           </div>
         </div>
-        <div class="field"><label>Energy</label><select id="energy"><option value=""></option><option>High</option><option>Okay</option><option>Low</option></select></div>
+        <div class="field"><label>Energy</label><select id="energy"><option value="">—</option><option>High</option><option>Okay</option><option>Low</option></select></div>
         <div class="field"><label>Incidents</label><select id="incidents"><option>None</option><option>1</option><option>2+</option></select></div>
-        <div class="field"><label>Wins</label><textarea id="wins"></textarea></div>
-        <div class="field"><label>Note for parent</label><textarea id="note"></textarea></div>
+        <div class="field"><label>Wins</label><textarea id="wins" placeholder="e.g. Great focus after lunch"></textarea></div>
+        <div class="field"><label>Note for parent</label><textarea id="note" placeholder="Anything the parent should know"></textarea></div>
         <button class="btn" id="send" type="button">Send to parent</button>
         <div id="msg" class="hidden" style="margin-top:14px;"></div>
       </div>
@@ -71,12 +82,25 @@
       const token = (new URLSearchParams(location.search).get("t") || new URLSearchParams(location.search).get("share") || "").trim();
       document.getElementById("date").value = new Date().toISOString().slice(0,10);
       let mood = "";
+      const customRow = document.getElementById("custom-row");
+      const customInput = document.getElementById("custom-mood");
       document.querySelectorAll("#moods .mood").forEach(function (b) {
         b.addEventListener("click", function () {
           document.querySelectorAll("#moods .mood").forEach(function (x) { x.classList.remove("on"); });
           b.classList.add("on");
-          mood = b.getAttribute("data-v");
+          const v = b.getAttribute("data-v");
+          if (v === "__custom__") { mood = ""; customRow.classList.remove("hidden"); customInput.focus(); }
+          else { mood = v; customRow.classList.add("hidden"); customInput.value = ""; }
         });
+      });
+      document.getElementById("custom-add").addEventListener("click", function () {
+        const v = customInput.value.trim();
+        if (!v) return;
+        mood = v.slice(0, 24);
+        customRow.classList.add("hidden");
+      });
+      customInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); document.getElementById("custom-add").click(); }
       });
       const msg = document.getElementById("msg");
       function show(t, ok) { msg.className = ok ? "ok" : "err"; msg.textContent = t; msg.classList.remove("hidden"); }
@@ -85,7 +109,8 @@
         const author = document.getElementById("author").value.trim() || "Teacher";
         if (!child) return show("Enter the child's first name.", false);
         if (!token) return show("This link is missing its code. Ask the parent for a fresh school link.", false);
-        if (!mood) return show("Pick a mood.", false);
+        if (!mood && customInput.value.trim()) mood = customInput.value.trim().slice(0,24);
+        if (!mood) return show("Pick a mood, or add your own.", false);
         const payload = {
           token: token,
           child: child.slice(0,24),
@@ -101,15 +126,24 @@
         const btn = document.getElementById("send");
         btn.disabled = true; btn.textContent = "Sending…";
         try {
-          const res = await fetch(SUPABASE_URL + "/rest/v1/playbook_school_notes", {
-            method: "POST",
-            headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
-            body: JSON.stringify(payload)
-          });
+          const headers = { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY, "Content-Type": "application/json", Prefer: "return=minimal" };
+          const look = await fetch(SUPABASE_URL + "/rest/v1/playbook_share_links?token=eq." + encodeURIComponent(token) + "&select=token,active", { headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY } });
+          let rows = [];
+          try { rows = look.ok ? await look.json() : []; } catch (e) { rows = []; }
+          if (rows && rows[0] && rows[0].active === false) throw new Error("The parent turned this link off. Ask them for a new teacher form link.");
+          if (!rows || !rows.length) {
+            const reg = await fetch(SUPABASE_URL + "/rest/v1/playbook_share_links", {
+              method: "POST",
+              headers: Object.assign({}, headers, { Prefer: "resolution=merge-duplicates,return=minimal" }),
+              body: JSON.stringify({ token: token, label: "Teacher form", active: true })
+            });
+            if (!reg.ok && reg.status !== 409) console.warn("register link", reg.status, await reg.text());
+          }
+          const res = await fetch(SUPABASE_URL + "/rest/v1/playbook_school_notes", { method: "POST", headers: headers, body: JSON.stringify(payload) });
           if (!res.ok) {
             const errText = await res.text();
             if (res.status === 404 || errText.indexOf("PGRST205") !== -1) throw new Error("School inbox is not switched on yet. Parent needs the one-time setup.");
-            if (res.status === 401 || res.status === 403 || errText.indexOf("row-level") !== -1) throw new Error("This link is not active. Ask the parent for a new one.");
+            if (res.status === 401 || res.status === 403 || errText.indexOf("row-level") !== -1) throw new Error("This link is not active. Ask the parent to create a new teacher form link.");
             throw new Error("Could not send. Try again.");
           }
           document.getElementById("form-view").classList.add("hidden");
