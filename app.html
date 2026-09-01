@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V40 -->
+  <!-- THEME_BUILD_V41 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -2900,9 +2900,7 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
 
   return (
     <div>
-      <PageHeader kicker="Share with professionals" title="Professional report" subtitle="Print or Save as PDF (browser → Print → Save as PDF)." />
-      <SchoolLinkCard showToast={typeof showToast === "function" ? showToast : undefined} />
-      <SchoolInbox showToast={typeof showToast === "function" ? showToast : undefined} />
+      <PageHeader kicker="For meetings" title="Professional report" subtitle="This page is the care summary for GP, school meetings, or therapists. The teacher daily-note link lives on Today." />
 
       <div className="appt-banner no-print">
         <h3>Appointment Mode</h3>
@@ -2924,12 +2922,12 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
             const url = window.location.origin + window.location.pathname + "?share=" + encodeSharePayload(payload);
             if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(url);
             const st = document.getElementById("share-status");
-            if (st) st.textContent = "Copied: view-only care summary. This is not the teacher form — use School link above for that.";
+            if (st) st.textContent = "Copied this report snapshot. It is view-only — not the teacher daily-note form.";
           } catch (e) {
             const st = document.getElementById("share-status");
             if (st) st.textContent = "Could not copy. Long-press and copy the address bar after tapping Share again.";
           }
-        }}>Copy this report (view only)</button>
+        }}>Copy report snapshot</button>
       </div>
       <p id="share-status" className="no-print" style={{ fontSize: 12, color: "#6B7280", minHeight: 16 }}></p>
 
@@ -3509,6 +3507,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
         <TrialOrPaywall dataStore={dataStore} unlocked={unlocked} onUnlock={onUnlock} />
       </div>
       <MedReminderBanner dataStore={dataStore} onDismiss={(id) => { dismissMedReminder(id); if (typeof showToast === "function") showToast("Reminder cleared"); }} />
+      <SchoolLinkCard showToast={showToast} />
       <SchoolInbox showToast={showToast} />
       <div className="home-hero">
         <QuickLog setDataStore={setDataStore} showToast={showToast} activeChildId={activeChildId} />
@@ -3731,7 +3730,6 @@ function CommunityPage({ posts, likes, onAddPost, onToggleLike, showToast, unloc
     <div>
       <PageHeader kicker="You're not the only one" title="Community" subtitle={cloudMode ? "Shared with other Playbook members." : "On this device until cloud is connected."} />
       <ConnectCard />
-      <SchoolLinkCard showToast={showToast} />
       {cloudMode ? (
         <div className="cloud-banner"><strong>Live community.</strong> Posts from paid members appear for everyone signed in. Pull to refresh by switching tabs, or tap Refresh.</div>
       ) : (
@@ -4905,7 +4903,7 @@ root.render(React.createElement(Root));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=40").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=41").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
