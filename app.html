@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V46 -->
+  <!-- THEME_BUILD_V47 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -4491,7 +4491,6 @@ function App() {
     { id: "track", label: "Track", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 11h16"/></svg> },
     { id: "insights", label: "Insights", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 19V10M12 19V5M19 19v-7"/></svg> },
     { id: "report", label: "Report", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 3h8l5 5v13H7z"/><path d="M15 3v5h5"/></svg> },
-    { id: "community", label: "Community", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="8" r="3"/><circle cx="16" cy="9" r="2.4"/><path d="M3.5 19c.6-3 2.8-5 5.5-5s4.9 2 5.5 5"/></svg> },
   ];
 
   const forceLogin = (function () {
@@ -4559,8 +4558,7 @@ function App() {
         </div>
         <div className="header-chips" role="navigation" aria-label="Features">
           <button type="button" className={"hchip" + (mainTab === "school" ? " active" : "")} onClick={() => navigate("school")}>🏫 Teacher notes</button>
-          <button type="button" className={"hchip" + (mainTab === "school" ? " active" : "")} onClick={() => navigate("school")}>🏫 Teacher notes</button>
-          <button type="button" className={"hchip" + (mainTab === "track" ? " active" : "")} onClick={() => navigate("track", "daily")}>🔒 Private tracking</button>
+                    <button type="button" className={"hchip" + (mainTab === "track" ? " active" : "")} onClick={() => navigate("track", "daily")}>🔒 Private tracking</button>
           <button type="button" className={"hchip" + (mainTab === "insights" ? " active" : "")} onClick={() => navigate("insights")}>📈 Pattern insights</button>
           <button type="button" className={"hchip" + (mainTab === "report" ? " active" : "")} onClick={() => navigate("report")}>📄 Professional report</button>
           <button type="button" className={"hchip" + (mainTab === "community" ? " active" : "")} onClick={() => navigate("community")}>👥 Community</button>
@@ -4582,7 +4580,6 @@ function App() {
           : mainTab === "home" ? (
             <HomePage setDataStore={setDataStore} showToast={showToast} dataStore={dataStore} onNavigate={navigate} unlocked={unlocked} onUnlock={handleUnlock} onOpenPaywall={requestUnlock} activeChildId={activeChildId} activeChildName={(children.find((c) => c.id === activeChildId) || {}).name} firstName={firstNameOf(user)} onWipeDevice={() => setPendingWipe(true)} />
           )
-          : mainTab === "school" ? <SchoolNotesPage showToast={showToast} />
           : mainTab === "school" ? <SchoolNotesPage showToast={showToast} />
           : mainTab === "track" ? (
             <TrackPage dataStore={dataStore} setDataStore={setDataStore} learningTicked={learningTicked} setLearningTicked={setLearningTicked}
@@ -4787,20 +4784,36 @@ async function revokeSchoolLinkCloud(token) {
     });
   } catch (e) {}
 }
-async function fetchSchoolNotesForTokens(tokens) {
+async async function fetchSchoolNotesForTokens(tokens) {
   const local = loadSavedSchoolNotes();
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !tokens.length) return { notes: local, error: null };
+  const uniq = [];
+  (tokens || []).forEach(function (t) {
+    const s = String(t || "").trim();
+    if (s && uniq.indexOf(s) === -1) uniq.push(s);
+  });
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !uniq.length) return { notes: local, error: null };
   try {
-    const list = tokens.filter(Boolean).map(function (t) { return encodeURIComponent(String(t)); }).join(",");
-    const res = await fetch(
-      SUPABASE_URL + "/rest/v1/playbook_school_notes?token=in.(" + list + ")&select=*&order=created_at.desc&limit=40",
-      { headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY } }
-    );
-    if (!res.ok) return { notes: local, error: { message: await res.text() } };
-    const data = await res.json();
-    const mapped = (data || []).map(mapSchoolRow);
-    saveSavedSchoolNotes(mapped);
-    return { notes: mapped, error: null };
+    const collected = [];
+    let lastErr = null;
+    for (let i = 0; i < uniq.length; i++) {
+      const res = await fetch(
+        SUPABASE_URL + "/rest/v1/playbook_school_notes?token=eq." + encodeURIComponent(uniq[i]) + "&select=*&order=created_at.desc&limit=40",
+        { headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY } }
+      );
+      if (!res.ok) {
+        lastErr = { message: await res.text() };
+        continue;
+      }
+      const data = await res.json();
+      (data || []).forEach(function (row) { collected.push(mapSchoolRow(row)); });
+    }
+    const byId = {};
+    local.forEach(function (n) { if (n && n.id) byId[n.id] = n; });
+    collected.forEach(function (n) { if (n && n.id) byId[n.id] = n; });
+    const merged = Object.keys(byId).map(function (k) { return byId[k]; });
+    merged.sort(function (a, b) { return String(b.sentAt || "").localeCompare(String(a.sentAt || "")); });
+    saveSavedSchoolNotes(merged);
+    return { notes: merged, error: collected.length ? null : lastErr };
   } catch (e) {
     return { notes: local, error: e };
   }
@@ -4871,7 +4884,7 @@ function SchoolLinkCard({ showToast }) {
   return (
     <div className="school-card">
       <h3>Teacher form link</h3>
-      <p><b>This is not the professional report.</b> The teacher gets a short form (mood, energy, incidents, wins). They never see your diary. Notes come back here on Today.</p>
+      <p><b>This is not the professional report.</b> The teacher gets a short form (mood, energy, incidents, wins). They never see your diary. Sent notes land on this School tab. Today only shows the latest one.</p>
       <button type="button" className="btn-primary" style={{ width: "100%" }} onClick={makeLink}>{copyState === "copied" ? "Copied successfully — create another" : "Create teacher form link"}</button>
       {copied ? (
         <div className="school-copied" role="status">
@@ -4890,7 +4903,8 @@ function SchoolLinkCard({ showToast }) {
             return (
               <div key={l.token} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8, flexWrap: "wrap" }}>
                 <span style={{ fontSize: 12, color: "#6B7280", flex: "1 1 160px" }}>{l.label} · {l.created}</span>
-                <button type="button" className="btn-secondary" style={{ padding: "6px 10px", fontSize: 12 }} onClick={function () { copyExisting(l.token); }}>Copy teacher form</button>
+                <button type="button" className="btn-secondary" style={{ padding: "6px 10px", fontSize: 12 }} onClick={function () { copyExisting(l.token); }}>Copy</button>
+                <button type="button" className="btn-secondary" style={{ padding: "6px 10px", fontSize: 12 }} onClick={function () { window.open(schoolLinkFor(l.token), "_blank"); }}>Open form to test</button>
                 <button type="button" className="btn-secondary" style={{ padding: "6px 10px", fontSize: 12, color: "#B03A2E" }} onClick={function () { revoke(l.token); }}>Revoke</button>
               </div>
             );
@@ -4905,19 +4919,33 @@ function SchoolLinkCard({ showToast }) {
 function SchoolInbox({ showToast, latestOnly, onSeeAll, title }) {
   const [inbox, setInbox] = useState(() => loadSavedSchoolNotes());
   const [status, setStatus] = useState("");
+  const [checkedAt, setCheckedAt] = useState("");
+  const [busy, setBusy] = useState(false);
+  const linkCount = loadSchoolLinks().length;
 
   async function refresh() {
+    setBusy(true);
     const tokens = loadSchoolLinks().map(function (l) { return l.token; });
+    if (!tokens.length) {
+      setInbox([]);
+      setStatus("Create a teacher form link first, then send it to school.");
+      setCheckedAt(new Date().toLocaleTimeString());
+      setBusy(false);
+      return;
+    }
     const result = await fetchSchoolNotesForTokens(tokens);
     const notes = result.notes || [];
     setInbox(notes);
-    if (result.error) setStatus("Could not reach school inbox yet.");
-    else setStatus(notes.length ? "" : "No teacher notes yet. When the teacher taps Send, it appears here.");
+    setCheckedAt(new Date().toLocaleTimeString());
+    if (result.error && !notes.length) setStatus("Could not reach the school inbox. Check you are online, then tap Check again.");
+    else if (!notes.length) setStatus("No teacher notes yet. Open the form on another phone, tap Send to parent, then tap Check again.");
+    else setStatus("");
+    setBusy(false);
   }
 
   useEffect(function () {
     refresh();
-    const id = setInterval(refresh, 15000);
+    const id = setInterval(refresh, 12000);
     return function () { clearInterval(id); };
   }, []);
 
@@ -4931,7 +4959,7 @@ function SchoolInbox({ showToast, latestOnly, onSeeAll, title }) {
   const shown = latestOnly ? inbox.slice(0, 1) : inbox;
 
   return (
-    <div style={{ marginBottom: 14 }}>
+    <div className="school-inbox" style={{ marginBottom: 14 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
         <h3 style={{ fontSize: 15, margin: 0 }}>{title || (latestOnly ? "Latest teacher note" : "All teacher notes")}</h3>
         {latestOnly && onSeeAll ? (
@@ -4942,7 +4970,7 @@ function SchoolInbox({ showToast, latestOnly, onSeeAll, title }) {
         return (
           <div className="school-entry" key={s.id} role="status">
             <div className="se-head">
-              <span className="se-date">School · {s.date || ""} · {s.author || "Teacher"}</span>
+              <span className="se-date">Received · {s.date || ""} · {s.author || "Teacher"}</span>
               {latestOnly ? null : (
                 <button type="button" className="se-del" aria-label="Dismiss" onClick={function () { dismiss(s.id); }}>✕</button>
               )}
@@ -4959,8 +4987,14 @@ function SchoolInbox({ showToast, latestOnly, onSeeAll, title }) {
         );
       })}
       {!shown.length ? <p style={{ fontSize: 13, color: "#6B7280", margin: "0 0 8px" }}>{status || "No teacher notes yet."}</p> : null}
-      <button type="button" className="btn-secondary" style={{ padding: "6px 10px", fontSize: 12 }} onClick={refresh}>Refresh notes</button>
-      {shown.length && status ? <p style={{ fontSize: 12, color: "#6B7280", margin: "6px 0 0" }}>{status}</p> : null}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <button type="button" className="btn-secondary" style={{ padding: "8px 12px", fontSize: 13 }} onClick={refresh} disabled={busy}>{busy ? "Checking…" : "Check for notes"}</button>
+        {latestOnly && onSeeAll ? <button type="button" className="btn-secondary" style={{ padding: "8px 12px", fontSize: 13 }} onClick={onSeeAll}>School tab</button> : null}
+      </div>
+      <p style={{ fontSize: 11, color: "#9CA3AF", margin: "6px 0 0" }}>
+        {linkCount ? (linkCount + " teacher link" + (linkCount === 1 ? "" : "s") + " on this phone") : "No teacher link on this phone yet"}
+        {checkedAt ? " · last check " + checkedAt : ""}
+      </p>
     </div>
   );
 }
@@ -4968,7 +5002,7 @@ function SchoolInbox({ showToast, latestOnly, onSeeAll, title }) {
 function SchoolNotesPage({ showToast }) {
   return (
     <div>
-      <PageHeader kicker="From school" title="Teacher notes" subtitle="Every note sent through your teacher form link. Today only keeps the latest one." />
+      <PageHeader kicker="From school" title="Teacher notes" subtitle="Create the teacher form here. After they send it, tap Check for notes. Today only keeps the most recent one." />
       <SchoolLinkCard showToast={showToast} />
       <SchoolInbox showToast={showToast} title="All teacher notes" />
     </div>
@@ -4989,7 +5023,7 @@ root.render(React.createElement(Root));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=46").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=47").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
