@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V43 -->
+  <!-- THEME_BUILD_V44 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -37,13 +37,6 @@
 
 
 /* ===== V38 school cloud ===== */
-.school-section{ background:#fff; border:1.5px solid #E2E8F0; border-radius:20px; padding:16px 16px 8px; margin:0 0 16px; }
-.school-section-head{ margin-bottom:12px; }
-.school-section-head h2{ margin:0 0 4px; font-size:18px; color:#0E131F; }
-.school-section-head p{ margin:0; font-size:13px; color:#6B7280; line-height:1.45; }
-.school-section .school-card{ border:1.5px solid #E2E8F0; box-shadow:none; }
-.school-copied.ok{ background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; }
-.btn-navy-copy{ background:var(--navy) !important; color:#fff !important; border:none !important; }
 .school-card{ background:#fff; border:1.5px solid #E2E8F0; border-radius:18px; padding:16px; margin-bottom:14px; }
 .school-card h3{ margin:0 0 4px; font-size:15px; color:#0E131F; }
 .school-card p{ margin:0 0 12px; font-size:13px; color:#6B7280; line-height:1.45; }
@@ -2938,6 +2931,7 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
         }}>Copy meeting-summary link</button>
       </div>
       <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link in Teacher log on Today and says <code>school.html</code>.</p>
+      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
       <p id="share-status" className="no-print" style={{ fontSize: 12, color: "#6B7280", minHeight: 16 }}></p>
 
       <div className="card" id="professional-report">
@@ -4746,22 +4740,44 @@ function mapSchoolRow(row) {
     sentAt: row.created_at || row.sentAt || ""
   };
 }
+async function schoolRestHeaders() {
+  return {
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: "Bearer " + SUPABASE_ANON_KEY,
+    "Content-Type": "application/json"
+  };
+}
 async function publishSchoolLink(entry) {
-  const sb = getSupabase();
-  if (!sb) return { ok: false, reason: "no-cloud" };
-  const { error } = await sb.from("playbook_share_links").upsert({
-    token: entry.token,
-    label: entry.label,
-    child_label: entry.child || null,
-    active: true
-  });
-  if (error) return { ok: false, reason: error.message || "cloud" };
-  return { ok: true };
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return { ok: false, reason: "no-cloud" };
+  try {
+    const res = await fetch(SUPABASE_URL + "/rest/v1/playbook_share_links", {
+      method: "POST",
+      headers: Object.assign(await schoolRestHeaders(), { Prefer: "resolution=merge-duplicates,return=minimal" }),
+      body: JSON.stringify({
+        token: entry.token,
+        label: entry.label,
+        child_label: entry.child || null,
+        active: true
+      })
+    });
+    if (!res.ok && res.status !== 409) {
+      const txt = await res.text();
+      return { ok: false, reason: txt || String(res.status) };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, reason: (e && e.message) || "network" };
+  }
 }
 async function revokeSchoolLinkCloud(token) {
-  const sb = getSupabase();
-  if (!sb) return;
-  await sb.from("playbook_share_links").update({ active: false }).eq("token", token);
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+  try {
+    await fetch(SUPABASE_URL + "/rest/v1/playbook_share_links?token=eq." + encodeURIComponent(token), {
+      method: "PATCH",
+      headers: Object.assign(await schoolRestHeaders(), { Prefer: "return=minimal" }),
+      body: JSON.stringify({ active: false })
+    });
+  } catch (e) {}
 }
 async function fetchSchoolNotesForTokens(tokens) {
   const sb = getSupabase();
