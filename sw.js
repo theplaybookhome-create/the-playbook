@@ -1,8 +1,8 @@
-/* THE PLAYBOOK service worker — v36
+/* THE PLAYBOOK service worker — v38
    Bump CACHE_NAME whenever app.html ships a breaking change.
    Strategy: cache-first for static assets, network-first for navigations. */
 
-const CACHE_NAME = "playbook-v36";
+const CACHE_NAME = "playbook-v38";
 const OFFLINE_URL = "./offline.html";
 
 const PRECACHE = [
