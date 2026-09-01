@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V50 -->
+  <!-- THEME_BUILD_V51 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -2900,7 +2900,7 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
 
   return (
     <div>
-      <PageHeader kicker="For meetings" title="Professional report" subtitle="Read-only care summary for GP, SENCO, or therapists. This is not the teacher daily form — that lives on Today." />
+      <PageHeader kicker="For meetings" title="Professional report" subtitle="Read-only care summary for GP, SENCO, or therapists. This is not the teacher daily form — that lives on the School tab." />
 
       <div className="appt-banner no-print">
         <h3>Appointment Mode</h3>
@@ -2930,11 +2930,7 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
           }
         }}>Copy meeting-summary link</button>
       </div>
-      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link in Teacher log on Today and says <code>school.html</code>.</p>
-      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
-      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
-      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
-      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
+      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>Copies a read-only meeting summary (<code>share=</code>). The teacher form is a different link on the School tab (<code>school.html</code>).</p>
       <p id="share-status" className="no-print" style={{ fontSize: 12, color: "#6B7280", minHeight: 16 }}></p>
 
       <div className="card" id="professional-report">
@@ -5016,7 +5012,7 @@ root.render(React.createElement(Root));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=50").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=51").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
