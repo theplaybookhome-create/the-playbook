@@ -6,6 +6,7 @@ on:
     paths:
       - "v38_school_cloud_patch.py"
       - "v41_split_school_ux.py"
+      - "v42_unmix_share_ux.py"
       - "school.html"
       - "SCHOOL_SHARE.sql"
       - ".github/workflows/v38-school.yml"
@@ -23,10 +24,12 @@ jobs:
         run: python v38_school_cloud_patch.py
       - name: Split teacher link from report
         run: python v41_split_school_ux.py
+      - name: Unmix teacher form vs meeting summary
+        run: python v42_unmix_share_ux.py
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app.html sw.js school.html SCHOOL_SHARE.sql
-          git diff --cached --quiet || git commit -m "fix: teacher note link only on Today"
+          git diff --cached --quiet || git commit -m "fix: unmix teacher form link from meeting-summary link"
           git push
