@@ -37,6 +37,13 @@
 
 
 /* ===== V38 school cloud ===== */
+.school-section{ background:#fff; border:1.5px solid #E2E8F0; border-radius:20px; padding:16px 16px 8px; margin:0 0 16px; }
+.school-section-head{ margin-bottom:12px; }
+.school-section-head h2{ margin:0 0 4px; font-size:18px; color:#0E131F; }
+.school-section-head p{ margin:0; font-size:13px; color:#6B7280; line-height:1.45; }
+.school-section .school-card{ border:1.5px solid #E2E8F0; box-shadow:none; }
+.school-copied.ok{ background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; }
+.btn-navy-copy{ background:var(--navy) !important; color:#fff !important; border:none !important; }
 .school-card{ background:#fff; border:1.5px solid #E2E8F0; border-radius:18px; padding:16px; margin-bottom:14px; }
 .school-card h3{ margin:0 0 4px; font-size:15px; color:#0E131F; }
 .school-card p{ margin:0 0 12px; font-size:13px; color:#6B7280; line-height:1.45; }
@@ -2916,21 +2923,21 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
 
       <div className="report-actions no-print share-bar">
         <button type="button" className="btn-primary" onClick={() => window.print()}>Print / Save as PDF</button>
-        <button type="button" className="btn-secondary" onClick={async () => {
+        <button type="button" className="btn-primary btn-navy-copy" onClick={async () => {
           try {
             const payload = buildSharePayload(dataStore, profileSafe, range);
             const url = window.location.origin + window.location.pathname + "?share=" + encodeSharePayload(payload);
-            if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(url);
+            const ok = await copyTextFallback(url);
             const st = document.getElementById("share-status");
-            if (st) st.textContent = "Copied a view-only meeting summary. This is NOT the teacher form (that one says school.html).";
+            if (st) st.textContent = ok ? "Copied successfully — this is a view-only meeting summary, not the teacher form." : "Could not auto-copy. Long-press the status line if a link appears, or try again.";
+            if (ok && showToast) showToast("Copied successfully", "success");
           } catch (e) {
             const st = document.getElementById("share-status");
-            if (st) st.textContent = "Could not copy. Long-press and copy the address bar after tapping Share again.";
+            if (st) st.textContent = "Could not copy. Long-press and copy the address bar after tapping again.";
           }
         }}>Copy meeting-summary link</button>
       </div>
-      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
-      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
+      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link in Teacher log on Today and says <code>school.html</code>.</p>
       <p id="share-status" className="no-print" style={{ fontSize: 12, color: "#6B7280", minHeight: 16 }}></p>
 
       <div className="card" id="professional-report">
@@ -3509,8 +3516,14 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
         <TrialOrPaywall dataStore={dataStore} unlocked={unlocked} onUnlock={onUnlock} />
       </div>
       <MedReminderBanner dataStore={dataStore} onDismiss={(id) => { dismissMedReminder(id); if (typeof showToast === "function") showToast("Reminder cleared"); }} />
-      <SchoolLinkCard showToast={showToast} />
-      <SchoolInbox showToast={showToast} />
+      <section className="school-section" aria-labelledby="teacher-log-heading">
+        <div className="school-section-head">
+          <h2 id="teacher-log-heading">Teacher log</h2>
+          <p>Keep school notes in one place. Teachers only get a short form — they never see your diary.</p>
+        </div>
+        <SchoolLinkCard showToast={showToast} />
+        <SchoolInbox showToast={showToast} />
+      </section>
       <div className="home-hero">
         <QuickLog setDataStore={setDataStore} showToast={showToast} activeChildId={activeChildId} />
         <div className="home-side">
@@ -4662,6 +4675,32 @@ function App() {
 }
 
 /* ===== V38: School link cloud (teacher adds by link) ===== */
+async function copyTextFallback(text) {
+  if (!text) return false;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (e) {}
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "0";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return !!ok;
+  } catch (e) {
+    return false;
+  }
+}
 function schoolToken() {
   const bytes = new Uint8Array(12);
   if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(bytes);
@@ -4741,15 +4780,11 @@ function SchoolLinkCard({ showToast }) {
   const [setupHint, setSetupHint] = useState("");
 
   async function copyUrl(url) {
-    let ok = false;
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(url);
-        ok = true;
-      }
-    } catch (e) {}
+    const ok = await copyTextFallback(url);
     setCopied(url);
     setCopyState(ok ? "copied" : "manual");
+    if (ok && showToast) showToast("Copied successfully", "success");
+    else if (!ok && showToast) showToast("Link ready — copy it from the green box");
     return ok;
   }
 
@@ -4766,24 +4801,29 @@ function SchoolLinkCard({ showToast }) {
   async function makeLink() {
     const token = schoolToken();
     const entry = { token: token, created: todayISO(), label: "Teacher form " + (links.length + 1) };
-    const published = await publishSchoolLink(entry);
-    if (!published.ok) {
-      setSetupHint("Link is ready, but teacher send may fail until cloud tables exist.");
-    } else {
-      setSetupHint("");
-    }
     const next = [entry, ...links].slice(0, 20);
     setLinks(next);
     saveSchoolLinks(next);
     const url = schoolLinkFor(token);
-    const ok = await copyUrl(url);
-    if (showToast) showToast(ok ? "Teacher form link copied" : "Link created — copy it from the green box");
+    await copyUrl(url);
+    try {
+      const published = await Promise.race([
+        publishSchoolLink(entry),
+        new Promise(function (resolve) { setTimeout(function () { resolve({ ok: false, reason: "timeout" }); }, 5000); })
+      ]);
+      if (!published || !published.ok) {
+        setSetupHint("Link is copied. If the teacher cannot send, cloud tables may still need setup.");
+      } else {
+        setSetupHint("");
+      }
+    } catch (e) {
+      setSetupHint("Link is copied. Teacher send needs an internet connection.");
+    }
   }
 
   async function copyExisting(token) {
     const url = schoolLinkFor(token);
-    const ok = await copyUrl(url);
-    if (showToast) showToast(ok ? "Teacher link copied" : "Copy the link from the green box");
+    await copyUrl(url);
   }
 
   async function revoke(token) {
@@ -4799,10 +4839,10 @@ function SchoolLinkCard({ showToast }) {
     <div className="school-card">
       <h3>Teacher form link</h3>
       <p><b>This is not the professional report.</b> The teacher gets a short form (mood, energy, incidents, wins). They never see your diary. Notes come back here on Today.</p>
-      <button type="button" className="btn-primary" style={{ width: "100%" }} onClick={makeLink}>Create teacher form link</button>
+      <button type="button" className="btn-primary" style={{ width: "100%" }} onClick={makeLink}>{copyState === "copied" ? "Copied successfully — create another" : "Create teacher form link"}</button>
       {copied ? (
         <div className="school-copied" role="status">
-          <strong>{copyState === "copied" ? "Copied to clipboard" : "Link created — copy it below"}</strong>
+          <strong>{copyState === "copied" ? "Copied successfully" : "Link created — copy it below"}</strong>
           <span className="sc-url">{copied}</span>
           <p className="sc-hint">Send this to the teacher. The address must include school.html — if it includes share= you copied the meeting summary by mistake.</p>
           <div className="sc-actions">
@@ -4856,7 +4896,7 @@ function SchoolInbox({ showToast }) {
 
   return (
     <div style={{ marginBottom: 14 }}>
-      <h3 style={{ fontSize: 15, margin: "0 0 8px" }}>Notes from teacher</h3>
+      <h3 style={{ fontSize: 15, margin: "8px 0 8px" }}>Incoming teacher notes</h3>
       {inbox.map(function (s) {
         return (
           <div className="school-entry" key={s.id} role="status">
@@ -4893,7 +4933,7 @@ root.render(React.createElement(Root));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=43").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=44").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
