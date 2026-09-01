@@ -7,6 +7,7 @@ on:
       - "v38_school_cloud_patch.py"
       - "v41_split_school_ux.py"
       - "v42_unmix_share_ux.py"
+      - "v43_fix_boot.py"
       - "school.html"
       - "SCHOOL_SHARE.sql"
       - ".github/workflows/v38-school.yml"
@@ -26,10 +27,12 @@ jobs:
         run: python v41_split_school_ux.py
       - name: Unmix teacher form vs meeting summary
         run: python v42_unmix_share_ux.py
+      - name: Fix boot crash and login reload
+        run: python v43_fix_boot.py
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app.html sw.js school.html SCHOOL_SHARE.sql
-          git diff --cached --quiet || git commit -m "fix: unmix teacher form link from meeting-summary link"
+          git diff --cached --quiet || git commit -m "fix: restore app boot and in-place login"
           git push
