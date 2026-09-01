@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V41 -->
+  <!-- THEME_BUILD_V42 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -2878,7 +2878,7 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
     const sneak = ready ? buildTalkingPoints(buildStories(dataStore, 14)).slice(0, 2) : [];
     return (
       <div>
-        <PageHeader kicker="For appointments" title="Professional report" subtitle="A clean summary to hand to school, GP, or therapists." />
+        <PageHeader kicker="For meetings" title="Professional report" subtitle="Read-only care summary for GP, SENCO, or therapists." />
         {sneak.length > 0 && (
           <div className="report-teaser" style={{ marginBottom: 12 }}>
             <div className="tk">Preview talking points</div>
@@ -2900,7 +2900,7 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
 
   return (
     <div>
-      <PageHeader kicker="For meetings" title="Professional report" subtitle="This page is the care summary for GP, school meetings, or therapists. The teacher daily-note link lives on Today." />
+      <PageHeader kicker="For meetings" title="Professional report" subtitle="Read-only care summary for GP, SENCO, or therapists. This is not the teacher daily form — that lives on Today." />
 
       <div className="appt-banner no-print">
         <h3>Appointment Mode</h3>
@@ -2916,19 +2916,20 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
 
       <div className="report-actions no-print share-bar">
         <button type="button" className="btn-primary" onClick={() => window.print()}>Print / Save as PDF</button>
-        <button type="button" className="btn-amber" onClick={async () => {
+        <button type="button" className="btn-secondary" onClick={async () => {
           try {
             const payload = buildSharePayload(dataStore, profileSafe, range);
             const url = window.location.origin + window.location.pathname + "?share=" + encodeSharePayload(payload);
             if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(url);
             const st = document.getElementById("share-status");
-            if (st) st.textContent = "Copied this report snapshot. It is view-only — not the teacher daily-note form.";
+            if (st) st.textContent = "Copied a view-only meeting summary. This is NOT the teacher form (that one says school.html).";
           } catch (e) {
             const st = document.getElementById("share-status");
             if (st) st.textContent = "Could not copy. Long-press and copy the address bar after tapping Share again.";
           }
-        }}>Copy report snapshot</button>
+        }}>Copy meeting-summary link</button>
       </div>
+      <p className="no-print" style={{ fontSize: 13, color: "#6B7280", margin: "0 0 10px", lineHeight: 1.45 }}>This button copies a <b>read-only meeting summary</b>. It will contain <code>share=</code>. The teacher daily form is a different link on the Today tab and says <code>school.html</code>.</p>
       <p id="share-status" className="no-print" style={{ fontSize: 12, color: "#6B7280", minHeight: 16 }}></p>
 
       <div className="card" id="professional-report">
@@ -3552,7 +3553,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
       <div className="quick-links">
         <button type="button" className="quick-link t-log" onClick={() => onNavigate("track", "daily")}><span className="ql-ico">✏️</span><strong>Log today</strong><span className="ql-hint">Energy, mood, what went well</span></button>
         <button type="button" className="quick-link t-ins" onClick={() => onNavigate("insights")}><span className="ql-ico">📊</span><strong>See patterns</strong><span className="ql-hint">Triggers, sleep, energy trends</span></button>
-        <button type="button" className="quick-link t-rep" onClick={() => onNavigate("report")}><span className="ql-ico">📄</span><strong>Pro report</strong><span className="ql-hint">Print for school / GP</span></button>
+        <button type="button" className="quick-link t-rep" onClick={() => onNavigate("report")}><span className="ql-ico">📄</span><strong>Meeting summary</strong><span className="ql-hint">Printable care report — not the teacher form</span></button>
         <button type="button" className="quick-link t-com" onClick={() => onNavigate("community")}><span className="ql-ico">💬</span><strong>Community</strong><span className="ql-hint">Peer notes & support</span></button>
         <button type="button" className="quick-link t-print" onClick={() => onNavigate("discover", null, "printables")}><span className="ql-ico">🖨️</span><span><strong>Printables</strong><span className="ql-hint">Preview packs · download</span></span></button>
         <button type="button" className="quick-link t-disc" onClick={() => onNavigate("discover")}><span className="ql-ico">*</span><span><strong>Discover</strong><span className="ql-hint">Tools, guides & more</span></span></button>
@@ -4668,7 +4669,7 @@ function mapSchoolRow(row){return {id:row.id||row.sentAt||String(row.created_at|
 async function publishSchoolLink(entry){const sb=getSupabase();if(!sb)return {ok:false};const {error}=await sb.from("playbook_share_links").upsert({token:entry.token,label:entry.label,active:true});return {ok:!error}}
 async function revokeSchoolLinkCloud(token){const sb=getSupabase();if(!sb)return;await sb.from("playbook_share_links").update({active:false}).eq("token",token)}
 async function fetchSchoolNotesForTokens(tokens){const sb=getSupabase();if(!sb||!tokens.length)return {notes:loadSavedSchoolNotes(),error:null};const {data,error}=await sb.from("playbook_school_notes").select("*").in("token",tokens).order("created_at",{ascending:false}).limit(40);if(error)return {notes:loadSavedSchoolNotes(),error:error};const mapped=(data||[]).map(mapSchoolRow);saveSavedSchoolNotes(mapped);return {notes:mapped,error:null}}
-function SchoolLinkCard({showToast}){const [links,setLinks]=useState(()=>loadSchoolLinks());const [copied,setCopied]=useState("");const [setupHint,setSetupHint]=useState("");async function makeLink(){const token=schoolToken();const entry={token:token,created:todayISO(),label:"School link "+(links.length+1)};const published=await publishSchoolLink(entry);setSetupHint(published.ok?"":"Link copied, but teacher send needs the one-time cloud setup.");const next=[entry,...links].slice(0,20);setLinks(next);saveSchoolLinks(next);const url=schoolLinkFor(token);try{if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(url)}catch(e){}setCopied(url);if(showToast)showToast(published.ok?"School link copied — send to the teacher":"Link copied — cloud setup still needed")}async function copyExisting(token){const url=schoolLinkFor(token);try{if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(url)}catch(e){}setCopied(url);if(showToast)showToast("Link copied")}async function revoke(token){const next=links.filter(function(l){return l.token!==token});setLinks(next);saveSchoolLinks(next);await revokeSchoolLinkCloud(token);if(showToast)showToast("Link revoked")}return (<div className="school-card"><h3>School link</h3><p>Give the teacher this link. They add today's note and it lands in your Playbook. They never see the full diary.</p><button type="button" className="btn-primary" style={{width:"100%"}} onClick={makeLink}>Create & copy school link</button>{links.map(function(l){return (<div key={l.token} style={{display:"flex",gap:8,alignItems:"center",marginTop:8,flexWrap:"wrap"}}><span style={{fontSize:12,color:"#6B7280",flex:"1 1 160px"}}>{l.label} · {l.created}</span><button type="button" className="btn-secondary" style={{padding:"6px 10px",fontSize:12}} onClick={function(){copyExisting(l.token)}}>Copy</button><button type="button" className="btn-secondary" style={{padding:"6px 10px",fontSize:12,color:"#B03A2E"}} onClick={function(){revoke(l.token)}}>Revoke</button></div>)})}{copied?<p style={{fontSize:11,color:"#9CA3AF",margin:"8px 0 0",wordBreak:"break-all"}}>Last copied: {copied}</p>:null}{setupHint?<div className="school-setup">{setupHint}</div>:null}</div>)}
+function SchoolLinkCard({showToast}){const [links,setLinks]=useState(()=>loadSchoolLinks());const [copied,setCopied]=useState("");const [setupHint,setSetupHint]=useState("");async function makeLink(){const token=schoolToken();const entry={token:token,created:todayISO(),label:"School link "+(links.length+1)};const published=await publishSchoolLink(entry);setSetupHint(published.ok?"":"Link copied, but teacher send needs the one-time cloud setup.");const next=[entry,...links].slice(0,20);setLinks(next);saveSchoolLinks(next);const url=schoolLinkFor(token);try{if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(url)}catch(e){}setCopied(url);if(showToast)showToast(published.ok?"School link copied — send to the teacher":"Link copied — cloud setup still needed")}async function copyExisting(token){const url=schoolLinkFor(token);try{if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(url)}catch(e){}setCopied(url);if(showToast)showToast("Link copied")}async function revoke(token){const next=links.filter(function(l){return l.token!==token});setLinks(next);saveSchoolLinks(next);await revokeSchoolLinkCloud(token);if(showToast)showToast("Link revoked")}return (<div className="school-card"><h3>Teacher form link</h3><p><b>This is not the professional report.</b> The teacher gets a short form. Notes come back here on Today.</p><button type="button" className="btn-primary" style={{width:"100%"}} onClick={makeLink}>Create teacher form link</button>{links.map(function(l){return (<div key={l.token} style={{display:"flex",gap:8,alignItems:"center",marginTop:8,flexWrap:"wrap"}}><span style={{fontSize:12,color:"#6B7280",flex:"1 1 160px"}}>{l.label} · {l.created}</span><button type="button" className="btn-secondary" style={{padding:"6px 10px",fontSize:12}} onClick={function(){copyExisting(l.token)}}>Copy</button><button type="button" className="btn-secondary" style={{padding:"6px 10px",fontSize:12,color:"#B03A2E"}} onClick={function(){revoke(l.token)}}>Revoke</button></div>)})}{copied?<p style={{fontSize:11,color:"#9CA3AF",margin:"8px 0 0",wordBreak:"break-all"}}>Last copied: {copied}</p>:null}{setupHint?<div className="school-setup">{setupHint}</div>:null}</div>)}
 function SchoolInbox({showToast}){const [inbox,setInbox]=useState(()=>loadSavedSchoolNotes());const [status,setStatus]=useState("");async function refresh(){const tokens=loadSchoolLinks().map(function(l){return l.token});const result=await fetchSchoolNotesForTokens(tokens);setInbox(result.notes||[]);if(result.error)setStatus("Could not reach school inbox yet.");else setStatus(result.notes&&result.notes.length?"":"No school notes yet.")}useEffect(function(){refresh();const id=setInterval(refresh,20000);return function(){clearInterval(id)}},[]);function dismiss(id){const next=inbox.filter(function(x){return x.id!==id});setInbox(next);saveSavedSchoolNotes(next)}return (<div style={{marginBottom:14}}>{inbox.map(function(s){return (<div className="school-entry" key={s.id}><div className="se-head"><span className="se-date">School · {s.date||""} · {s.author||"Teacher"}</span><button type="button" className="se-del" onClick={function(){dismiss(s.id)}}>✕</button></div><div><span className="se-tag">{s.child||"Child"}</span>{s.mood?<span className="se-tag">{s.mood}</span>:null}{s.energy?<span className="se-tag">Energy: {s.energy}</span>:null}{s.incidents?<span className="se-tag">Incidents: {s.incidents}</span>:null}</div>{s.wins?<div className="se-line"><b>Wins:</b> {s.wins}</div>:null}{s.note?<div className="se-line"><b>Note:</b> {s.note}</div>:null}</div>)})}<button type="button" className="btn-secondary" style={{padding:"6px 10px",fontSize:12}} onClick={refresh}>Refresh school notes</button>{status?<p style={{fontSize:12,color:"#6B7280",margin:"6px 0 0"}}>{status}</p>:null}</div>)}
 
 
@@ -4776,7 +4777,7 @@ function SchoolLinkCard({ showToast }) {
 
   async function makeLink() {
     const token = schoolToken();
-    const entry = { token: token, created: todayISO(), label: "School link " + (links.length + 1) };
+    const entry = { token: token, created: todayISO(), label: "Teacher form " + (links.length + 1) };
     const published = await publishSchoolLink(entry);
     if (!published.ok) {
       setSetupHint("Link is ready, but teacher send may fail until cloud tables exist.");
@@ -4788,7 +4789,7 @@ function SchoolLinkCard({ showToast }) {
     saveSchoolLinks(next);
     const url = schoolLinkFor(token);
     const ok = await copyUrl(url);
-    if (showToast) showToast(ok ? "Copied — send this to the teacher" : "Link created — copy it from the green box");
+    if (showToast) showToast(ok ? "Teacher form link copied" : "Link created — copy it from the green box");
   }
 
   async function copyExisting(token) {
@@ -4808,14 +4809,14 @@ function SchoolLinkCard({ showToast }) {
 
   return (
     <div className="school-card">
-      <h3>Teacher note link</h3>
-      <p>This is only for the teacher. They get a short form (mood, energy, incidents, wins). They never see your diary or the professional report.</p>
-      <button type="button" className="btn-primary" style={{ width: "100%" }} onClick={makeLink}>Create teacher link</button>
+      <h3>Teacher form link</h3>
+      <p><b>This is not the professional report.</b> The teacher gets a short form (mood, energy, incidents, wins). They never see your diary. Notes come back here on Today.</p>
+      <button type="button" className="btn-primary" style={{ width: "100%" }} onClick={makeLink}>Create teacher form link</button>
       {copied ? (
         <div className="school-copied" role="status">
           <strong>{copyState === "copied" ? "Copied to clipboard" : "Link created — copy it below"}</strong>
           <span className="sc-url">{copied}</span>
-          <p className="sc-hint">Send this to the teacher. It must say school.html — if it says share= it is the wrong button.</p>
+          <p className="sc-hint">Send this to the teacher. The address must include school.html — if it includes share= you copied the meeting summary by mistake.</p>
           <div className="sc-actions">
             <button type="button" className="btn-secondary" style={{ padding: "8px 12px", fontSize: 13 }} onClick={function () { copyUrl(copied); }}>Copy again</button>
             <button type="button" className="btn-amber" style={{ padding: "8px 12px", fontSize: 13 }} onClick={function () { shareUrl(copied); }}>Share with teacher</button>
@@ -4828,7 +4829,7 @@ function SchoolLinkCard({ showToast }) {
             return (
               <div key={l.token} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8, flexWrap: "wrap" }}>
                 <span style={{ fontSize: 12, color: "#6B7280", flex: "1 1 160px" }}>{l.label} · {l.created}</span>
-                <button type="button" className="btn-secondary" style={{ padding: "6px 10px", fontSize: 12 }} onClick={function () { copyExisting(l.token); }}>Copy</button>
+                <button type="button" className="btn-secondary" style={{ padding: "6px 10px", fontSize: 12 }} onClick={function () { copyExisting(l.token); }}>Copy teacher form</button>
                 <button type="button" className="btn-secondary" style={{ padding: "6px 10px", fontSize: 12, color: "#B03A2E" }} onClick={function () { revoke(l.token); }}>Revoke</button>
               </div>
             );
@@ -4867,6 +4868,7 @@ function SchoolInbox({ showToast }) {
 
   return (
     <div style={{ marginBottom: 14 }}>
+      <h3 style={{ fontSize: 15, margin: "0 0 8px" }}>Notes from teacher</h3>
       {inbox.map(function (s) {
         return (
           <div className="school-entry" key={s.id} role="status">
@@ -4903,7 +4905,7 @@ root.render(React.createElement(Root));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=41").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=42").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
