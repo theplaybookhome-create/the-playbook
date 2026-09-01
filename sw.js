@@ -1,30 +1,31 @@
-/* THE PLAYBOOK — service worker */
-const CACHE = "playbook-v35";
+/* THE PLAYBOOK service worker — v35
+   Bump CACHE_NAME whenever app.html ships a breaking change.
+   Strategy: cache-first for static assets, network-first for navigations. */
+
+const CACHE_NAME = "playbook-v35";
+const OFFLINE_URL = "./offline.html";
+
 const PRECACHE = [
   "./",
-  "./index.html",
   "./app.html",
-  "./privacy.html",
-  "./terms.html",
-  "./support.html",
   "./offline.html",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
-  "./icon-180.png",
+  "./icon-maskable-512.png",
   "./favicon.png"
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
@@ -33,36 +34,23 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  const url = new URL(req.url);
-  const isHTML = req.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname === "/" || url.pathname.endsWith("/");
-
-  if (isHTML) {
+  // Navigations: network first, fall back to offline page
+  if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req)
-        .then((res) => {
-          if (res && res.status === 200) {
-            const copy = res.clone();
-            caches.open(CACHE).then((cache) => cache.put(req, copy));
-          }
-          return res;
-        })
-        .catch(() => caches.match(req).then((cached) => cached || caches.match("./offline.html")))
+      fetch(req).catch(() => caches.match(OFFLINE_URL))
     );
     return;
   }
 
+  // Static assets: cache first
   event.respondWith(
     caches.match(req).then((cached) => {
-      const network = fetch(req)
-        .then((res) => {
-          if (res && res.status === 200 && url.origin === self.location.origin) {
-            const copy = res.clone();
-            caches.open(CACHE).then((cache) => cache.put(req, copy));
-          }
-          return res;
-        })
-        .catch(() => cached);
-      return cached || network;
+      if (cached) return cached;
+      return fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
+        return res;
+      }).catch(() => caches.match(OFFLINE_URL));
     })
   );
 });
