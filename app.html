@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V33 -->
+  <!-- THEME_BUILD_V35 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -18,7 +18,23 @@
 
   <meta name="description" content="THE PLAYBOOK — calm companion for neurodivergent families. Track free. Unlock insights, report & more for £2.99 once." />
   <title>THE PLAYBOOK — For neurodivergent families</title>
-  <style>body { margin: 0; background: #0B1219; }</style>
+  <style>body { margin: 0; background: #0B1219; }
+/* ===== V35 voice logging ===== */
+.voice-btn{
+  flex:0 0 auto; width:46px; height:46px; border-radius:14px; border:1.5px solid #E6E8EC;
+  background:#fff; color:#0E131F; font-size:18px; cursor:pointer; display:grid; place-items:center;
+  transition:background .15s, border-color .15s, transform .1s;
+}
+.voice-btn:hover{ border-color:#FF8A2B; background:#FFF4EB; }
+.voice-btn.recording{ border-color:#FF6B00; background:#FFE4D6; color:#FF6B00; animation:pbPulse 1s infinite; }
+.voice-btn:active{ transform:scale(.94); }
+.voice-btn:disabled{ opacity:.4; cursor:not-allowed; }
+.voice-status{ font-size:12px; color:#6B7280; margin-top:6px; min-height:16px; }
+.voice-status.live{ color:#FF6B00; font-weight:700; }
+@keyframes pbPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,107,0,.35);} 50%{ box-shadow:0 0 0 8px rgba(255,107,0,0);} }
+@media (prefers-reduced-motion:reduce){ .voice-btn.recording{ animation:none; } }
+
+</style>
 </head>
 <body>
   <div id="root"></div>
@@ -1597,7 +1613,9 @@ const medFields = [
   { key: "dose", label: "Dose", type: "text" },
   { key: "timeGiven", label: "Time given", type: "text" },
   { key: "notes", label: "Notes / side effects", type: "textarea", rows: 2 },
+  { key: "_reminder", label: "Reminder", type: "ticks", options: ["Remind me tomorrow", "Remind me in 2 days", "No reminder"] },
 ];
+// V35 meds reminder marker
 const milestoneFields = [
   { key: "date", label: "Date", type: "date" },
   { key: "description", label: "What you noticed", type: "textarea", hint: "A new word, skill, or first.", rows: 2 },
@@ -2826,6 +2844,104 @@ function EnergySpark({ values, avg }) {
   );
 }
 
+
+/* ===== V35: Voice logging + pattern detection ===== */
+function VoiceButton({ value, onChange }) {
+  const [listening, setListening] = useState(false);
+  const [supported, setSupported] = useState(true);
+  const recRef = useRef(null);
+
+  useEffect(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { setSupported(false); return; }
+    const r = new SR();
+    r.lang = "en-GB";
+    r.interimResults = false;
+    r.maxAlternatives = 1;
+    r.onresult = (e) => {
+      const t = (e.results[0] && e.results[0][0] && e.results[0][0].transcript) || "";
+      if (t) onChange(value ? (value + " " + t).trim() : t);
+    };
+    r.onend = () => setListening(false);
+    r.onerror = (ev) => {
+      setListening(false);
+      const st = document.getElementById("ql-voice-status");
+      if (st) {
+        st.textContent = ev.error === "not-allowed"
+          ? "Microphone blocked — allow it in browser settings."
+          : "Couldn't hear that. Try again.";
+        st.classList.remove("live");
+      }
+    };
+    recRef.current = r;
+    return () => { try { r.onresult = null; r.onend = null; r.onerror = null; r.stop(); } catch (e) {} };
+  }, []);
+
+  if (!supported) return null;
+
+  function toggle() {
+    const r = recRef.current;
+    if (!r) return;
+    const st = document.getElementById("ql-voice-status");
+    if (listening) {
+      try { r.stop(); } catch (e) {}
+      setListening(false);
+      if (st) { st.textContent = ""; st.classList.remove("live"); }
+      return;
+    }
+    try {
+      r.start();
+      setListening(true);
+      if (st) { st.textContent = "Listening… tap again to stop"; st.classList.add("live"); }
+    } catch (e) {
+      setListening(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      className={"voice-btn" + (listening ? " recording" : "")}
+      onClick={toggle}
+      aria-label={listening ? "Stop voice note" : "Speak a voice note"}
+      title={listening ? "Stop" : "Tap to speak"}
+    >
+      {listening ? "⏹" : "🎤"}
+    </button>
+  );
+}
+
+// Pattern detection: rough-night → next-day low energy / meltdown link
+function detectPatterns(dataStore) {
+  const daily = (dataStore["daily-log-entries"] || []).slice().sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  const sleep = (dataStore["sleep-food-entries"] || []).slice().sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  const behavior = dataStore["behavior-log-entries"] || [];
+  const byDate = {};
+  daily.forEach((d) => { if (d.date) byDate[d.date] = d; });
+  sleep.forEach((s) => { if (s.date) byDate[s.date] = Object.assign(byDate[s.date] || {}, { _sleep: s }); });
+  const dates = Object.keys(byDate).sort();
+  let roughFollowedByLow = 0, roughFollowedByMelt = 0, totalRough = 0;
+  for (let i = 0; i < dates.length - 1; i++) {
+    const today = byDate[dates[i]];
+    const next = byDate[dates[i + 1]];
+    const sq = (today._sleep && today._sleep.quality) || [];
+    const rough = sq.includes("Rough night") || (today._sleep && /wake|rough|night/i.test(today._sleep.sleepNotes || ""));
+    if (!rough) continue;
+    totalRough++;
+    if (next.energy != null && next.energy <= 2) roughFollowedByLow++;
+    const nextBeh = behavior.filter((b) => b.date === dates[i + 1]);
+    if (nextBeh.length) roughFollowedByMelt++;
+  }
+  const out = [];
+  if (totalRough >= 2 && roughFollowedByLow >= 2) {
+    out.push({ kicker: "Sleep → energy", text: totalRough + " rough nights logged, and " + roughFollowedByLow + " of the next days had low energy (2 or below). Worth raising at your next appointment.", meta: "From sleep + daily logs" });
+  }
+  if (totalRough >= 2 && roughFollowedByMelt >= 2) {
+    out.push({ kicker: "Sleep → behaviour", text: roughFollowedByMelt + " behaviour logs landed on the day after a rough night. A consistent link — useful evidence for school or GP.", meta: "From sleep + behaviour logs" });
+  }
+  return out;
+}
+
 function QuickLog({ setDataStore, showToast, activeChildId }) {
   const [energy, setEnergy] = useState(null);
   const [mood, setMood] = useState([]);
@@ -2891,8 +3007,10 @@ function QuickLog({ setDataStore, showToast, activeChildId }) {
       </div>
       <div className="ql-foot">
         <input type="text" placeholder="One line note (optional)" value={note} onChange={(e) => setNote(e.target.value)} />
+        <VoiceButton value={note} onChange={setNote} />
         <button type="button" className="btn-primary" onClick={save}>Save quick log <span aria-hidden="true">›</span></button>
       </div>
+      <div className="voice-status" id="ql-voice-status" aria-live="polite"></div>
     </div>
   );
 }
@@ -4252,7 +4370,7 @@ root.render(React.createElement(App));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=34").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=35").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
