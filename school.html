@@ -4,187 +4,121 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0B1219" />
-  <meta name="description" content="School link — send a daily report to a parent through THE PLAYBOOK." />
   <title>School link · THE PLAYBOOK</title>
   <link rel="icon" type="image/png" href="favicon.png" />
   <style>
     :root { --navy:#0E131F; --amber:#FF6B00; --paper:#F4F6F8; --line:#E2E8F0; --ink:#111827; --soft:#6B7280; }
     * { box-sizing: border-box; }
-    body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background:var(--paper); color:var(--ink); }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:var(--paper); color:var(--ink); }
     .wrap { max-width:560px; margin:0 auto; padding:24px 18px 48px; }
-    .brand { display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.5px; color:var(--navy); }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:800; color:var(--navy); }
     .brand img { width:30px; height:30px; border-radius:8px; }
     .kicker { font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--amber); margin:18px 0 6px; }
     h1 { font-size:22px; margin:0 0 6px; color:var(--navy); }
     .sub { font-size:14px; color:var(--soft); margin:0 0 18px; line-height:1.45; }
-    .card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:0 4px 20px rgba(0,0,0,.04); margin-bottom:14px; }
+    .card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:14px; }
     .field { margin-bottom:14px; }
-    .field label { display:block; font-size:12px; font-weight:700; color:var(--soft); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
-    .field input, .field textarea, .field select { width:100%; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; font-size:16px; font-family:inherit; background:#fff; }
-    .field textarea { min-height:70px; resize:vertical; }
+    .field label { display:block; font-size:12px; font-weight:700; color:var(--soft); margin-bottom:6px; text-transform:uppercase; }
+    .field input, .field textarea, .field select { width:100%; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; font-size:16px; font-family:inherit; }
     .moods { display:flex; gap:8px; flex-wrap:wrap; }
-    .mood { flex:1; min-width:64px; border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:10px 6px; font-size:13px; font-weight:700; color:var(--soft); cursor:pointer; font-family:inherit; }
-    .mood.on { border-color:var(--amber); background:#FFF4EB; color:var(--navy); }
-    .mood.custom { border-style:dashed; }
-    .btn { width:100%; border:0; border-radius:14px; padding:14px; font-size:16px; font-weight:800; font-family:inherit; cursor:pointer; background:var(--navy); color:#fff; }
-    .btn:disabled { opacity:.5; cursor:wait; }
-    .ok { background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; border-radius:12px; padding:12px 14px; font-size:14px; line-height:1.4; }
-    .err { background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; border-radius:12px; padding:12px 14px; font-size:14px; }
-    .foot { margin-top:18px; font-size:12px; color:var(--soft); line-height:1.5; }
-    .foot a { color:var(--amber); font-weight:700; }
+    .mood { flex:1; min-width:64px; border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:10px 6px; font-size:13px; font-weight:700; cursor:pointer; }
+    .mood.on { border-color:var(--amber); background:#FFF4EB; }
+    .btn { width:100%; border:0; border-radius:14px; padding:14px; font-size:16px; font-weight:800; background:var(--navy); color:#fff; cursor:pointer; }
+    .btn:disabled { opacity:.5; }
+    .ok { background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; border-radius:12px; padding:12px 14px; }
+    .err { background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; border-radius:12px; padding:12px 14px; }
+    .foot { margin-top:18px; font-size:12px; color:var(--soft); }
     .hidden { display:none; }
-    .custom-row { display:flex; gap:8px; margin-top:8px; }
-    .custom-row input { flex:1; }
-    .custom-row button { border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:0 14px; font-weight:700; color:var(--navy); cursor:pointer; font-family:inherit; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="brand"><img src="icon-192.png" alt="" /> THE PLAYBOOK</div>
-
     <div id="form-view">
       <div class="kicker">School → parent</div>
       <h1>Daily school report</h1>
-      <p class="sub">One-way note for the linked parent. No chat, no photos of other children, no login needed.</p>
-
+      <p class="sub">One-way note for the linked parent. No chat, no photos, no login needed.</p>
       <div class="card">
-        <div class="field">
-          <label>Child's first name</label>
-          <input id="child" type="text" placeholder="e.g. Preston" maxlength="24" />
-        </div>
-        <div class="field">
-          <label>Date</label>
-          <input id="date" type="date" />
-        </div>
-        <div class="field">
-          <label>Mood today</label>
+        <div class="field"><label>Your name / role</label><input id="author" maxlength="40" placeholder="e.g. Mrs Khan · class teacher" /></div>
+        <div class="field"><label>Child's first name</label><input id="child" maxlength="24" placeholder="e.g. Preston" /></div>
+        <div class="field"><label>Date</label><input id="date" type="date" /></div>
+        <div class="field"><label>Mood today</label>
           <div class="moods" id="moods">
-            <button type="button" class="mood" data-v="😊 Calm">😊 Calm</button>
-            <button type="button" class="mood" data-v="😐 Okay">😐 Okay</button>
-            <button type="button" class="mood" data-v="😟 Wobbly">😟 Wobbly</button>
-            <button type="button" class="mood" data-v="😤 Upset">😤 Upset</button>
-            <button type="button" class="mood custom" data-v="__custom__">＋ Add your own</button>
-          </div>
-          <div class="custom-row hidden" id="custom-row">
-            <input id="custom-mood" type="text" placeholder="e.g. Focused, Anxious, Silly" maxlength="24" />
-            <button type="button" id="custom-add">Add</button>
+            <button type="button" class="mood" data-v="Calm">Calm</button>
+            <button type="button" class="mood" data-v="Okay">Okay</button>
+            <button type="button" class="mood" data-v="Wobbly">Wobbly</button>
+            <button type="button" class="mood" data-v="Upset">Upset</button>
           </div>
         </div>
-        <div class="field">
-          <label>Energy</label>
-          <select id="energy">
-            <option value="">—</option>
-            <option>High</option><option>Okay</option><option>Low</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Incidents</label>
-          <select id="incidents">
-            <option>None</option><option>1</option><option>2+</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Wins / settled moments</label>
-          <textarea id="wins" placeholder="e.g. Great focus after lunch"></textarea>
-        </div>
-        <div class="field">
-          <label>One-line note for parent</label>
-          <textarea id="note" placeholder="Anything the parent should know"></textarea>
-        </div>
+        <div class="field"><label>Energy</label><select id="energy"><option value=""></option><option>High</option><option>Okay</option><option>Low</option></select></div>
+        <div class="field"><label>Incidents</label><select id="incidents"><option>None</option><option>1</option><option>2+</option></select></div>
+        <div class="field"><label>Wins</label><textarea id="wins"></textarea></div>
+        <div class="field"><label>Note for parent</label><textarea id="note"></textarea></div>
         <button class="btn" id="send" type="button">Send to parent</button>
         <div id="msg" class="hidden" style="margin-top:14px;"></div>
       </div>
-      <p class="foot">This link is unique to one child. It expires or can be revoked by the parent. <a href="./privacy.html">Privacy</a> · <a href="mailto:Theplaybookhome@gmail.com">Support</a></p>
     </div>
-
     <div id="done-view" class="hidden">
       <div class="kicker">Sent</div>
       <h1>Report delivered</h1>
       <div class="ok" id="done-text"></div>
-      <p class="foot">You can close this page. The parent will see it in THE PLAYBOOK.</p>
     </div>
   </div>
-
   <script>
     (function () {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get("t") || "";
-      const dateEl = document.getElementById("date");
-      dateEl.value = new Date().toISOString().slice(0, 10);
-
+      const SUPABASE_URL = "https://kknaxghkbgjvgblhcaay.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbmF4Z2hrYmdqdmdibGhjYWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1NjUzMzgsImV4cCI6MjEwMzE0MTMzOH0.3HCBXqbqpatgUBApHUORAYpOtg9zX_NfhzlqBtb5W0k";
+      const token = (new URLSearchParams(location.search).get("t") || new URLSearchParams(location.search).get("share") || "").trim();
+      document.getElementById("date").value = new Date().toISOString().slice(0,10);
       let mood = "";
-      const customRow = document.getElementById("custom-row");
-      const customInput = document.getElementById("custom-mood");
-
       document.querySelectorAll("#moods .mood").forEach(function (b) {
         b.addEventListener("click", function () {
           document.querySelectorAll("#moods .mood").forEach(function (x) { x.classList.remove("on"); });
           b.classList.add("on");
-          const v = b.getAttribute("data-v");
-          if (v === "__custom__") {
-            mood = "";
-            customRow.classList.remove("hidden");
-            customInput.focus();
-          } else {
-            mood = v;
-            customRow.classList.add("hidden");
-            customInput.value = "";
-          }
+          mood = b.getAttribute("data-v");
         });
       });
-
-      document.getElementById("custom-add").addEventListener("click", function () {
-        const v = customInput.value.trim();
-        if (!v) return;
-        mood = v.slice(0, 24);
-        customRow.classList.add("hidden");
-      });
-      customInput.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") { e.preventDefault(); document.getElementById("custom-add").click(); }
-      });
-
       const msg = document.getElementById("msg");
-      function show(html, ok) {
-        msg.className = ok ? "ok" : "err";
-        msg.innerHTML = html;
-        msg.classList.remove("hidden");
-      }
-
-      document.getElementById("send").addEventListener("click", function () {
+      function show(t, ok) { msg.className = ok ? "ok" : "err"; msg.textContent = t; msg.classList.remove("hidden"); }
+      document.getElementById("send").addEventListener("click", async function () {
         const child = document.getElementById("child").value.trim();
-        if (!child) { show("Please enter the child's first name.", false); return; }
-        if (!token) { show("This link is missing its token. Ask the parent for a fresh link.", false); return; }
-        if (!mood) { show("Please pick a mood, or add your own.", false); return; }
-
+        const author = document.getElementById("author").value.trim() || "Teacher";
+        if (!child) return show("Enter the child's first name.", false);
+        if (!token) return show("This link is missing its code. Ask the parent for a fresh school link.", false);
+        if (!mood) return show("Pick a mood.", false);
         const payload = {
-          v: 1,
-          kind: "school",
           token: token,
-          child: child.slice(0, 24),
-          date: dateEl.value || new Date().toISOString().slice(0, 10),
+          child: child.slice(0,24),
+          note_date: document.getElementById("date").value,
           mood: mood,
-          energy: document.getElementById("energy").value,
-          incidents: document.getElementById("incidents").value,
-          wins: document.getElementById("wins").value.trim().slice(0, 300),
-          note: document.getElementById("note").value.trim().slice(0, 300),
-          sentAt: new Date().toISOString()
+          energy: document.getElementById("energy").value || null,
+          incidents: document.getElementById("incidents").value || null,
+          wins: document.getElementById("wins").value.trim().slice(0,300) || null,
+          body: document.getElementById("note").value.trim().slice(0,400) || null,
+          author_name: author.slice(0,40),
+          role: "Teacher"
         };
-
-        // Store locally so the parent app (same device/browser) can pick it up.
-        // When Supabase is wired, this POST goes to an edge function instead.
+        const btn = document.getElementById("send");
+        btn.disabled = true; btn.textContent = "Sending…";
         try {
-          const key = "playbook:school-inbox:" + token;
-          const existing = JSON.parse(localStorage.getItem(key) || "[]");
-          existing.unshift(payload);
-          localStorage.setItem(key, JSON.stringify(existing.slice(0, 50)));
-          // Also stash the latest for the parent app to read on next open.
-          localStorage.setItem("playbook:school-latest", JSON.stringify(payload));
-        } catch (e) {}
-
-        document.getElementById("form-view").classList.add("hidden");
-        document.getElementById("done-view").classList.remove("hidden");
-        document.getElementById("done-text").textContent =
-          "Sent for " + child + " on " + payload.date + ". The parent will see it in THE PLAYBOOK.";
+          const res = await fetch(SUPABASE_URL + "/rest/v1/playbook_school_notes", {
+            method: "POST",
+            headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) {
+            const errText = await res.text();
+            if (res.status === 404 || errText.indexOf("PGRST205") !== -1) throw new Error("School inbox is not switched on yet. Parent needs the one-time setup.");
+            if (res.status === 401 || res.status === 403 || errText.indexOf("row-level") !== -1) throw new Error("This link is not active. Ask the parent for a new one.");
+            throw new Error("Could not send. Try again.");
+          }
+          document.getElementById("form-view").classList.add("hidden");
+          document.getElementById("done-view").classList.remove("hidden");
+          document.getElementById("done-text").textContent = "Sent for " + child + ". The parent will see it in THE PLAYBOOK.";
+        } catch (err) {
+          show(err.message || "Send failed.", false);
+          btn.disabled = false; btn.textContent = "Send to parent";
+        }
       });
     })();
   </script>
