@@ -1,0 +1,27 @@
+name: v50 boot fix
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "v50_boot_fix.py"
+      - ".github/workflows/v50-boot.yml"
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fix async async boot crash
+        run: python v50_boot_fix.py
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.html sw.js v50_boot_fix.py
+          git diff --cached --quiet || git commit -m "fix: restore app boot (remove async async) and bump cache to v50"
+          git push
