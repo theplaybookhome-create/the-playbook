@@ -1,145 +1,143 @@
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
-  <script>
-    (function () {
-      try {
-        var params = new URLSearchParams(window.location.search);
-        if (params.get("unlocked") === "1") {
-          try { localStorage.setItem("playbook:premium-unlocked", "1"); } catch (e) {}
-          window.location.replace("./app.html?unlocked=1");
-          return;
-        }
-        if (params.get("stay") === "1" || params.get("landing") === "1") return;
-        if ((window.location.hash || "") === "#buy") return;
-        /* Stay on the public landing at / — phones and desktop see Open / Log in / Unlock.
-           Installed PWA still opens app.html from the manifest. */
-      } catch (e) {}
-    })();
-  </script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0B1219" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="icon-180.png" />
-  <link rel="icon" type="image/png" href="favicon.png" />
-  <title>THE PLAYBOOK — For neurodivergent families</title>
-  <meta name="description" content="Track daily life, spot patterns, and print a professional report. Log in to continue. One-time unlock £2.99." />
-  <style>
-    :root { --navy:#0E1822; --navy-dark:#0B1219; --amber:#E8892C; --amber-deep:#C1752E; --amber-tint:#FFF4E8; --paper:#F4F6F8; --ink:#111827; --soft:#5C6570; --line:#E2E6EA; --white:#fff; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--paper); color:var(--ink); line-height:1.5; }
-    a { color:var(--amber-deep); }
-    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
-    header { background:linear-gradient(165deg,#121A22 0%,#1A252F 40%,#0B1219 100%); color:#fff; padding:22px 0 52px; }
-    .topbar { display:flex; justify-content:space-between; align-items:center; gap:12px; }
-    .brand { font-weight:800; letter-spacing:1.4px; font-size:14px; display:flex; align-items:center; gap:10px; }
-    .brand img { width:28px; height:28px; border-radius:8px; object-fit:cover; }
-    .login-link { color:#fff; text-decoration:none; font-weight:700; font-size:13px; border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.08); padding:8px 14px; border-radius:999px; }
-    .hero { padding-top:28px; }
-    .hero h1 { font-size:clamp(28px,5vw,40px); line-height:1.15; margin:0 0 14px; font-weight:800; letter-spacing:-.03em; }
-    .lead { font-size:17px; opacity:.9; max-width:34em; margin:0 0 22px; }
-    .price { font-size:32px; font-weight:800; color:#F5C98A; margin:0 0 18px; }
-    .price span { font-size:15px; font-weight:600; opacity:.85; margin-left:6px; }
-    .cta-row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-    .btn { display:inline-block; background:var(--amber); color:#fff; font-weight:800; text-decoration:none; padding:14px 20px; border-radius:12px; font-size:15px; border:0; cursor:pointer; }
-    .btn-ghost { display:inline-block; background:transparent; color:#fff; font-weight:700; text-decoration:none; padding:13px 18px; border-radius:12px; border:1px solid rgba(255,255,255,.32); font-size:15px; }
-    .btn-soft { display:inline-block; background:#fff; color:var(--navy); font-weight:800; text-decoration:none; padding:14px 20px; border-radius:12px; font-size:15px; }
-    .trust { font-size:13px; opacity:.8; margin-top:16px; }
-    main { padding:36px 0 20px; }
-    h2 { font-size:22px; margin:0 0 8px; color:var(--navy); }
-    .sub { color:var(--soft); margin:0 0 20px; }
-    .grid { display:grid; grid-template-columns:1fr; gap:12px; }
-    @media (min-width:560px) { .grid { grid-template-columns:1fr 1fr; } }
-    .card { background:var(--white); border:1px solid var(--line); border-radius:16px; padding:16px; }
-    .badge { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; border-radius:999px; margin-bottom:8px; }
-    .badge.free { background:#E8F5EE; color:#1E7A46; }
-    .badge.pro { background:var(--amber-tint); color:var(--amber-deep); }
-    .card h3 { margin:0 0 6px; font-size:16px; color:var(--navy); }
-    .card p { margin:0; font-size:14px; color:var(--soft); }
-    #buy { background:linear-gradient(160deg,var(--navy) 0%,var(--navy-dark) 100%); color:#fff; padding:36px 0; margin-top:28px; }
-    #buy h2 { color:#fff; }
-    #buy .sub { color:rgba(255,255,255,.8); }
-    .buy-box { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:20px; }
-    footer { padding:28px 0 40px; font-size:13px; color:var(--soft); text-align:center; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>THE PLAYBOOK — Calm companion for neurodivergent families</title>
+<meta name="description" content="Track energy, mood, sleep, behaviour and wins. Spot patterns. Hand school or your GP a one-page report. £2.99 once, no subscription." />
+<link rel="icon" href="favicon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#0E131F" />
+<style>
+  :root{ --navy:#0E131F; --orange:#FF6B00; --bg:#F4F6F8; --line:#E2E8F0; --ink:#111827; --soft:#6B7280; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); line-height:1.55; }
+  a{ color:var(--orange); font-weight:600; text-decoration:none; }
+  .wrap{ max-width:880px; margin:0 auto; padding:0 20px 64px; }
+  header{ background:var(--navy); color:#fff; padding:28px 20px; }
+  header .inner{ max-width:880px; margin:0 auto; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .logo{ width:44px; height:44px; border-radius:12px; background:linear-gradient(180deg,#FF8A2B,#FF6B00); box-shadow:0 6px 16px rgba(255,107,0,.35); }
+  header h1{ margin:0; font-size:20px; letter-spacing:.5px; }
+  header p{ margin:2px 0 0; font-size:13px; color:rgba(255,255,255,.62); }
+  .cta{ margin-left:auto; display:flex; gap:10px; flex-wrap:wrap; }
+  .btn{ display:inline-block; padding:11px 18px; border-radius:12px; font-weight:700; font-size:14px; }
+  .btn-primary{ background:var(--orange); color:#fff; }
+  .btn-ghost{ background:transparent; border:1px solid rgba(255,255,255,.25); color:#fff; }
+  .hero{ padding:48px 0 24px; }
+  .hero h2{ font-size:34px; line-height:1.12; margin:0 0 14px; letter-spacing:-.02em; }
+  .hero p{ font-size:18px; color:var(--soft); margin:0 0 22px; max-width:60ch; }
+  .price{ display:inline-flex; align-items:center; gap:8px; background:#FFF4EB; border:1px solid #F3D7B3; border-radius:999px; padding:8px 16px; font-weight:800; color:var(--navy); }
+  .price b{ color:var(--orange); }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:28px 0; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,.04); }
+  .card h3{ margin:0 0 6px; font-size:17px; }
+  .card p{ margin:0; font-size:14px; color:var(--soft); }
+  .tag{ display:inline-block; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:4px 10px; border-radius:999px; margin-bottom:10px; }
+  .tag.free{ background:#EAF7EF; color:#1E7A46; }
+  .tag.paid{ background:#FFF4EB; color:var(--orange); }
+  .vs{ margin:40px 0; }
+  .vs h3{ font-size:22px; margin:0 0 6px; }
+  .vs p{ color:var(--soft); margin:0 0 18px; max-width:60ch; }
+  table{ width:100%; border-collapse:collapse; background:#fff; border-radius:16px; overflow:hidden; border:1px solid var(--line); }
+  th,td{ text-align:left; padding:12px 14px; font-size:14px; border-bottom:1px solid var(--line); }
+  th{ background:var(--navy); color:#fff; font-size:12px; letter-spacing:.04em; text-transform:uppercase; }
+  tr:last-child td{ border-bottom:none; }
+  td.yes{ color:#1E7A46; font-weight:700; }
+  td.no{ color:#B03A2E; }
+  td.mid{ color:var(--orange); font-weight:600; }
+  .steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:28px 0; }
+  .step{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px; }
+  .step .n{ width:28px; height:28px; border-radius:8px; background:var(--orange); color:#fff; font-weight:800; display:grid; place-items:center; margin-bottom:10px; }
+  .step h4{ margin:0 0 4px; font-size:15px; }
+  .step p{ margin:0; font-size:13px; color:var(--soft); }
+  footer{ border-top:1px solid var(--line); padding:24px 0; font-size:13px; color:var(--soft); }
+  footer .links{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:8px; }
+  @media (max-width:640px){ .grid,.steps{ grid-template-columns:1fr; } .hero h2{ font-size:26px; } .cta{ margin-left:0; } }
+</style>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <div class="topbar">
-        <div class="brand"><img src="icon-192.png" width="28" height="28" alt="" /> THE PLAYBOOK</div>
-        <a class="login-link" href="./app.html?login=1">Log in</a>
-      </div>
-      <div class="hero">
-        <h1>The calm companion for neurodivergent families</h1>
-        <p class="lead">Track the days that matter. Spot patterns. Hand school or your GP a clear one-page summary — without another subscription.</p>
-        <div class="price">£2.99 <span>once · no subscription</span></div>
-        <div class="cta-row">
-          <a class="btn-soft" href="./app.html">Open the app</a>
-          <a class="btn-ghost" href="./app.html?login=1">Log in</a>
-          <a class="btn" id="buy-btn" href="#buy">Unlock full access</a>
-        </div>
-        <p class="trust">Already using THE PLAYBOOK? Log in or tap Open the app — your logs stay on this device.</p>
-      </div>
+<header>
+  <div class="inner">
+    <div class="logo" aria-hidden="true"></div>
+    <div>
+      <h1>THE PLAYBOOK</h1>
+      <p>Calm companion for neurodivergent families</p>
     </div>
-  </header>
-  <main>
-    <section>
-      <div class="wrap">
-        <h2>What’s free vs what’s unlocked</h2>
-        <p class="sub">Try tracking first. An account is optional. Log in if you already have one.</p>
-        <div class="grid">
-          <div class="card"><div class="badge free">Free</div><h3>Full tracking</h3><p>Daily log, behaviour, sensory, sleep &amp; food, therapy, meds, milestones, self-care, wins, brain dump, At a Glance.</p></div>
-          <div class="card"><div class="badge free">Free</div><h3>Private on your device</h3><p>No account required for core logging. Export / import a backup anytime.</p></div>
-          <div class="card"><div class="badge pro">£2.99 unlock</div><h3>Insights</h3><p>Plain-English patterns from your logs — energy, triggers, sleep links, what already helps.</p></div>
-          <div class="card"><div class="badge pro">£2.99 unlock</div><h3>Professional report</h3><p>Printable one-pager + talking points for school, GP, or therapy.</p></div>
-          <div class="card"><div class="badge pro">£2.99 unlock</div><h3>Discover + Community</h3><p>Toys, events, tips, and member posts when signed in. Plus visual supports, colouring &amp; AAC printables.</p></div>
-        </div>
-      </div>
-    </section>
-    <section id="buy">
-      <div class="wrap">
-        <h2>Unlock everything</h2>
-        <p class="sub">One payment. Keep it on this device.</p>
-        <div class="buy-box">
-          <p>One-time £2.99. No subscription. Card, Apple Pay, Google Pay where available.</p>
-          <a class="btn" id="buy-btn-2" href="#buy" style="margin-top:12px">Pay £2.99 · unlock now</a>
-          <p class="trust" style="margin-top:14px">
-            <a href="./app.html?login=1" style="color:#F5C98A">Log in</a> ·
-            <a href="./app.html" style="color:#F5C98A">Open the free tracker</a>
-          </p>
-        </div>
-      </div>
-    </section>
-  </main>
-  <footer>
-    <div class="wrap">
-      THE PLAYBOOK · Made for neurodivergent families<br />
-      Not a substitute for professional medical or educational advice.<br />
-      <p style="margin:12px 0 6px">
-        <a href="https://www.facebook.com/groups/2217693205459716/" target="_blank" rel="noopener" style="color:var(--amber-deep);margin:0 8px;text-decoration:none;font-weight:600">Facebook group</a> ·
-        <a href="https://www.tiktok.com/@the.playbook311" target="_blank" rel="noopener" style="color:var(--amber-deep);margin:0 8px;text-decoration:none;font-weight:600">TikTok</a> ·
-        <a href="https://x.com/theplaybookhome" target="_blank" rel="noopener" style="color:var(--amber-deep);margin:0 8px;text-decoration:none;font-weight:600">X</a> ·
-        <a href="mailto:Theplaybookhome@gmail.com" style="color:var(--amber-deep);margin:0 8px;text-decoration:none;font-weight:600">Email</a>
-      </p>
-      <a href="./privacy.html" style="color:var(--amber-deep);text-decoration:none;font-weight:600">Privacy</a>
-      · <a href="./terms.html" style="color:var(--amber-deep);text-decoration:none;font-weight:600">Terms</a>
-      · <a href="./support.html" style="color:var(--amber-deep);text-decoration:none;font-weight:600">Support</a>
-      · <a href="./index.html?stay=1" style="color:var(--soft);text-decoration:none">Stay on landing</a>
-      <br /><span id="year"></span>
+    <div class="cta">
+      <a class="btn btn-ghost" href="./app.html">Open app</a>
+      <a class="btn btn-primary" href="https://buy.stripe.com/bJe4gB2R9fbb96O52C38403">£2.99 once</a>
     </div>
-  </footer>
-  <script>
-    const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/bJe4gB2R9fbb96O52C38403";
-    document.getElementById("year").textContent = new Date().getFullYear();
-    function goBuy(e) {
-      if (e) e.preventDefault();
-      window.location.href = STRIPE_PAYMENT_LINK;
-    }
-    document.getElementById("buy-btn").addEventListener("click", goBuy);
-    document.getElementById("buy-btn-2").addEventListener("click", goBuy);
-  </script>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <h2>Track the days that matter.<br>Spot the patterns.<br>Walk into appointments prepared.</h2>
+    <p>A private diary for parents and carers of autistic and neurodivergent children. Log energy, mood, sleep, behaviour and wins — then turn it into a one-page report for school, GP or therapy. No subscription. Data stays on your device.</p>
+    <span class="price">£2.99 <b>once</b> · no subscription · cancel nothing</span>
+  </section>
+
+  <div class="grid">
+    <div class="card">
+      <span class="tag free">Free</span>
+      <h3>Full tracking</h3>
+      <p>Daily energy, mood, behaviour, sensory, sleep, food, therapy, medication, milestones, self-care and wins. Multiple children on one device. Export and import a backup anytime.</p>
+    </div>
+    <div class="card">
+      <span class="tag paid">£2.99 unlock</span>
+      <h3>Insights & report</h3>
+      <p>Plain-English patterns from your own logs — including sleep-to-energy links. A printable professional report with talking points for school, GP or therapy.</p>
+    </div>
+    <div class="card">
+      <span class="tag paid">£2.99 unlock</span>
+      <h3>Discover & community</h3>
+      <p>Toys, events and tips matched to what you log. Printable visual supports, colouring and AAC boards. Share with other paid members when signed in.</p>
+    </div>
+    <div class="card">
+      <span class="tag free">Private</span>
+      <h3>Your data, your device</h3>
+      <p>No account needed to start. Logs never leave the phone unless you choose to create one. Delete my data clears everything in one tap.</p>
+    </div>
+  </div>
+
+  <section class="vs">
+    <h3>How THE PLAYBOOK compares</h3>
+    <p>Most autism apps are either visual schedules for the child or adult energy trackers. THE PLAYBOOK is the parent-side evidence trail — the thing you hand to a professional.</p>
+    <table>
+      <thead><tr><th>Feature</th><th>THE PLAYBOOK</th><th>Tiimo / Goally</th><th>Guiding Growth</th><th>Autism360</th></tr></thead>
+      <tbody>
+        <tr><td>Parent-side daily diary</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="mid">Partial</td></tr>
+        <tr><td>One-page pro report</td><td class="yes">Yes</td><td class="no">No</td><td class="mid">Limited</td><td class="no">No</td></tr>
+        <tr><td>Voice logging</td><td class="yes">Coming</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+        <tr><td>Sleep → energy patterns</td><td class="yes">Yes</td><td class="no">No</td><td class="mid">Basic</td><td class="no">No</td></tr>
+        <tr><td>Price model</td><td class="yes">£2.99 once</td><td class="mid">Subscription</td><td class="mid">Subscription</td><td class="mid">Subscription</td></tr>
+        <tr><td>Data stays on device</td><td class="yes">Yes</td><td class="mid">Cloud</td><td class="mid">Cloud</td><td class="mid">Cloud</td></tr>
+        <tr><td>No account to start</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="steps">
+    <div class="step"><div class="n">1</div><h4>Log in seconds</h4><p>Tap energy, pick a mood, speak a note. Thirty seconds on a hard day.</p></div>
+    <div class="step"><div class="n">2</div><h4>See the pattern</h4><p>Insights surface what your logs are really saying — triggers, sleep links, what helps.</p></div>
+    <div class="step"><div class="n">3</div><h4>Hand it over</h4><p>Print the one-page report. Walk into school or the GP with evidence, not memory.</p></div>
+  </section>
+
+  <p style="text-align:center; margin:32px 0;">
+    <a class="btn btn-primary" href="./app.html" style="padding:14px 26px; font-size:16px;">Start free tracking →</a>
+  </p>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="./privacy.html">Privacy</a>
+      <a href="./terms.html">Terms</a>
+      <a href="./support.html">Support</a>
+      <a href="mailto:Theplaybookhome@gmail.com">Theplaybookhome@gmail.com</a>
+    </div>
+    <div>THE PLAYBOOK · For neurodivergent families · £2.99 once, no subscription.</div>
+  </div>
+</footer>
 </body>
 </html>
