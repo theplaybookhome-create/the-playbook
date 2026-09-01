@@ -13,59 +13,59 @@
   *{ box-sizing:border-box; }
   body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); line-height:1.55; }
   a{ color:var(--orange); font-weight:600; text-decoration:none; }
-  .wrap{ max-width:880px; margin:0 auto; padding:0 20px 64px; }
-  header{ background:var(--navy); color:#fff; padding:28px 20px; }
-  header .inner{ max-width:880px; margin:0 auto; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-  .logo{ width:44px; height:44px; border-radius:12px; background:linear-gradient(180deg,#FF8A2B,#FF6B00); box-shadow:0 6px 16px rgba(255,107,0,.35); }
-  header h1{ margin:0; font-size:20px; letter-spacing:.5px; }
-  header p{ margin:2px 0 0; font-size:13px; color:rgba(255,255,255,.62); }
-  .cta{ margin-left:auto; display:flex; gap:10px; flex-wrap:wrap; }
-  .btn{ display:inline-block; padding:11px 18px; border-radius:12px; font-weight:700; font-size:14px; }
+  .wrap{ max-width:840px; margin:0 auto; padding:0 20px 56px; }
+  header{ background:var(--navy); color:#fff; padding:16px 20px; }
+  header .inner{ max-width:840px; margin:0 auto; display:flex; align-items:center; gap:12px; }
+  .logo{ width:40px; height:40px; border-radius:10px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,.25); }
+  header h1{ margin:0; font-size:16px; letter-spacing:.4px; }
+  header p{ margin:2px 0 0; font-size:12px; color:rgba(255,255,255,.62); }
+  .cta{ margin-left:auto; display:flex; gap:8px; }
+  .btn{ display:inline-block; padding:10px 16px; border-radius:12px; font-weight:700; font-size:14px; border:0; }
   .btn-primary{ background:var(--orange); color:#fff; }
   .btn-ghost{ background:transparent; border:1px solid rgba(255,255,255,.25); color:#fff; }
-  .hero{ padding:48px 0 24px; }
-  .hero h2{ font-size:34px; line-height:1.12; margin:0 0 14px; letter-spacing:-.02em; }
-  .hero p{ font-size:18px; color:var(--soft); margin:0 0 22px; max-width:60ch; }
-  .price{ display:inline-flex; align-items:center; gap:8px; background:#FFF4EB; border:1px solid #F3D7B3; border-radius:999px; padding:8px 16px; font-weight:800; color:var(--navy); }
+  .btn-dark{ background:var(--navy); color:#fff; }
+  .hero{ padding:40px 0 8px; }
+  .hero h2{ font-size:32px; line-height:1.15; margin:0 0 12px; letter-spacing:-.02em; }
+  .hero p{ font-size:17px; color:var(--soft); margin:0 0 20px; max-width:58ch; }
+  .hero-actions{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:8px; }
+  .price{ display:inline-flex; align-items:center; background:#FFF4EB; border:1px solid #F3D7B3; border-radius:999px; padding:7px 14px; font-weight:700; font-size:13px; color:var(--navy); }
   .price b{ color:var(--orange); }
-  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:28px 0; }
-  .card{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,.04); }
-  .card h3{ margin:0 0 6px; font-size:17px; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:24px 0 8px; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px; }
+  .card h3{ margin:0 0 6px; font-size:16px; }
   .card p{ margin:0; font-size:14px; color:var(--soft); }
-  .tag{ display:inline-block; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:4px 10px; border-radius:999px; margin-bottom:10px; }
+  .tag{ display:inline-block; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; border-radius:999px; margin-bottom:8px; }
   .tag.free{ background:#EAF7EF; color:#1E7A46; }
   .tag.paid{ background:#FFF4EB; color:var(--orange); }
-  .vs{ margin:40px 0; }
-  .vs h3{ font-size:22px; margin:0 0 6px; }
-  .vs p{ color:var(--soft); margin:0 0 18px; max-width:60ch; }
-  table{ width:100%; border-collapse:collapse; background:#fff; border-radius:16px; overflow:hidden; border:1px solid var(--line); }
-  th,td{ text-align:left; padding:12px 14px; font-size:14px; border-bottom:1px solid var(--line); }
-  th{ background:var(--navy); color:#fff; font-size:12px; letter-spacing:.04em; text-transform:uppercase; }
-  tr:last-child td{ border-bottom:none; }
-  td.yes{ color:#1E7A46; font-weight:700; }
-  td.no{ color:#B03A2E; }
-  td.mid{ color:var(--orange); font-weight:600; }
-  .steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:28px 0; }
-  .step{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px; }
-  .step .n{ width:28px; height:28px; border-radius:8px; background:var(--orange); color:#fff; font-weight:800; display:grid; place-items:center; margin-bottom:10px; }
+  .steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:28px 0 8px; }
+  .step{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px; }
+  .step .n{ width:26px; height:26px; border-radius:8px; background:var(--orange); color:#fff; font-weight:800; display:grid; place-items:center; margin-bottom:8px; font-size:13px; }
   .step h4{ margin:0 0 4px; font-size:15px; }
   .step p{ margin:0; font-size:13px; color:var(--soft); }
-  footer{ border-top:1px solid var(--line); padding:24px 0; font-size:13px; color:var(--soft); }
-  footer .links{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:8px; }
-  @media (max-width:640px){ .grid,.steps{ grid-template-columns:1fr; } .hero h2{ font-size:26px; } .cta{ margin-left:0; } }
+  .note{ font-size:13px; color:var(--soft); text-align:center; margin:8px 0 0; }
+  .bottom-cta{ text-align:center; margin:28px 0 0; }
+  footer{ border-top:1px solid var(--line); padding:20px 0 28px; font-size:13px; color:var(--soft); }
+  footer .links{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:6px; }
+  @media (max-width:640px){
+    .grid,.steps{ grid-template-columns:1fr; }
+    .hero h2{ font-size:26px; }
+    header .inner{ flex-wrap:wrap; }
+    .cta{ margin-left:0; width:100%; }
+    .cta .btn{ flex:1; text-align:center; }
+  }
 </style>
 </head>
 <body>
 <header>
   <div class="inner">
-    <div class="logo" aria-hidden="true"></div>
+    <img class="logo" src="icon-192.png" width="40" height="40" alt="" />
     <div>
       <h1>THE PLAYBOOK</h1>
-      <p>Calm companion for neurodivergent families</p>
+      <p>For neurodivergent families</p>
     </div>
     <div class="cta">
       <a class="btn btn-ghost" href="./app.html">Open app</a>
-      <a class="btn btn-primary" href="https://buy.stripe.com/bJe4gB2R9fbb96O52C38403">£2.99 once</a>
+      <a class="btn btn-primary" href="./app.html">Start free</a>
     </div>
   </div>
 </header>
@@ -73,70 +73,58 @@
 <div class="wrap">
   <section class="hero">
     <h2>Track the days that matter.<br>Spot the patterns.<br>Walk into appointments prepared.</h2>
-    <p>A private diary for parents and carers of autistic and neurodivergent children. Log energy, mood, sleep, behaviour and wins — then turn it into a one-page report for school, GP or therapy. No subscription. Data stays on your device.</p>
-    <span class="price">£2.99 <b>once</b> · no subscription · cancel nothing</span>
+    <p>A private diary for parents and carers. Log energy, mood, sleep, behaviour and wins — then hand school or your GP a clear one-page summary. No subscription. Logs stay on your device.</p>
+    <div class="hero-actions">
+      <a class="btn btn-dark" href="./app.html">Open the app</a>
+      <a class="btn btn-primary" href="https://buy.stripe.com/bJe4gB2R9fbb96O52C38403">Unlock · £2.99 once</a>
+      <span class="price">£2.99 <b>once</b> · no subscription</span>
+    </div>
+    <p class="note">Already using it? Open the app on this device — your logs are still here.</p>
   </section>
 
   <div class="grid">
     <div class="card">
       <span class="tag free">Free</span>
       <h3>Full tracking</h3>
-      <p>Daily energy, mood, behaviour, sensory, sleep, food, therapy, medication, milestones, self-care and wins. Multiple children on one device. Export and import a backup anytime.</p>
+      <p>Daily energy, mood, behaviour, sensory, sleep, food, therapy, meds, milestones, self-care and wins. More than one child on the same device.</p>
     </div>
     <div class="card">
       <span class="tag paid">£2.99 unlock</span>
       <h3>Insights & report</h3>
-      <p>Plain-English patterns from your own logs — including sleep-to-energy links. A printable professional report with talking points for school, GP or therapy.</p>
+      <p>Plain-English patterns from your own logs, including sleep-to-energy links. A printable one-pager with talking points for school, GP or therapy.</p>
     </div>
     <div class="card">
-      <span class="tag paid">£2.99 unlock</span>
-      <h3>Discover & community</h3>
-      <p>Toys, events and tips matched to what you log. Printable visual supports, colouring and AAC boards. Share with other paid members when signed in.</p>
+      <span class="tag free">School</span>
+      <h3>Teacher daily note</h3>
+      <p>Give school a private link. They send mood, energy and one note — no login, no photos, no chat. The same link works every day until you revoke it.</p>
     </div>
     <div class="card">
       <span class="tag free">Private</span>
       <h3>Your data, your device</h3>
-      <p>No account needed to start. Logs never leave the phone unless you choose to create one. Delete my data clears everything in one tap.</p>
+      <p>No account needed to start. Export a backup anytime. Delete my data clears notes on this phone or tablet in one tap.</p>
     </div>
   </div>
 
-  <section class="vs">
-    <h3>How THE PLAYBOOK compares</h3>
-    <p>Most autism apps are either visual schedules for the child or adult energy trackers. THE PLAYBOOK is the parent-side evidence trail — the thing you hand to a professional.</p>
-    <table>
-      <thead><tr><th>Feature</th><th>THE PLAYBOOK</th><th>Tiimo / Goally</th><th>Guiding Growth</th><th>Autism360</th></tr></thead>
-      <tbody>
-        <tr><td>Parent-side daily diary</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td><td class="mid">Partial</td></tr>
-        <tr><td>One-page pro report</td><td class="yes">Yes</td><td class="no">No</td><td class="mid">Limited</td><td class="no">No</td></tr>
-        <tr><td>Voice logging</td><td class="yes">Coming</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
-        <tr><td>Sleep → energy patterns</td><td class="yes">Yes</td><td class="no">No</td><td class="mid">Basic</td><td class="no">No</td></tr>
-        <tr><td>Price model</td><td class="yes">£2.99 once</td><td class="mid">Subscription</td><td class="mid">Subscription</td><td class="mid">Subscription</td></tr>
-        <tr><td>Data stays on device</td><td class="yes">Yes</td><td class="mid">Cloud</td><td class="mid">Cloud</td><td class="mid">Cloud</td></tr>
-        <tr><td>No account to start</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
-      </tbody>
-    </table>
-  </section>
-
   <section class="steps">
-    <div class="step"><div class="n">1</div><h4>Log in seconds</h4><p>Tap energy, pick a mood, speak a note. Thirty seconds on a hard day.</p></div>
-    <div class="step"><div class="n">2</div><h4>See the pattern</h4><p>Insights surface what your logs are really saying — triggers, sleep links, what helps.</p></div>
-    <div class="step"><div class="n">3</div><h4>Hand it over</h4><p>Print the one-page report. Walk into school or the GP with evidence, not memory.</p></div>
+    <div class="step"><div class="n">1</div><h4>Log in seconds</h4><p>Tap energy, pick a mood, add a note. Thirty seconds on a hard day.</p></div>
+    <div class="step"><div class="n">2</div><h4>See the pattern</h4><p>Insights show triggers, sleep links and what already helps.</p></div>
+    <div class="step"><div class="n">3</div><h4>Hand it over</h4><p>Print the one-page report. Walk in with evidence, not memory.</p></div>
   </section>
 
-  <p style="text-align:center; margin:32px 0;">
-    <a class="btn btn-primary" href="./app.html" style="padding:14px 26px; font-size:16px;">Start free tracking →</a>
-  </p>
+  <div class="bottom-cta">
+    <a class="btn btn-primary" href="./app.html" style="padding:13px 24px; font-size:16px;">Start free tracking</a>
+  </div>
 </div>
 
 <footer>
-  <div class="wrap">
+  <div class="wrap" style="padding-bottom:0;">
     <div class="links">
       <a href="./privacy.html">Privacy</a>
       <a href="./terms.html">Terms</a>
       <a href="./support.html">Support</a>
       <a href="mailto:Theplaybookhome@gmail.com">Theplaybookhome@gmail.com</a>
     </div>
-    <div>THE PLAYBOOK · For neurodivergent families · £2.99 once, no subscription.</div>
+    <div>THE PLAYBOOK · £2.99 once, no subscription.</div>
   </div>
 </footer>
 </body>
