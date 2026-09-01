@@ -1,0 +1,26 @@
+name: v35-voice
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - v35_voice_patterns_patch.py
+      - .github/workflows/v35-voice.yml
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V35 voice and patterns patch
+        run: |
+          set -euo pipefail
+          python3 v35_voice_patterns_patch.py
+          grep -q "function VoiceButton" app.html
+          grep -q "VoiceButton value={note}" app.html
+          grep -q "THEME_BUILD_V35" app.html
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add app.html
+          git diff --cached --quiet || git commit -m "V35: apply voice logging, pattern detection, meds reminder"
+          git push origin HEAD:main
