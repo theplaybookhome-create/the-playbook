@@ -1,8 +1,8 @@
-/* THE PLAYBOOK service worker — v35
+/* THE PLAYBOOK service worker — v36
    Bump CACHE_NAME whenever app.html ships a breaking change.
    Strategy: cache-first for static assets, network-first for navigations. */
 
-const CACHE_NAME = "playbook-v35";
+const CACHE_NAME = "playbook-v36";
 const OFFLINE_URL = "./offline.html";
 
 const PRECACHE = [
@@ -34,7 +34,6 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  // Navigations: network first, fall back to offline page
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).catch(() => caches.match(OFFLINE_URL))
@@ -42,7 +41,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets: cache first
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;

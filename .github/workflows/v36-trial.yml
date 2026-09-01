@@ -1,0 +1,30 @@
+name: v36-trial
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - v36_trial_share_meds_patch.py
+      - .github/workflows/v36-trial.yml
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V36 patch
+        run: |
+          set -euo pipefail
+          python3 v36_trial_share_meds_patch.py
+          grep -q "function countLoggedDays" app.html
+          grep -q "function TrialOrPaywall" app.html
+          grep -q "Copy share link" app.html
+          grep -q "function ShareReportView" app.html
+          grep -q "function MedReminderBanner" app.html
+          grep -q "function Root()" app.html
+          grep -q "THEME_BUILD_V36" app.html
+          git config user.name "theplaybookhome-create"
+          git config user.email "theplaybookhome@gmail.com"
+          git add app.html sw.js
+          git diff --cached --quiet || git commit -m "V36: 7-day trial paywall, shareable report, med reminders"
+          git push origin HEAD:main
