@@ -9,6 +9,7 @@ on:
       - "v42_unmix_share_ux.py"
       - "v43_fix_boot.py"
       - "v44_school_send_fix.py"
+      - "v45_school_tab.py"
       - "school.html"
       - "SCHOOL_SHARE.sql"
       - ".github/workflows/v38-school.yml"
@@ -32,10 +33,12 @@ jobs:
         run: python v43_fix_boot.py
       - name: Fix teacher send (anon publish)
         run: python v44_school_send_fix.py
+      - name: School notes tab
+        run: python v45_school_tab.py
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app.html sw.js school.html SCHOOL_SHARE.sql
-          git diff --cached --quiet || git commit -m "fix: teacher form send + custom mood"
+          git diff --cached --quiet || git commit -m "feat: school tab + latest teacher note on Today"
           git push
