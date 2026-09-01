@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V47 -->
+  <!-- THEME_BUILD_V48 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -3513,14 +3513,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
         <TrialOrPaywall dataStore={dataStore} unlocked={unlocked} onUnlock={onUnlock} />
       </div>
       <MedReminderBanner dataStore={dataStore} onDismiss={(id) => { dismissMedReminder(id); if (typeof showToast === "function") showToast("Reminder cleared"); }} />
-      <section className="school-section" aria-labelledby="teacher-log-heading">
-        <div className="school-section-head">
-          <h2 id="teacher-log-heading">Teacher log</h2>
-          <p>Keep school notes in one place. Teachers only get a short form — they never see your diary.</p>
-        </div>
-        <SchoolLinkCard showToast={showToast} />
-        <SchoolInbox showToast={showToast} latestOnly={true} onSeeAll={function () { onNavigate("school"); }} />
-      </section>
+      <SchoolInbox showToast={showToast} latestOnly={true} onSeeAll={function () { onNavigate("school"); }} />
       <div className="home-hero">
         <QuickLog setDataStore={setDataStore} showToast={showToast} activeChildId={activeChildId} />
         <div className="home-side">
@@ -5023,7 +5016,7 @@ root.render(React.createElement(Root));
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=47").then(function (reg) {
+        navigator.serviceWorker.register("./sw.js?v=48").then(function (reg) {
           if (reg && reg.update) try { reg.update(); } catch (e) {}
         }).catch(function (e) {
           console.warn("SW register failed", e);
