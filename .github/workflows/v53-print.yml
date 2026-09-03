@@ -1,0 +1,28 @@
+name: v53 printables save print
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "v53_printables_fix.py"
+      - ".github/workflows/v53-print.yml"
+      - "print-pack.html"
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Improve printables save and print
+        run: python v53_printables_fix.py
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.html sw.js print-pack.html v53_printables_fix.py
+          git diff --cached --quiet || git commit -m "fix: save and print printables instead of open-as-file"
+          git push

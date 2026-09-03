@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Printable — THE PLAYBOOK</title>
+  <meta name="theme-color" content="#0E131F" />
+  <style>
+    :root { --navy:#0E131F; --orange:#FF6B00; --bg:#F4F6F8; --ink:#111827; --soft:#6B7280; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--navy); color:#fff; min-height:100vh; display:flex; flex-direction:column; }
+    header { padding:14px 16px 10px; }
+    header a { color:#FFD0A8; font-weight:700; text-decoration:none; font-size:13px; }
+    h1 { font-size:20px; margin:8px 0 4px; }
+    .sub { color:#9AA3AD; font-size:13px; margin:0 0 12px; }
+    .actions { display:flex; flex-wrap:wrap; gap:8px; padding:0 16px 12px; }
+    button, .btn {
+      appearance:none; border:0; border-radius:12px; padding:12px 14px; font-weight:800; font-size:14px;
+      font-family:inherit; cursor:pointer; text-decoration:none; display:inline-block;
+    }
+    .save { background:var(--orange); color:#fff; }
+    .print { background:#fff; color:var(--navy); }
+    .open { background:#243041; color:#fff; }
+    .hint { padding:0 16px 12px; color:#C4CAD1; font-size:13px; line-height:1.45; min-height:1.4em; }
+    .frame-wrap { flex:1; background:#111; min-height:50vh; }
+    iframe, embed { width:100%; height:100%; min-height:60vh; border:0; background:#fff; }
+    @media print {
+      header, .actions, .hint { display:none !important; }
+      body { background:#fff; }
+      .frame-wrap, iframe, embed { height:100vh; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="./app.html">← Back to THE PLAYBOOK</a>
+    <h1 id="title">Printable pack</h1>
+    <p class="sub" id="sub">Save to Files, then print from there if you want paper copies.</p>
+  </header>
+  <div class="actions">
+    <button class="save" id="saveBtn" type="button">Save to device</button>
+    <button class="print" id="printBtn" type="button">Print</button>
+    <a class="btn open" id="openBtn" href="#" target="_blank" rel="noopener">Open PDF</a>
+  </div>
+  <p class="hint" id="hint">On iPhone and iPad tap Save to device, then choose Save to Files. Print is in that same share sheet.</p>
+  <div class="frame-wrap"><iframe id="frame" title="PDF preview"></iframe></div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const file = params.get("file") || "1-visual-supports.pdf";
+    const title = params.get("title") || "THE PLAYBOOK printable";
+    const autoPrint = params.get("print") === "1";
+    const url = new URL(file, location.href).href;
+    document.title = title + " — THE PLAYBOOK";
+    document.getElementById("title").textContent = title;
+    document.getElementById("openBtn").href = url;
+    document.getElementById("frame").src = url;
+    function say(msg) { document.getElementById("hint").textContent = msg; }
+    async function blobFor() {
+      const res = await fetch(url, { credentials: "same-origin" });
+      if (!res.ok) throw new Error("Could not load PDF");
+      const blob = await res.blob();
+      return blob.type && blob.type.indexOf("pdf") >= 0 ? blob : new Blob([blob], { type: "application/pdf" });
+    }
+    async function save() {
+      say("Preparing file…");
+      try {
+        const blob = await blobFor();
+        const name = file.split("/").pop() || "playbook-printable.pdf";
+        if (navigator.share && navigator.canShare) {
+          const f = new File([blob], name, { type: "application/pdf" });
+          if (navigator.canShare({ files: [f] })) {
+            await navigator.share({ files: [f], title: title, text: "Save to Files or Print" });
+            say("Share sheet opened. Choose Save to Files or Print.");
+            return;
+          }
+        }
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        say("Download started. Check Files or Downloads.");
+      } catch (e) {
+        if (e && e.name === "AbortError") { say(""); return; }
+        window.open(url, "_blank", "noopener");
+        say("Opened the PDF. Use Share → Save to Files or Print.");
+      }
+    }
+    function printPack() {
+      try {
+        const frame = document.getElementById("frame");
+        if (frame && frame.contentWindow) {
+          frame.contentWindow.focus();
+          frame.contentWindow.print();
+          say("If the print box did not appear, tap Save to device and choose Print.");
+          return;
+        }
+      } catch (e) {}
+      window.print();
+    }
+    document.getElementById("saveBtn").onclick = save;
+    document.getElementById("printBtn").onclick = printPack;
+    if (autoPrint) setTimeout(printPack, 800);
+  </script>
+</body>
+</html>
