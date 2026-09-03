@@ -1,5 +1,5 @@
-/* THE PLAYBOOK — service worker */
-const CACHE = "playbook-v51";
+/* THE PLAYBOOK — service worker v52 */
+const CACHE = "playbook-v52";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -17,17 +17,20 @@ const PRECACHE = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    // One missing file must not fail the whole install (old addAll did).
+    await Promise.all(PRECACHE.map((url) => cache.add(url).catch(() => null)));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener("fetch", (event) => {
@@ -35,6 +38,10 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
+  // Never intercept auth or third-party CDNs — login dies if these are cached wrong.
+  if (url.origin !== self.location.origin) return;
+  if (url.hostname.indexOf("supabase") >= 0) return;
+
   const isHTML = req.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname === "/" || url.pathname.endsWith("/");
 
   if (isHTML) {
@@ -56,7 +63,7 @@ self.addEventListener("fetch", (event) => {
     caches.match(req).then((cached) => {
       const network = fetch(req)
         .then((res) => {
-          if (res && res.status === 200 && url.origin === self.location.origin) {
+          if (res && res.status === 200) {
             const copy = res.clone();
             caches.open(CACHE).then((cache) => cache.put(req, copy));
           }
