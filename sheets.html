@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Printables — THE PLAYBOOK</title>
+  <meta name="theme-color" content="#0E131F" />
+  <style>
+    :root { --navy:#0E131F; --orange:#FF6B00; --paper:#F6F3EE; --ink:#12202B; --soft:#5B6773; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--paper); color:var(--ink); }
+    header { position:sticky; top:0; z-index:5; background:var(--navy); color:#fff; padding:12px 16px 14px; }
+    header a { color:#FFD0A8; font-weight:700; text-decoration:none; font-size:13px; }
+    h1 { margin:8px 0 4px; font-size:22px; }
+    .sub { margin:0; color:#C9D1D8; font-size:13px; line-height:1.45; }
+    #hint { margin:10px 16px 0; font-size:13px; color:#3E4A55; min-height:1.2em; }
+    .feed { padding:12px 14px 40px; display:flex; flex-direction:column; gap:14px; max-width:720px; margin:0 auto; }
+    .sheet { border:0; background:#fff; border-radius:16px; padding:0; overflow:hidden; box-shadow:0 8px 24px rgba(18,32,43,.08); text-align:left; cursor:pointer; font-family:inherit; }
+    .sheet img { width:100%; display:block; background:#fff; }
+    .cap { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px 12px; }
+    .cap strong { font-size:14px; }
+    .cap em { font-style:normal; font-size:12px; font-weight:800; color:#fff; background:var(--orange); border-radius:999px; padding:5px 10px; }
+    .empty { padding:24px; color:var(--soft); }
+  </style>
+  <script src="./sheets.js"></script>
+</head>
+<body>
+  <header>
+    <a href="./app.html">← Back to THE PLAYBOOK</a>
+    <h1>Printables</h1>
+    <p class="sub">Scroll the pages. Tap a picture to save it to this device. On iPad choose Save to Files.</p>
+  </header>
+  <p id="hint"></p>
+  <div class="feed" id="feed"><p class="empty">Loading sheets…</p></div>
+  <script>
+    const feed = document.getElementById("feed");
+    const hint = document.getElementById("hint");
+    const sheets = window.PRINTABLE_SHEETS || [];
+    function say(msg) { hint.textContent = msg || ""; }
+    async function saveSheet(sheet) {
+      say("Preparing " + sheet.title + "…");
+      try {
+        const res = await fetch(sheet.src, { credentials: "same-origin" });
+        if (!res.ok) throw new Error("missing");
+        const blob = await res.blob();
+        const name = (sheet.src.split("/").pop() || "playbook-sheet.jpg");
+        if (navigator.share && navigator.canShare) {
+          const f = new File([blob], name, { type: blob.type || "image/jpeg" });
+          if (navigator.canShare({ files: [f] })) {
+            await navigator.share({ files: [f], title: sheet.title, text: "Save to Files or Print" });
+            say("Share sheet opened — tap Save to Files.");
+            return;
+          }
+        }
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        say("Saved. Check Files or Downloads.");
+      } catch (e) {
+        if (e && e.name === "AbortError") { say(""); return; }
+        say("Could not save that page. Check you are online and try again.");
+      }
+    }
+    if (!sheets.length) {
+      feed.innerHTML = '<p class="empty">Sheets are still publishing. Open this page again in a minute.</p>';
+    } else {
+      feed.innerHTML = "";
+      sheets.forEach(function (sheet) {
+        const btn = document.createElement("button");
+        btn.className = "sheet";
+        btn.type = "button";
+        btn.innerHTML = '<img src="' + sheet.src + '" alt="' + sheet.title + '"><span class="cap"><strong>' + sheet.title + '</strong><em>Tap to save</em></span>';
+        btn.onclick = function () { saveSheet(sheet); };
+        feed.appendChild(btn);
+      });
+    }
+  </script>
+</body>
+</html>
