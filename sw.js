@@ -1,5 +1,5 @@
-/* THE PLAYBOOK — service worker v52 */
-const CACHE = "playbook-v52";
+/* THE PLAYBOOK — service worker v52b */
+const CACHE = "playbook-v52b";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -19,9 +19,8 @@ const PRECACHE = [
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
-    // One missing file must not fail the whole install (old addAll did).
     await Promise.all(PRECACHE.map((url) => cache.add(url).catch(() => null)));
-    await self.skipWaiting();
+    // No skipWaiting — iPad Chrome + old app.html reloads to a white screen.
   })());
 });
 
@@ -29,7 +28,6 @@ self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
-    await self.clients.claim();
   })());
 });
 
@@ -38,7 +36,6 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
-  // Never intercept auth or third-party CDNs — login dies if these are cached wrong.
   if (url.origin !== self.location.origin) return;
   if (url.hostname.indexOf("supabase") >= 0) return;
 

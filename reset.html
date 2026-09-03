@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reset THE PLAYBOOK</title>
+  <meta name="theme-color" content="#0E131F" />
+  <style>
+    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:system-ui,-apple-system,sans-serif; background:#0E131F; color:#F4F6F8; text-align:center; padding:24px; }
+    h1 { font-size:22px; margin:0 0 10px; }
+    p { color:#9AA3AD; max-width:28em; line-height:1.45; }
+    a { display:inline-block; margin-top:16px; background:#FF6B00; color:#fff; font-weight:800; text-decoration:none; padding:12px 18px; border-radius:12px; }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>Clearing old app cache…</h1>
+    <p id="st">Give this a couple of seconds on the iPad.</p>
+    <p><a id="go" href="./app.html?v=52" style="display:none">Open the app</a></p>
+  </div>
+  <script>
+    (async function () {
+      var st = document.getElementById("st");
+      try {
+        if (navigator.serviceWorker) {
+          var regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(function (r) { return r.unregister(); }));
+        }
+        if (window.caches) {
+          var keys = await caches.keys();
+          await Promise.all(keys.map(function (k) { return caches.delete(k); }));
+        }
+        st.textContent = "Cache cleared. Open the app below.";
+      } catch (e) {
+        st.textContent = "Could not clear everything. Still try Open the app.";
+      }
+      document.getElementById("go").style.display = "inline-block";
+    })();
+  </script>
+</body>
+</html>
