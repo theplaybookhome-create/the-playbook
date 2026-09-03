@@ -1,9 +1,10 @@
-/* THE PLAYBOOK — service worker v52b */
-const CACHE = "playbook-v52b";
+/* THE PLAYBOOK — service worker v53 */
+const CACHE = "playbook-v53";
 const PRECACHE = [
   "./",
   "./index.html",
   "./app.html",
+  "./print-pack.html",
   "./privacy.html",
   "./terms.html",
   "./support.html",
@@ -20,7 +21,6 @@ self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     await Promise.all(PRECACHE.map((url) => cache.add(url).catch(() => null)));
-    // No skipWaiting — iPad Chrome + old app.html reloads to a white screen.
   })());
 });
 
@@ -34,13 +34,10 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
-
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
   if (url.hostname.indexOf("supabase") >= 0) return;
-
   const isHTML = req.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname === "/" || url.pathname.endsWith("/");
-
   if (isHTML) {
     event.respondWith(
       fetch(req)
@@ -55,7 +52,6 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
-
   event.respondWith(
     caches.match(req).then((cached) => {
       const network = fetch(req)
