@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V51 -->
+  <!-- THEME_BUILD_V54 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -154,6 +154,7 @@
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/dist/umd/supabase.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
+  <script src="./sheets.js"></script>
   <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
@@ -684,6 +685,14 @@ textarea { resize: vertical; min-height: 56px; }
 }
 .print-pack .pp-emoji { font-size: 28px; line-height: 1; margin-bottom: 4px; }
 .print-pack.preview-locked { opacity: 0.95; }
+
+.sheets-feed { display:flex; flex-direction:column; gap:14px; margin-bottom:18px; }
+.sheet-card { border:0; background:#fff; border-radius:16px; padding:0; overflow:hidden; box-shadow:0 8px 24px rgba(18,32,43,.08); text-align:left; cursor:pointer; font-family:inherit; }
+.sheet-card img { width:100%; display:block; background:#fff; }
+.sheet-cap { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px 12px; }
+.sheet-cap strong { font-size:14px; color:var(--navy); }
+.sheet-cap em { font-style:normal; font-size:12px; font-weight:800; color:#fff; background:var(--amber, #F08A2A); border-radius:999px; padding:5px 10px; }
+
 .print-hero {
   background: linear-gradient(145deg, #FFF8F0 0%, #FFFFFF 55%);
   border: 2px solid #E8D5C0; border-radius: 16px; padding: 16px; margin-bottom: 14px;
@@ -3427,60 +3436,55 @@ function PdfViewerModal({ pack, onClose }) {
 }
 
 function PrintablesGallery({ unlocked, onRequestUnlock, embedded }) {
-  const [activePack, setActivePack] = useState(null);
+  const sheets = (typeof PRINTABLE_SHEETS !== "undefined" && PRINTABLE_SHEETS) ? PRINTABLE_SHEETS : [];
+  const [note, setNote] = useState("");
+  async function saveSheet(sheet) {
+    if (!unlocked) { onRequestUnlock(); return; }
+    setNote("Preparing " + sheet.title + "…");
+    try {
+      const res = await fetch(sheet.src, { credentials: "same-origin" });
+      if (!res.ok) throw new Error("missing");
+      const blob = await res.blob();
+      const name = (sheet.src.split("/").pop() || "playbook-sheet.jpg");
+      if (navigator.share && navigator.canShare) {
+        const f = new File([blob], name, { type: blob.type || "image/jpeg" });
+        if (navigator.canShare({ files: [f] })) {
+          await navigator.share({ files: [f], title: sheet.title, text: "Save to Files or Print" });
+          setNote("Share sheet opened — tap Save to Files.");
+          return;
+        }
+      }
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setNote("Saved. Check Files or Downloads.");
+    } catch (e) {
+      if (e && e.name === "AbortError") { setNote(""); return; }
+      setNote("Could not save that page. Try again on Wi-Fi.");
+    }
+  }
   return (
     <div>
       {!embedded && (
-        <PageHeader kicker="Print · laminate · use" title="Printables" subtitle="See what's inside each pack before you download." />
+        <PageHeader kicker="Tap a page · save to this device" title="Printables" subtitle="One scroll of ready sheets. Tap the picture to keep it." />
       )}
       <div className="print-hero">
-        <h3>Printable toolkit for home & school</h3>
-        <p>A grid of packs you can preview, open and save — without leaving the app.</p>
+        <h3>Tap a page to save it</h3>
+        <p>No packs to open. Scroll the sheets and tap the image. On iPad choose Save to Files.</p>
       </div>
-      {!unlocked && (
-        <div className="locked-overlay" style={{ marginBottom: 14 }}>
-          <p style={{ margin: "0 0 8px", fontWeight: 700, color: "var(--navy)" }}>Preview free · download with full access</p>
-          <p style={{ margin: "0 0 14px" }}>You can see what's in every pack. Unlock once to open and save the PDFs.</p>
-          <button type="button" className="btn-primary" onClick={onRequestUnlock}>Unlock Printables · {PREMIUM_PRICE}</button>
-        </div>
-      )}
-      <div className="printables-grid">
-        {PRINTABLES_PACKS.map((p) => (
-          <div
-            className={"print-pack" + (!unlocked ? " preview-locked" : "")}
-            key={p.id}
-            style={p.primary ? { borderColor: "var(--amber)", borderWidth: 2 } : undefined}
-          >
-            {p.cover ? <img className="pp-cover" src={p.cover} alt="" /> : <div className="pp-emoji" aria-hidden="true">{p.emoji || "📄"}</div>}
-            <div className="pp-kicker">{p.kicker}</div>
-            <h3>{p.title}</h3>
-            <p>{p.desc}</p>
-            {p.samples && p.samples.length > 0 && (
-              <div className="print-preview-chips">
-                {p.samples.map((s) => <span key={s}>{s}</span>)}
-              </div>
-            )}
-            <div className="pp-meta">{p.meta}</div>
-            {unlocked ? (
-              <button
-                type="button"
-                className={p.primary ? "btn-amber" : "btn-primary"}
-                onClick={() => setActivePack(p)}
-              >
-                {p.primary ? "Open complete toolkit" : "Open & save PDF"}
-              </button>
-            ) : (
-              <button type="button" className={p.primary ? "btn-amber" : "btn-primary"} onClick={onRequestUnlock}>
-                Unlock to download
-              </button>
-            )}
-          </div>
+      {note ? <p className="footer-note">{note}</p> : null}
+      <div className="sheets-feed">
+        {sheets.map((s) => (
+          <button key={s.src} type="button" className="sheet-card" onClick={() => saveSheet(s)}>
+            <img src={s.src} alt={s.title} />
+            <span className="sheet-cap"><strong>{s.title}</strong><em>Tap to save</em></span>
+          </button>
         ))}
       </div>
-      <p className="footer-note">Family use — not a clinical AAC system. More packs can be added later.</p>
-      {activePack && (
-        <PdfViewerModal pack={activePack} onClose={() => setActivePack(null)} />
-      )}
+      {!sheets.length ? <p className="footer-note">Sheets are still publishing — open Discover again in a minute.</p> : null}
     </div>
   );
 }
@@ -5011,18 +5015,9 @@ root.render(React.createElement(Root));
 
   <script>
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js?v=51").then(function (reg) {
-          if (reg && reg.update) try { reg.update(); } catch (e) {}
-        }).catch(function (e) {
-          console.warn("SW register failed", e);
-        });
-        navigator.serviceWorker.addEventListener("controllerchange", function () {
-          if (window.__pbReloaded) return;
-          window.__pbReloaded = true;
-          window.location.reload();
-        });
-      });
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        regs.forEach(function (r) { r.unregister(); });
+      }).catch(function () {});
     }
   </script>
 
