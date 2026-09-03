@@ -3447,10 +3447,10 @@ function PrintablesGallery({ unlocked, onRequestUnlock, embedded }) {
       const blob = await res.blob();
       const name = (sheet.src.split("/").pop() || "playbook-sheet.jpg");
       if (navigator.share && navigator.canShare) {
-        const f = new File([blob], name, { type: blob.type || "image/jpeg" });
+        const f = new File([blob], name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
         if (navigator.canShare({ files: [f] })) {
-          await navigator.share({ files: [f], title: sheet.title, text: "Save to Files or Print" });
-          setNote("Share sheet opened — tap Save to Files.");
+          await navigator.share({ files: [f], title: sheet.title, text: "Save Image to put this in your gallery" });
+          setNote("Share sheet opened — tap Save Image / Add to Photos.");
           return;
         }
       }
@@ -3460,7 +3460,7 @@ function PrintablesGallery({ unlocked, onRequestUnlock, embedded }) {
       document.body.appendChild(a);
       a.click();
       a.remove();
-      setNote("Saved. Check Files or Downloads.");
+      setNote("Saved. Check your photo gallery or Downloads.");
     } catch (e) {
       if (e && e.name === "AbortError") { setNote(""); return; }
       setNote("Could not save that page. Try again on Wi-Fi.");
@@ -3469,18 +3469,18 @@ function PrintablesGallery({ unlocked, onRequestUnlock, embedded }) {
   return (
     <div>
       {!embedded && (
-        <PageHeader kicker="Tap a page · save to this device" title="Printables" subtitle="One scroll of ready sheets. Tap the picture to keep it." />
+        <PageHeader kicker="Tap a page · save to gallery" title="Printables" subtitle="One scroll of ready sheets. Tap the picture to keep it." />
       )}
       <div className="print-hero">
         <h3>Tap a page to save it</h3>
-        <p>No packs to open. Scroll the sheets and tap the image. On iPad choose Save to Files.</p>
+        <p>No packs to open. Scroll the sheets and tap the image. On iPad tap Save Image to add it to your gallery.</p>
       </div>
       {note ? <p className="footer-note">{note}</p> : null}
       <div className="sheets-feed">
         {sheets.map((s) => (
           <button key={s.src} type="button" className="sheet-card" onClick={() => saveSheet(s)}>
             <img src={s.src} alt={s.title} />
-            <span className="sheet-cap"><strong>{s.title}</strong><em>Tap to save</em></span>
+            <span className="sheet-cap"><strong>{s.title}</strong><em>Save to gallery</em></span>
           </button>
         ))}
       </div>
