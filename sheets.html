@@ -15,11 +15,14 @@
     .sub { margin:0; color:#C9D1D8; font-size:13px; line-height:1.45; }
     #hint { margin:10px 16px 0; font-size:13px; color:#3E4A55; min-height:1.2em; }
     .feed { padding:12px 14px 40px; display:flex; flex-direction:column; gap:14px; max-width:720px; margin:0 auto; }
-    .sheet { border:0; background:#fff; border-radius:16px; padding:0; overflow:hidden; box-shadow:0 8px 24px rgba(18,32,43,.08); text-align:left; cursor:pointer; font-family:inherit; }
-    .sheet img { width:100%; display:block; background:#fff; }
+    .sheet { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 8px 24px rgba(18,32,43,.08); }
+    .sheet img { width:100%; display:block; background:#fff; -webkit-touch-callout:default; }
     .cap { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px 12px; }
     .cap strong { font-size:14px; }
-    .cap em { font-style:normal; font-size:12px; font-weight:800; color:#fff; background:var(--orange); border-radius:999px; padding:5px 10px; }
+    .cap button {
+      appearance:none; border:0; font-style:normal; font-size:12px; font-weight:800; color:#fff;
+      background:var(--orange); border-radius:999px; padding:8px 12px; font-family:inherit; cursor:pointer;
+    }
     .empty { padding:24px; color:var(--soft); }
   </style>
   <script src="./sheets.js"></script>
@@ -28,7 +31,7 @@
   <header>
     <a href="./app.html">← Back to THE PLAYBOOK</a>
     <h1>Printables</h1>
-    <p class="sub">Scroll the pages. Tap a picture to save it to this device. On iPad choose Save to Files.</p>
+    <p class="sub">Scroll the pages. Tap Save to gallery. On iPad choose Save Image so it lands in Photos.</p>
   </header>
   <p id="hint"></p>
   <div class="feed" id="feed"><p class="empty">Loading sheets…</p></div>
@@ -43,25 +46,27 @@
         const res = await fetch(sheet.src, { credentials: "same-origin" });
         if (!res.ok) throw new Error("missing");
         const blob = await res.blob();
-        const name = (sheet.src.split("/").pop() || "playbook-sheet.jpg");
+        const rawName = (sheet.src.split("/").pop() || "playbook-sheet.jpg");
+        const name = rawName.replace(/\.[^.]+$/, ".jpg");
+        const imgBlob = blob.type && blob.type.indexOf("image/") === 0 ? blob : new Blob([blob], { type: "image/jpeg" });
         if (navigator.share && navigator.canShare) {
-          const f = new File([blob], name, { type: blob.type || "image/jpeg" });
+          const f = new File([imgBlob], name, { type: "image/jpeg" });
           if (navigator.canShare({ files: [f] })) {
-            await navigator.share({ files: [f], title: sheet.title, text: "Save to Files or Print" });
-            say("Share sheet opened — tap Save to Files.");
+            await navigator.share({ files: [f], title: sheet.title, text: "Save Image to add this to your gallery" });
+            say("Tap Save Image / Add to Photos.");
             return;
           }
         }
         const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
+        a.href = URL.createObjectURL(imgBlob);
         a.download = name;
         document.body.appendChild(a);
         a.click();
         a.remove();
-        say("Saved. Check Files or Downloads.");
+        say("Saved. Check Photos, gallery or Downloads.");
       } catch (e) {
         if (e && e.name === "AbortError") { say(""); return; }
-        say("Could not save that page. Check you are online and try again.");
+        say("Long-press the picture instead, then tap Add to Photos.");
       }
     }
     if (!sheets.length) {
@@ -69,12 +74,12 @@
     } else {
       feed.innerHTML = "";
       sheets.forEach(function (sheet) {
-        const btn = document.createElement("button");
-        btn.className = "sheet";
-        btn.type = "button";
-        btn.innerHTML = '<img src="' + sheet.src + '" alt="' + sheet.title + '"><span class="cap"><strong>' + sheet.title + '</strong><em>Tap to save</em></span>';
-        btn.onclick = function () { saveSheet(sheet); };
-        feed.appendChild(btn);
+        const card = document.createElement("div");
+        card.className = "sheet";
+        card.innerHTML = '<img src="' + sheet.src + '" alt="' + sheet.title + '"><div class="cap"><strong>' + sheet.title + '</strong><button type="button">Save to gallery</button></div>';
+        card.querySelector("button").onclick = function () { saveSheet(sheet); };
+        card.querySelector("img").onclick = function () { saveSheet(sheet); };
+        feed.appendChild(card);
       });
     }
   </script>
