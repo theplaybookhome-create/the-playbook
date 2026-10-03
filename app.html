@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V54 -->
+  <!-- THEME_BUILD_V56 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -4484,6 +4484,7 @@ function App() {
     { id: "track", label: "Track", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 11h16"/></svg> },
     { id: "insights", label: "Insights", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 19V10M12 19V5M19 19v-7"/></svg> },
     { id: "report", label: "Report", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 3h8l5 5v13H7z"/><path d="M15 3v5h5"/></svg> },
+    { id: "paper", label: "Paper", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5M8 13h8M8 17h5"/></svg> },
   ];
 
   const forceLogin = (function () {
@@ -4554,6 +4555,7 @@ function App() {
                     <button type="button" className={"hchip" + (mainTab === "track" ? " active" : "")} onClick={() => navigate("track", "daily")}>🔒 Private tracking</button>
           <button type="button" className={"hchip" + (mainTab === "insights" ? " active" : "")} onClick={() => navigate("insights")}>📈 Pattern insights</button>
           <button type="button" className={"hchip" + (mainTab === "report" ? " active" : "")} onClick={() => navigate("report")}>📄 Professional report</button>
+          <button type="button" className="hchip" onClick={() => { window.location.href = "paper.html"; }}>📋 Paper</button>
           <button type="button" className={"hchip" + (mainTab === "community" ? " active" : "")} onClick={() => navigate("community")}>👥 Community</button>
           <button type="button" className={"hchip" + (mainTab === "discover" ? " active" : "")} onClick={() => navigate("discover")}>✨ Curated tools</button>
         </div>
@@ -4583,7 +4585,7 @@ function App() {
           : mainTab === "community" ? (
             <CommunityPage posts={communityPosts} likes={communityLikes} onAddPost={addCommunityPost} onToggleLike={toggleLike} showToast={showToast} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} onRefreshCloud={refreshCommunity} />
           )
-          : mainTab === "discover" ? <DiscoverPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} memberPosts={discoverPosts} onAddDiscover={addDiscoverPost} onRefreshDiscover={refreshDiscover} initialTab={discTab} /> : null}
+          : mainTab === "paper" ? (window.location.href = "paper.html", null) : mainTab === "discover" ? <DiscoverPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} memberPosts={discoverPosts} onAddDiscover={addDiscoverPost} onRefreshDiscover={refreshDiscover} initialTab={discTab} /> : null}
       </main>
       <nav className="bottom-nav no-print" aria-label="Main">
         {bottom.map((b) => (
