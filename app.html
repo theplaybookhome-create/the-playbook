@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V56 -->
+  <!-- THEME_BUILD_V57 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -3507,13 +3507,10 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
     <div className="home-today">
       <div className="home-top">
         <div className="home-greet">
-          <p className="hi">{hello}{who ? ", " + who : ""}{who ? " 👋" : ""}</p>
-          <p className="sub">Logging for <strong>{activeChildName || "My child"}</strong> · track what matters.</p>
+          <p className="hi">{hello}{who ? ", " + who : ""}</p>
+          <p className="sub">Logging for <strong>{activeChildName || "My child"}</strong>. Tap energy, pick a mood, save.</p>
         </div>
-        <TrialOrPaywall dataStore={dataStore} unlocked={unlocked} onUnlock={onUnlock} />
       </div>
-      <MedReminderBanner dataStore={dataStore} onDismiss={(id) => { dismissMedReminder(id); if (typeof showToast === "function") showToast("Reminder cleared"); }} />
-      <SchoolInbox showToast={showToast} latestOnly={true} onSeeAll={function () { onNavigate("school"); }} />
       <div className="home-hero">
         <QuickLog setDataStore={setDataStore} showToast={showToast} activeChildId={activeChildId} />
         <div className="home-side">
@@ -3528,6 +3525,9 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
           </div>
         </div>
       </div>
+      <TrialOrPaywall dataStore={dataStore} unlocked={unlocked} onUnlock={onUnlock} />
+      <MedReminderBanner dataStore={dataStore} onDismiss={(id) => { dismissMedReminder(id); if (typeof showToast === "function") showToast("Reminder cleared"); }} />
+      <SchoolInbox showToast={showToast} latestOnly={true} onSeeAll={function () { onNavigate("school"); }} />
       <ConnectCard />
       <div className="progress-row" style={{ display: "none" }}>
         <div className="progress-card" role="button" tabIndex={0} onClick={() => onNavigate("insights")}>
@@ -3559,6 +3559,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
         <button type="button" className="quick-link t-ins" onClick={() => onNavigate("insights")}><span className="ql-ico">📊</span><strong>See patterns</strong><span className="ql-hint">Triggers, sleep, energy trends</span></button>
         <button type="button" className="quick-link t-rep" onClick={() => onNavigate("report")}><span className="ql-ico">📄</span><strong>Meeting summary</strong><span className="ql-hint">Printable care report — not the teacher form</span></button>
         <button type="button" className="quick-link t-com" onClick={() => onNavigate("community")}><span className="ql-ico">💬</span><strong>Community</strong><span className="ql-hint">Peer notes & support</span></button>
+        <button type="button" className="quick-link" onClick={() => { window.location.href = "paper.html"; }}><span className="ql-ico">📋</span><span><strong>EHCP and DLA</strong><span className="ql-hint">Draft the meeting from your logs</span></span></button>
         <button type="button" className="quick-link t-print" onClick={() => onNavigate("discover", null, "printables")}><span className="ql-ico">🖨️</span><span><strong>Printables</strong><span className="ql-hint">Preview packs · download</span></span></button>
         <button type="button" className="quick-link t-disc" onClick={() => onNavigate("discover")}><span className="ql-ico">*</span><span><strong>Discover</strong><span className="ql-hint">Tools, guides & more</span></span></button>
         <div className="why-card">
@@ -4551,13 +4552,13 @@ function App() {
           </div>
         </div>
         <div className="header-chips" role="navigation" aria-label="Features">
-          <button type="button" className={"hchip" + (mainTab === "school" ? " active" : "")} onClick={() => navigate("school")}>🏫 Teacher notes</button>
-                    <button type="button" className={"hchip" + (mainTab === "track" ? " active" : "")} onClick={() => navigate("track", "daily")}>🔒 Private tracking</button>
-          <button type="button" className={"hchip" + (mainTab === "insights" ? " active" : "")} onClick={() => navigate("insights")}>📈 Pattern insights</button>
-          <button type="button" className={"hchip" + (mainTab === "report" ? " active" : "")} onClick={() => navigate("report")}>📄 Professional report</button>
+          <button type="button" className={"hchip" + (mainTab === "school" ? " active" : "")} onClick={() => navigate("school")}>🏫 School</button>
+                    <button type="button" className={"hchip" + (mainTab === "track" ? " active" : "")} onClick={() => navigate("track", "daily")}>🔒 Log</button>
+          <button type="button" className={"hchip" + (mainTab === "insights" ? " active" : "")} onClick={() => navigate("insights")}>📈 Patterns</button>
+          <button type="button" className={"hchip" + (mainTab === "report" ? " active" : "")} onClick={() => navigate("report")}>📄 Report</button>
           <button type="button" className="hchip" onClick={() => { window.location.href = "paper.html"; }}>📋 Paper</button>
           <button type="button" className={"hchip" + (mainTab === "community" ? " active" : "")} onClick={() => navigate("community")}>👥 Community</button>
-          <button type="button" className={"hchip" + (mainTab === "discover" ? " active" : "")} onClick={() => navigate("discover")}>✨ Curated tools</button>
+          <button type="button" className={"hchip" + (mainTab === "discover" ? " active" : "")} onClick={() => navigate("discover")}>✨ Tools</button>
         </div>
         {children && children.length > 0 && (
           <div className="child-bar">
