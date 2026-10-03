@@ -1,5 +1,5 @@
-/* THE PLAYBOOK — service worker v61 */
-const CACHE = "playbook-v61";
+/* THE PLAYBOOK — service worker v62 */
+const CACHE = "playbook-v62";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -45,13 +45,7 @@ self.addEventListener("fetch", (event) => {
   if (isHTML) {
     event.respondWith(
       fetch(req)
-        .then((res) => {
-          if (res && res.status === 200) {
-            const copy = res.clone();
-            caches.open(CACHE).then((cache) => cache.put(req, copy));
-          }
-          return res;
-        })
+        .then((res) => res)
         .catch(() => caches.match(req).then((cached) => cached || caches.match("./offline.html")))
     );
     return;
