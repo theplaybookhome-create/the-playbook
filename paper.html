@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0B1219" />
+  <title>Paper — THE PLAYBOOK</title>
+  <style>
+    :root { --ink:#0E131F; --muted:#6B7280; --line:#E6E8EC; --orange:#FF8A2B; --bg:#F6F7F9; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
+    header { background:#0B1219; color:#fff; padding:16px 16px 18px; }
+    header a { color:#FFB067; text-decoration:none; font-size:13px; font-weight:700; }
+    header h1 { margin:8px 0 4px; font-size:26px; }
+    header p { margin:0; color:#C5CDD6; font-size:14px; line-height:1.4; }
+    main { max-width:680px; margin:0 auto; padding:16px 16px 48px; }
+    .card { background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:16px; margin-bottom:14px; }
+    .card h2 { margin:0 0 4px; font-size:16px; }
+    .card .hint { margin:0 0 12px; color:var(--muted); font-size:13px; line-height:1.45; }
+    label { display:block; font-size:12px; font-weight:700; margin:10px 0 4px; }
+    input, select, textarea { width:100%; border:1.5px solid var(--line); border-radius:12px; padding:10px 12px; font:inherit; font-size:15px; }
+    textarea { min-height:84px; resize:vertical; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; }
+    button.btn { border:0; border-radius:12px; padding:12px 14px; font-weight:800; cursor:pointer; font-size:14px; }
+    button.primary { background:#0E131F; color:#fff; }
+    button.orange { background:var(--orange); color:#fff; }
+    button.ghost { background:#fff; border:1.5px solid var(--line); }
+    .draft { white-space:pre-wrap; background:#FFF8F2; border:1px solid #FFE0C7; border-radius:14px; padding:12px; font-size:14px; line-height:1.45; }
+    .note { font-size:12px; color:var(--muted); line-height:1.4; }
+    .toast { position:fixed; left:16px; right:16px; bottom:16px; background:#0E131F; color:#fff; border-radius:12px; padding:12px 14px; display:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="app.html">← Today</a>
+    <h1>Paper</h1>
+    <p>EHCP, review and DLA prompts. Drafts use logs already on this phone. Nothing is sent.</p>
+  </header>
+  <main>
+    <section class="card">
+      <h2>Plan</h2>
+      <p class="hint">What is in place. Keep the photo of the page in your camera roll.</p>
+      <label for="planType">Type</label>
+      <select id="planType">
+        <option>EHCP</option>
+        <option>SEN support</option>
+        <option>Waiting / no plan yet</option>
+      </select>
+      <label for="planStart">Start date</label>
+      <input id="planStart" placeholder="e.g. March 2024" />
+      <label for="reviewDate">Review date</label>
+      <input id="reviewDate" placeholder="e.g. 12 Nov" />
+      <label for="provision">What school agreed to do</label>
+      <textarea id="provision" placeholder="Support named in the plan"></textarea>
+    </section>
+
+    <section class="card">
+      <h2>This review</h2>
+      <p class="hint">What you want changed. The draft below pulls the last 14 days from your log.</p>
+      <label for="wanted">What I want changed</label>
+      <textarea id="wanted" placeholder="What is not happening, or what you are asking for"></textarea>
+      <label for="meetingNote">Meeting note</label>
+      <textarea id="meetingNote" placeholder="Date, who was there, what was agreed"></textarea>
+    </section>
+
+    <section class="card">
+      <h2>DLA</h2>
+      <p class="hint">Prompts only. Empty means you have not logged that yet. This is not a claim.</p>
+      <label for="dlaCare">Care — washing, dressing, meals, night, supervision</label>
+      <textarea id="dlaCare"></textarea>
+      <label for="dlaMobility">Getting out — journeys, unfamiliar places, supervision</label>
+      <textarea id="dlaMobility"></textarea>
+    </section>
+
+    <section class="card">
+      <h2>Dates</h2>
+      <label for="nextReview">Next review</label>
+      <input id="nextReview" />
+      <label for="formDeadline">Form deadline</label>
+      <input id="formDeadline" />
+      <label for="meeting">Meeting</label>
+      <input id="meeting" />
+      <p class="note">These stay on this phone. Set a reminder in your calendar from the date if you need an alert.</p>
+    </section>
+
+    <section class="card">
+      <h2>Draft from your logs</h2>
+      <p class="hint">Template only. Not AI, not sent, not advice. Check every line before you use it.</p>
+      <div class="row">
+        <button class="btn primary" type="button" id="btnParent">Parent view</button>
+        <button class="btn primary" type="button" id="btnEmail">School email</button>
+        <button class="btn orange" type="button" id="btnDla">DLA examples</button>
+      </div>
+      <div id="draftBox" style="margin-top:12px"></div>
+    </section>
+    <p class="note">Saved on this device with your other Playbook notes. Delete my data on Today removes this too.</p>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script>
+    const KEY = "playbook:paper-pack";
+    const fields = ["planType","planStart","reviewDate","provision","wanted","meetingNote","dlaCare","dlaMobility","nextReview","formDeadline","meeting"];
+    function load() {
+      try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; }
+    }
+    function save() {
+      const pack = {};
+      fields.forEach((id) => { pack[id] = document.getElementById(id).value; });
+      localStorage.setItem(KEY, JSON.stringify(pack));
+      toast("Saved on this phone");
+    }
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.style.display = "block";
+      setTimeout(() => { el.style.display = "none"; }, 1600);
+    }
+    function readList(key) {
+      try { return JSON.parse(localStorage.getItem("playbook:" + key) || "[]"); } catch (e) { return []; }
+    }
+    function recent(key, days) {
+      const cut = new Date();
+      cut.setDate(cut.getDate() - days);
+      const iso = cut.toISOString().slice(0, 10);
+      return readList(key).filter((e) => e && String(e.date || "") >= iso);
+    }
+    function lineDaily(e) {
+      const mood = Array.isArray(e.mood) ? e.mood.join(", ") : (e.mood || "");
+      return [e.date + ": energy " + (e.energy || "—"), mood, e.challenges ? "Hard: " + e.challenges : "", e.wentWell ? "Helped: " + e.wentWell : "", e.notes || ""].filter(Boolean).join(". ");
+    }
+    function pack() { return load(); }
+    function showDraft(title, text) {
+      const box = document.getElementById("draftBox");
+      box.innerHTML = "";
+      const h = document.createElement("h2");
+      h.textContent = title;
+      const pre = document.createElement("div");
+      pre.className = "draft";
+      pre.textContent = text;
+      const btn = document.createElement("button");
+      btn.className = "btn ghost";
+      btn.type = "button";
+      btn.style.marginTop = "8px";
+      btn.textContent = "Copy draft";
+      btn.onclick = () => navigator.clipboard.writeText(text).then(() => toast("Draft copied")).catch(() => toast("Select the text to copy"));
+      box.appendChild(h);
+      box.appendChild(pre);
+      box.appendChild(btn);
+    }
+    document.getElementById("btnParent").onclick = () => {
+      const p = pack();
+      const daily = recent("daily-log-entries", 14).sort((a,b) => String(a.date).localeCompare(String(b.date)));
+      const beh = recent("behavior-log-entries", 14);
+      const lines = [
+        "DRAFT — check before you send. Written only from logs on this phone. Not advice.",
+        "",
+        "Parent view, last 14 days.",
+        daily.length ? daily.map(lineDaily).join("\n") : "No daily logs in the last 14 days.",
+        beh.length ? "\nHard moments:\n" + beh.map((e) => e.date + ": " + (e.whatHappened || "") + (e.whatHelped ? " Helped: " + e.whatHelped : "")).join("\n") : "",
+        p.wanted ? "\nWhat I want changed:\n" + p.wanted : "",
+        p.provision ? "\nWhat the plan says school will do:\n" + p.provision : ""
+      ];
+      showDraft("Parent view", lines.filter(Boolean).join("\n"));
+    };
+    document.getElementById("btnEmail").onclick = () => {
+      const p = pack();
+      const hard = recent("daily-log-entries", 14).filter((e) => e.challenges).slice(0, 5).map((e) => e.date + ": " + e.challenges);
+      const text = [
+        "DRAFT — edit and send yourself. Not sent from this app.",
+        "",
+        "Subject: Notes before the meeting",
+        "",
+        "Hello,",
+        "",
+        "I am writing ahead of our meeting.",
+        hard.length ? "From the home log:\n" + hard.join("\n") : "I do not have home logs for the last 14 days yet.",
+        p.wanted ? "\nI would like us to look at:\n" + p.wanted : "",
+        p.meeting ? "\nMeeting: " + p.meeting : "",
+        "",
+        "Please reply with a time if that suits.",
+        "",
+        "Thank you"
+      ].join("\n");
+      showDraft("School email", text);
+    };
+    document.getElementById("btnDla").onclick = () => {
+      const p = pack();
+      const sleep = recent("sleep-food-entries", 28);
+      const daily = recent("daily-log-entries", 28).slice(0, 8);
+      const beh = recent("behavior-log-entries", 28).slice(0, 6);
+      const text = [
+        "DRAFT examples for a DLA form. Only from logs. Empty means you have not logged that yet. This is not a claim and not advice.",
+        "",
+        "Night / sleep:",
+        sleep.length ? sleep.map((e) => e.date + ": sleep " + (e.sleepQuality || "—") + "/5" + (e.notes ? " — " + e.notes : "")).join("\n") : "No sleep logs yet.",
+        "",
+        "Day / care from the diary:",
+        daily.length ? daily.map(lineDaily).join("\n") : "No daily notes yet.",
+        beh.length ? "\nSupervision / hard moments:\n" + beh.map((e) => e.date + ": " + (e.whatHappened || "")).join("\n") : "",
+        p.dlaCare ? "\nYour care note:\n" + p.dlaCare : "",
+        p.dlaMobility ? "\nYour mobility note:\n" + p.dlaMobility : ""
+      ].join("\n");
+      showDraft("DLA examples", text);
+    };
+    const saved = load();
+    fields.forEach((id) => {
+      const el = document.getElementById(id);
+      if (saved[id]) el.value = saved[id];
+      el.addEventListener("change", save);
+      el.addEventListener("blur", save);
+    });
+  </script>
+</body>
+</html>
