@@ -1,5 +1,5 @@
-/* THE PLAYBOOK — service worker v53 */
-const CACHE = "playbook-v53";
+/* THE PLAYBOOK — service worker v59 */
+const CACHE = "playbook-v59";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const PRECACHE = [
   "./terms.html",
   "./support.html",
   "./school.html",
+  "./paper.html",
   "./offline.html",
   "./manifest.webmanifest",
   "./icon-192.png",
@@ -18,6 +19,7 @@ const PRECACHE = [
 ];
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     await Promise.all(PRECACHE.map((url) => cache.add(url).catch(() => null)));
@@ -26,6 +28,7 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
+    await self.clients.claim();
     const keys = await caches.keys();
     await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
   })());
