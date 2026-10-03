@@ -86,8 +86,11 @@
     <section class="card">
       <h2>Draft from your logs</h2>
       <p class="hint">Template only. Not AI, not sent, not advice. Check every line before you use it.</p>
-      <div class="row">
+      <label for="sendTo">Send to</label>
+      <input id="sendTo" placeholder="school or council email — stays on this phone" />
+      <div class="row" style="margin-top:12px">
         <button class="btn primary" type="button" id="btnParent">Parent view</button>
+        <button class="btn primary" type="button" id="btnEhcp">EHCP review</button>
         <button class="btn primary" type="button" id="btnEmail">School email</button>
         <button class="btn orange" type="button" id="btnDla">DLA examples</button>
       </div>
@@ -98,7 +101,7 @@
   <div class="toast" id="toast"></div>
   <script>
     const KEY = "playbook:paper-pack";
-    const fields = ["planType","planStart","reviewDate","provision","wanted","meetingNote","dlaCare","dlaMobility","nextReview","formDeadline","meeting"];
+    const fields = ["planType","planStart","reviewDate","provision","wanted","meetingNote","dlaCare","dlaMobility","nextReview","formDeadline","meeting","sendTo"];
     function load() {
       try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; }
     }
@@ -142,9 +145,17 @@
       btn.style.marginTop = "8px";
       btn.textContent = "Copy draft";
       btn.onclick = () => navigator.clipboard.writeText(text).then(() => toast("Draft copied")).catch(() => toast("Select the text to copy"));
+      const send = document.createElement("button");
+      send.className = "btn orange";
+      send.type = "button";
+      send.style.marginTop = "8px";
+      send.style.marginLeft = "8px";
+      send.textContent = "Send";
+      send.onclick = sendDraft;
       box.appendChild(h);
       box.appendChild(pre);
       box.appendChild(btn);
+      box.appendChild(send);
     }
     document.getElementById("btnParent").onclick = () => {
       const p = pack();
@@ -159,7 +170,44 @@
         p.wanted ? "\nWhat I want changed:\n" + p.wanted : "",
         p.provision ? "\nWhat the plan says school will do:\n" + p.provision : ""
       ];
-      showDraft("Parent view", lines.filter(Boolean).join("\n"));
+      lastDraft = { title: "Parent view", text: lines.filter(Boolean).join("\n"), subject: "Parent view for the meeting" };
+      showDraft("Parent view", lastDraft.text);
+    };
+
+    let lastDraft = { title: "Draft", text: "", subject: "THE PLAYBOOK draft" };
+    function sendDraft() {
+      if (!lastDraft.text) { toast("Make a draft first"); return; }
+      const to = (document.getElementById("sendTo").value || "").trim();
+      const href = "mailto:" + encodeURIComponent(to) + "?subject=" + encodeURIComponent(lastDraft.subject) + "&body=" + encodeURIComponent(lastDraft.text);
+      window.location.href = href;
+      toast("Opening your email app");
+    }
+    document.getElementById("btnEhcp").onclick = () => {
+      const p = pack();
+      const daily = recent("daily-log-entries", 28).sort((a,b) => String(a.date).localeCompare(String(b.date)));
+      const beh = recent("behavior-log-entries", 28);
+      const text = [
+        "DRAFT EHCP parent view — check before you send. From logs on this phone only. Not advice. Not a request for assessment unless you say so.",
+        "",
+        "Plan: " + (p.planType || "EHCP"),
+        p.planStart ? "Started: " + p.planStart : "",
+        p.reviewDate ? "Review date: " + p.reviewDate : "",
+        "",
+        "What the plan says school will do:",
+        p.provision || "Not filled in yet.",
+        "",
+        "What I want changed at this review:",
+        p.wanted || "Not filled in yet.",
+        "",
+        "What home has looked like:",
+        daily.length ? daily.map(lineDaily).join("\n") : "No daily logs in the last 28 days.",
+        beh.length ? "\nIncidents / hard moments:\n" + beh.map((e) => e.date + ": " + (e.whatHappened || "") + (e.whatHelped ? " Helped: " + e.whatHelped : "")).join("\n") : "",
+        p.meetingNote ? "\nMeeting note:\n" + p.meetingNote : "",
+        "",
+        "I am asking for the review to record the above and to say what will change in the plan."
+      ].filter(Boolean).join("\n");
+      lastDraft = { title: "EHCP review", text: text, subject: "EHCP review — parent view" };
+      showDraft("EHCP review", text);
     };
     document.getElementById("btnEmail").onclick = () => {
       const p = pack();
@@ -180,6 +228,7 @@
         "",
         "Thank you"
       ].join("\n");
+      lastDraft = { title: "School email", text: text, subject: "Notes before the meeting" };
       showDraft("School email", text);
     };
     document.getElementById("btnDla").onclick = () => {
@@ -199,6 +248,7 @@
         p.dlaCare ? "\nYour care note:\n" + p.dlaCare : "",
         p.dlaMobility ? "\nYour mobility note:\n" + p.dlaMobility : ""
       ].join("\n");
+      lastDraft = { title: "DLA examples", text: text, subject: "DLA examples from the home log" };
       showDraft("DLA examples", text);
     };
     const saved = load();
