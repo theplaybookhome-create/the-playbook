@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V59 -->
+  <!-- THEME_BUILD_V60 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -3595,7 +3595,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
         <button type="button" className="quick-link t-ins" onClick={() => onNavigate("insights")}><span className="ql-ico">📊</span><strong>See patterns</strong><span className="ql-hint">Triggers, sleep, energy trends</span></button>
         <button type="button" className="quick-link t-rep" onClick={() => onNavigate("report")}><span className="ql-ico">📄</span><strong>Meeting summary</strong><span className="ql-hint">Printable care report — not the teacher form</span></button>
         <button type="button" className="quick-link t-com" onClick={() => onNavigate("community")}><span className="ql-ico">💬</span><strong>Community</strong><span className="ql-hint">Peer notes & support</span></button>
-        <button type="button" className="quick-link" onClick={() => { window.location.href = "paper.html"; }}><span className="ql-ico">📋</span><span><strong>EHCP and DLA</strong><span className="ql-hint">Draft the meeting from your logs</span></span></button>
+        <button type="button" className="quick-link" onClick={() => { setMainTab("paper"); }}><span className="ql-ico">📋</span><span><strong>EHCP and DLA</strong><span className="ql-hint">Draft the meeting from your logs</span></span></button>
         <button type="button" className="quick-link t-print" onClick={() => onNavigate("discover", null, "printables")}><span className="ql-ico">🖨️</span><span><strong>Printables</strong><span className="ql-hint">Preview packs · download</span></span></button>
         <button type="button" className="quick-link t-disc" onClick={() => onNavigate("discover")}><span className="ql-ico">*</span><span><strong>Discover</strong><span className="ql-hint">Tools, guides & more</span></span></button>
         <div className="why-card">
@@ -4516,11 +4516,12 @@ function App() {
   }
 
   useEffect(() => {
-    function recover(e) {
-      if (e && e.persisted) window.location.reload();
+    function onMsg(e) {
+      if (e.origin !== window.location.origin) return;
+      if (e.data && e.data.type === "playbook-home") setMainTab("home");
     }
-    window.addEventListener("pageshow", recover);
-    return () => window.removeEventListener("pageshow", recover);
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
   }, []);
 
   const bottom = [
@@ -4600,7 +4601,7 @@ function App() {
                     <button type="button" className={"hchip" + (mainTab === "track" ? " active" : "")} onClick={() => navigate("track", "daily")}>🔒 Log</button>
           <button type="button" className={"hchip" + (mainTab === "insights" ? " active" : "")} onClick={() => navigate("insights")}>📈 Patterns</button>
           <button type="button" className={"hchip" + (mainTab === "report" ? " active" : "")} onClick={() => navigate("report")}>📄 Report</button>
-          <button type="button" className="hchip" onClick={() => { window.location.href = "paper.html"; }}>📋 Paper</button>
+          <button type="button" className="hchip" onClick={() => { setMainTab("paper"); }}>📋 Paper</button>
           <button type="button" className={"hchip" + (mainTab === "community" ? " active" : "")} onClick={() => navigate("community")}>👥 Community</button>
           <button type="button" className={"hchip" + (mainTab === "discover" ? " active" : "")} onClick={() => navigate("discover")}>✨ Tools</button>
         </div>
@@ -4630,11 +4631,11 @@ function App() {
           : mainTab === "community" ? (
             <CommunityPage posts={communityPosts} likes={communityLikes} onAddPost={addCommunityPost} onToggleLike={toggleLike} showToast={showToast} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} onRefreshCloud={refreshCommunity} />
           )
-          : mainTab === "discover" ? <DiscoverPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} memberPosts={discoverPosts} onAddDiscover={addDiscoverPost} onRefreshDiscover={refreshDiscover} initialTab={discTab} /> : null}
+          : mainTab === "paper" ? <iframe title="Paper" src="paper.html?embed=1" style={{ border: 0, width: "100%", minHeight: "78vh", background: "#F6F7F9" }} /> : mainTab === "discover" ? <DiscoverPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} memberPosts={discoverPosts} onAddDiscover={addDiscoverPost} onRefreshDiscover={refreshDiscover} initialTab={discTab} /> : null}
       </main>
       <nav className="bottom-nav no-print" aria-label="Main">
         {bottom.map((b) => (
-          <button key={b.id} type="button" className={"bottom-btn" + (mainTab === b.id ? " active" : "")} onClick={() => { if (b.id === "paper") { window.location.assign("paper.html"); return; } setMainTab(b.id); }}>
+          <button key={b.id} type="button" className={"bottom-btn" + (mainTab === b.id ? " active" : "")} onClick={() => { setMainTab(b.id); }}>
             <span className="ico">{b.ico}</span><span className="lbl">{b.label}</span>
           </button>
         ))}
