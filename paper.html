@@ -36,7 +36,7 @@
 </head>
 <body>
   <header>
-    <a href="app.html?home=1" id="backToday">← Today</a>
+    <a href="app.html?home=1&amp;v=61" id="backToday">← Today</a>
     <h1>Paper</h1>
     <p>Four parts. Fill one, preview it, then send. Drafts use logs on this phone.</p>
   </header>
@@ -111,10 +111,12 @@
     </section>
   </main>
   <div class="toast" id="toast"></div>
+  <script src="./playbook-logs.js?v=61"></script>
   <script>
     const KEY = "playbook:paper-pack";
     const fields = ["planType","planStart","reviewDate","provision","wanted","meetingNote","dlaCare","dlaMobility","nextReview","formDeadline","meeting","sendTo"];
     let lastDraft = { title: "Draft", text: "", subject: "THE PLAYBOOK draft" };
+    let lastAction = null;
     function toast(msg) {
       const el = document.getElementById("toast");
       el.textContent = msg;
@@ -127,24 +129,19 @@
       try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {}
       return data;
     }
-    function readList(key) {
-      const out = [];
-      const prefix = "playbook:" + key;
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (!k || k.indexOf(prefix) !== 0) continue;
-        try {
-          const v = JSON.parse(localStorage.getItem(k) || "[]");
-          if (Array.isArray(v)) out.push.apply(out, v);
-        } catch (e) {}
-      }
-      return out;
-    }
     function recent(key, days) {
-      const cut = new Date();
-      cut.setDate(cut.getDate() - days);
-      const iso = cut.toISOString().slice(0, 10);
-      return readList(key).filter((e) => e && String(e.date || "") >= iso);
+      if (window.PlaybookLogs && typeof window.PlaybookLogs.read === "function") {
+        return window.PlaybookLogs.read(key, null, days);
+      }
+      try {
+        const raw = localStorage.getItem("playbook:" + key);
+        const list = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(list)) return [];
+        const cut = new Date();
+        cut.setDate(cut.getDate() - days);
+        const iso = cut.toISOString().slice(0, 10);
+        return list.filter((e) => e && String(e.date || "") >= iso);
+      } catch (e) { return []; }
     }
     function lineDaily(e) {
       const mood = Array.isArray(e.mood) ? e.mood.join(", ") : (e.mood || "");
@@ -172,7 +169,7 @@
       window.location.href = "mailto:" + encodeURIComponent(to) + "?subject=" + encodeURIComponent(lastDraft.subject) + "&body=" + encodeURIComponent(lastDraft.text);
       toast("Opening your email app");
     }
-    document.getElementById("btnEhcp").onclick = () => {
+    function previewEhcp() {
       const p = pack();
       const daily = recent("daily-log-entries", 28).sort((a,b) => String(a.date).localeCompare(String(b.date)));
       const beh = recent("behavior-log-entries", 28);
@@ -195,8 +192,8 @@
         p.meetingNote ? "\nMeeting note:\n" + p.meetingNote : ""
       ].filter(Boolean).join("\n");
       showDraft("ehcpPreview", "EHCP preview", text, "EHCP review — parent view");
-    };
-    document.getElementById("btnDla").onclick = () => {
+    }
+    function previewDla() {
       const p = pack();
       const sleep = recent("sleep-food-entries", 28);
       const daily = recent("daily-log-entries", 28).slice(0, 8);
@@ -214,8 +211,8 @@
         p.dlaMobility ? "\nYour mobility note:\n" + p.dlaMobility : ""
       ].join("\n");
       showDraft("dlaPreview", "DLA preview", text, "DLA examples from the home log");
-    };
-    document.getElementById("btnParent").onclick = () => {
+    }
+    function previewParent() {
       const p = pack();
       const daily = recent("daily-log-entries", 14).sort((a,b) => String(a.date).localeCompare(String(b.date)));
       const text = [
@@ -225,8 +222,8 @@
         p.wanted ? "\nWhat I want changed:\n" + p.wanted : ""
       ].join("\n");
       showDraft("sendPreview", "Parent view preview", text, "Parent view for the meeting");
-    };
-    document.getElementById("btnEmail").onclick = () => {
+    }
+    function previewEmail() {
       const p = pack();
       const hard = recent("daily-log-entries", 14).filter((e) => e.challenges).slice(0, 5).map((e) => e.date + ": " + e.challenges);
       const text = [
@@ -241,7 +238,11 @@
         "Thank you"
       ].join("\n");
       showDraft("sendPreview", "School email preview", text, "Notes before the meeting");
-    };
+    }
+    document.getElementById("btnEhcp").onclick = () => { lastAction = previewEhcp; previewEhcp(); };
+    document.getElementById("btnDla").onclick = () => { lastAction = previewDla; previewDla(); };
+    document.getElementById("btnParent").onclick = () => { lastAction = previewParent; previewParent(); };
+    document.getElementById("btnEmail").onclick = () => { lastAction = previewEmail; previewEmail(); };
     document.getElementById("btnSend").onclick = sendDraft;
     document.querySelectorAll("nav button").forEach((btn) => {
       btn.onclick = () => {
@@ -257,7 +258,8 @@
     fields.forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
-      el.addEventListener("change", pack);
+      el.addEventListener("input", () => { pack(); if (lastAction) lastAction(); });
+      el.addEventListener("change", () => { pack(); if (lastAction) lastAction(); });
       el.addEventListener("blur", pack);
     });
   

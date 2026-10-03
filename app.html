@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V60 -->
+  <!-- THEME_BUILD_V61 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -155,6 +155,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/dist/umd/supabase.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
   <script src="./sheets.js"></script>
+  <script src="./playbook-logs.js?v=61"></script>
   <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
@@ -521,8 +522,9 @@ textarea { resize: vertical; min-height: 56px; }
 .report-kpi .rk-l { font-size: 10px; color: var(--soft); font-weight: 600; margin-top: 2px; }
 .parent-note-box {
   border: 1px dashed var(--line); border-radius: 10px; min-height: 72px;
-  padding: 12px; background: #FFFEF9; font-size: 13px; color: var(--muted);
+  padding: 12px; background: #FFFEF9; font-size: 13px; color: var(--ink);
 }
+.parent-note-print { display: none; }
 .helped-list { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.5; }
 .helped-list li { margin-bottom: 4px; }
 
@@ -1445,6 +1447,19 @@ html, body, #root, .app-root {
   .app-root { padding: 0; background: white; }
   .app-main { max-width: 100%; padding: 12px; }
   .card, .entry-form { box-shadow: none; border: 1px solid #ccc; }
+  textarea.parent-note-screen { display: none !important; }
+  .parent-note-print {
+    display: block !important;
+    white-space: pre-wrap;
+    color: #111 !important;
+    font-size: 14px;
+    line-height: 1.45;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 12px;
+    min-height: 40px;
+    background: #fff !important;
+  }
 }
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
@@ -2879,9 +2894,11 @@ function PaywallCard({ onUnlock, unlocked, compact }) {
   );
 }
 
-function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }) {
+function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast, activeChildId }) {
   const [range, setRange] = useState(14);
-  const [parentNote, setParentNote] = useState("");
+  const [parentNote, setParentNote] = useState(function () {
+    try { return localStorage.getItem("playbook:report-parent-note") || ""; } catch (e) { return ""; }
+  });
   const loggedDays = countLoggedDays(dataStore);
   useEffect(() => {
     try { setParentNote(localStorage.getItem("playbook:report-parent-note") || ""); } catch (e) {}
@@ -2890,11 +2907,18 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
     setParentNote(v);
     try { localStorage.setItem("playbook:report-parent-note", v); } catch (e) {}
   }
-  function previewFromLogs() {
-    const cut = new Date(); cut.setDate(cut.getDate() - (range === "all" ? 365 : Number(range) || 14));
+  function logsFor(base) {
+    const days = range === "all" ? "all" : (Number(range) || 14);
+    if (window.PlaybookLogs && typeof window.PlaybookLogs.read === "function") {
+      return window.PlaybookLogs.read(base, activeChildId, days);
+    }
+    const cut = new Date(); cut.setDate(cut.getDate() - (range === "all" ? 3650 : Number(range) || 14));
     const iso = cut.toISOString().slice(0, 10);
-    const daily = (dataStore["daily-log-entries"] || []).filter((e) => !e.date || String(e.date) >= iso);
-    const beh = (dataStore["behavior-log-entries"] || []).filter((e) => !e.date || String(e.date) >= iso);
+    return (dataStore[base] || []).filter((e) => !e.date || String(e.date) >= iso);
+  }
+  function previewFromLogs() {
+    const daily = logsFor("daily-log-entries");
+    const beh = logsFor("behavior-log-entries");
     const lines = daily.slice(0, 8).map((e) => {
       const mood = Array.isArray(e.mood) ? e.mood.join(", ") : (e.mood || "");
       return [e.date, e.energy ? "energy " + e.energy : "", mood, e.challenges ? "Hard: " + e.challenges : "", e.wentWell ? "Helped: " + e.wentWell : "", e.notes || ""].filter(Boolean).join(". ");
@@ -2916,7 +2940,8 @@ function ReportPage({ dataStore, profile, unlocked, onRequestUnlock, showToast }
     <div className="report-section no-print-border">
       <h3>Parent / carer note for this appointment</h3>
       <p className="no-print" style={{ margin: "0 0 8px", fontSize: 13, color: "#6B7280" }}>Write here before you print. Preview fills this from your logs. Edit it.</p>
-      <textarea className="parent-note-box" value={parentNote} onChange={(e) => saveParentNote(e.target.value)} placeholder="What you want the school, GP or review to know" rows={6} style={{ width: "100%", minHeight: 120, border: "1.5px dashed #E6E8EC", borderRadius: 12, padding: 12, font: "inherit" }} />
+      <textarea className="parent-note-box parent-note-screen" value={parentNote} onChange={(e) => saveParentNote(e.target.value)} placeholder="What you want the school, GP or review to know" rows={6} style={{ width: "100%", minHeight: 120, border: "1.5px dashed #E6E8EC", borderRadius: 12, padding: 12, font: "inherit", color: "#1F1F1F" }} />
+      <div className="parent-note-print">{parentNote}</div>
       <button type="button" className="btn-secondary no-print" style={{ marginTop: 8 }} onClick={previewFromLogs}>Preview from logs</button>
     </div>
   );
@@ -3141,7 +3166,7 @@ function EnergySpark({ values, avg }) {
       {pts.length < 2 ? (
         <div>
           <div className="es-dots" aria-hidden="true"><i /><i /><i /><i /><i /></div>
-          <p className="es-empty">Tap energy on the left — a trend line shows after two logs.</p>
+          <p className="es-empty">A trend line shows after two logs.</p>
         </div>
       ) : (
         <svg viewBox={"0 0 " + w + " " + h} aria-hidden="true">
@@ -3544,7 +3569,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
       <div className="home-top">
         <div className="home-greet">
           <p className="hi">{hello}{who ? ", " + who : ""}</p>
-          <p className="sub">Logging for <strong>{activeChildName || "My child"}</strong>. Tap energy, pick a mood, save.</p>
+          <p className="sub">Logging for <strong>{activeChildName || "My child"}</strong>.</p>
         </div>
       </div>
       <div className="home-hero">
@@ -3595,7 +3620,7 @@ function HomePage({ dataStore, setDataStore, onNavigate, unlocked, onUnlock, onO
         <button type="button" className="quick-link t-ins" onClick={() => onNavigate("insights")}><span className="ql-ico">📊</span><strong>See patterns</strong><span className="ql-hint">Triggers, sleep, energy trends</span></button>
         <button type="button" className="quick-link t-rep" onClick={() => onNavigate("report")}><span className="ql-ico">📄</span><strong>Meeting summary</strong><span className="ql-hint">Printable care report — not the teacher form</span></button>
         <button type="button" className="quick-link t-com" onClick={() => onNavigate("community")}><span className="ql-ico">💬</span><strong>Community</strong><span className="ql-hint">Peer notes & support</span></button>
-        <button type="button" className="quick-link" onClick={() => { setMainTab("paper"); }}><span className="ql-ico">📋</span><span><strong>EHCP and DLA</strong><span className="ql-hint">Draft the meeting from your logs</span></span></button>
+        <button type="button" className="quick-link" onClick={() => onNavigate("paper")}><span className="ql-ico">📋</span><span><strong>EHCP and DLA</strong><span className="ql-hint">Draft the meeting from your logs</span></span></button>
         <button type="button" className="quick-link t-print" onClick={() => onNavigate("discover", null, "printables")}><span className="ql-ico">🖨️</span><span><strong>Printables</strong><span className="ql-hint">Preview packs · download</span></span></button>
         <button type="button" className="quick-link t-disc" onClick={() => onNavigate("discover")}><span className="ql-ico">*</span><span><strong>Discover</strong><span className="ql-hint">Tools, guides & more</span></span></button>
         <div className="why-card">
@@ -4601,7 +4626,7 @@ function App() {
                     <button type="button" className={"hchip" + (mainTab === "track" ? " active" : "")} onClick={() => navigate("track", "daily")}>🔒 Log</button>
           <button type="button" className={"hchip" + (mainTab === "insights" ? " active" : "")} onClick={() => navigate("insights")}>📈 Patterns</button>
           <button type="button" className={"hchip" + (mainTab === "report" ? " active" : "")} onClick={() => navigate("report")}>📄 Report</button>
-          <button type="button" className="hchip" onClick={() => { setMainTab("paper"); }}>📋 Paper</button>
+          <button type="button" className={"hchip" + (mainTab === "paper" ? " active" : "")} onClick={() => { setMainTab("paper"); }}>📋 Paper</button>
           <button type="button" className={"hchip" + (mainTab === "community" ? " active" : "")} onClick={() => navigate("community")}>👥 Community</button>
           <button type="button" className={"hchip" + (mainTab === "discover" ? " active" : "")} onClick={() => navigate("discover")}>✨ Tools</button>
         </div>
@@ -4627,11 +4652,11 @@ function App() {
               profile={profile} setProfile={setProfile} brainDump={brainDump} setBrainDump={setBrainDump} showToast={showToast} initialSub={trackSub} activeChildId={activeChildId} />
           )
           : mainTab === "insights" ? <InsightsPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} />
-          : mainTab === "report" ? <ReportPage dataStore={dataStore} profile={profile} unlocked={unlocked} onRequestUnlock={requestUnlock} showToast={showToast} />
+          : mainTab === "report" ? <ReportPage dataStore={dataStore} profile={profile} unlocked={unlocked} onRequestUnlock={requestUnlock} showToast={showToast} activeChildId={activeChildId} />
           : mainTab === "community" ? (
             <CommunityPage posts={communityPosts} likes={communityLikes} onAddPost={addCommunityPost} onToggleLike={toggleLike} showToast={showToast} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} onRefreshCloud={refreshCommunity} />
           )
-          : mainTab === "paper" ? <iframe title="Paper" src="paper.html?embed=1" style={{ border: 0, width: "100%", minHeight: "78vh", background: "#F6F7F9" }} /> : mainTab === "discover" ? <DiscoverPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} memberPosts={discoverPosts} onAddDiscover={addDiscoverPost} onRefreshDiscover={refreshDiscover} initialTab={discTab} /> : null}
+          : mainTab === "paper" ? <iframe title="Paper" src="paper.html?embed=1&v=61" style={{ border: 0, width: "100%", minHeight: "78vh", background: "#F6F7F9" }} /> : mainTab === "discover" ? <DiscoverPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} memberPosts={discoverPosts} onAddDiscover={addDiscoverPost} onRefreshDiscover={refreshDiscover} initialTab={discTab} /> : null}
       </main>
       <nav className="bottom-nav no-print" aria-label="Main">
         {bottom.map((b) => (
