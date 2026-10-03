@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V58 -->
+  <!-- THEME_BUILD_V59 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -4515,6 +4515,14 @@ function App() {
     window.setTimeout(() => window.location.reload(), 400);
   }
 
+  useEffect(() => {
+    function recover(e) {
+      if (e && e.persisted) window.location.reload();
+    }
+    window.addEventListener("pageshow", recover);
+    return () => window.removeEventListener("pageshow", recover);
+  }, []);
+
   const bottom = [
     { id: "home", label: "Today", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/></svg> },
     { id: "school", label: "School", ico: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 20V6l8-3 8 3v14"/><path d="M12 3v17M8 20h8"/></svg> },
@@ -4622,11 +4630,11 @@ function App() {
           : mainTab === "community" ? (
             <CommunityPage posts={communityPosts} likes={communityLikes} onAddPost={addCommunityPost} onToggleLike={toggleLike} showToast={showToast} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} onRefreshCloud={refreshCommunity} />
           )
-          : mainTab === "paper" ? (window.location.href = "paper.html", null) : mainTab === "discover" ? <DiscoverPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} memberPosts={discoverPosts} onAddDiscover={addDiscoverPost} onRefreshDiscover={refreshDiscover} initialTab={discTab} /> : null}
+          : mainTab === "discover" ? <DiscoverPage dataStore={dataStore} unlocked={unlocked} onRequestUnlock={requestUnlock} user={user} cloudMode={cloudMode} memberPosts={discoverPosts} onAddDiscover={addDiscoverPost} onRefreshDiscover={refreshDiscover} initialTab={discTab} /> : null}
       </main>
       <nav className="bottom-nav no-print" aria-label="Main">
         {bottom.map((b) => (
-          <button key={b.id} type="button" className={"bottom-btn" + (mainTab === b.id ? " active" : "")} onClick={() => setMainTab(b.id)}>
+          <button key={b.id} type="button" className={"bottom-btn" + (mainTab === b.id ? " active" : "")} onClick={() => { if (b.id === "paper") { window.location.assign("paper.html"); return; } setMainTab(b.id); }}>
             <span className="ico">{b.ico}</span><span className="lbl">{b.label}</span>
           </button>
         ))}
