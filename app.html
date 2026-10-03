@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- THEME_BUILD_V61 -->
+  <!-- THEME_BUILD_V62 -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
@@ -83,6 +83,24 @@
 </style>
 </head>
 <body>
+  <script>
+window.addEventListener("pageshow", function (e) {
+  if (e.persisted) window.location.reload();
+});
+setTimeout(function () {
+  var root = document.getElementById("root");
+  if (root && root.childElementCount > 0) {
+    try { sessionStorage.removeItem("pb-reloaded"); } catch (err) {}
+    return;
+  }
+  try {
+    if (sessionStorage.getItem("pb-reloaded") === "1") return;
+    sessionStorage.setItem("pb-reloaded", "1");
+  } catch (err) {}
+  window.location.replace("app.html?fresh=1");
+}, 1800);
+</script>
+
   <div id="root"></div>
   <script>
     window.storage = {
@@ -5086,13 +5104,6 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(React.createElement(Root));
   </script>
 
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function (regs) {
-        regs.forEach(function (r) { r.unregister(); });
-      }).catch(function () {});
-    }
-  </script>
 
 </body>
 </html>
