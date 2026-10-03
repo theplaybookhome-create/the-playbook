@@ -118,7 +118,17 @@
       setTimeout(() => { el.style.display = "none"; }, 1600);
     }
     function readList(key) {
-      try { return JSON.parse(localStorage.getItem("playbook:" + key) || "[]"); } catch (e) { return []; }
+      const out = [];
+      const prefix = "playbook:" + key;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || k.indexOf(prefix) !== 0) continue;
+        try {
+          const v = JSON.parse(localStorage.getItem(k) || "[]");
+          if (Array.isArray(v)) out.push.apply(out, v);
+        } catch (e) {}
+      }
+      return out;
     }
     function recent(key, days) {
       const cut = new Date();
@@ -130,7 +140,12 @@
       const mood = Array.isArray(e.mood) ? e.mood.join(", ") : (e.mood || "");
       return [e.date + ": energy " + (e.energy || "—"), mood, e.challenges ? "Hard: " + e.challenges : "", e.wentWell ? "Helped: " + e.wentWell : "", e.notes || ""].filter(Boolean).join(". ");
     }
-    function pack() { return load(); }
+    function pack() {
+      const data = {};
+      fields.forEach((id) => { const el = document.getElementById(id); data[id] = el ? el.value : ""; });
+      try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {}
+      return data;
+    }
     function showDraft(title, text) {
       const box = document.getElementById("draftBox");
       box.innerHTML = "";
